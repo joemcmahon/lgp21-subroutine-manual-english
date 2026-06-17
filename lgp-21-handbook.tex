@@ -19,30 +19,6 @@
 \tableofcontents
 \newpage
 \section{Notes on the Translation}
-\subsection{LGP-21 calling sequences}
-\label{subsec:standard-call}
-Because the LGP-21 has a relatively limited instruction set, subroutine calls are typically handled with code similar to the following:
-
-\begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{parameter} & \text{; Load theta@9 into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+n$} & \text{; Store return address at end of sub} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the sine routine} \\
-\end{tabular}
-\end{center}
-
-On the LGP-21, there is no such thing as a stack or recursion. All subroutine returns must be done by modifying a \textbf{U} (unconditional jump) instruction in the subroutine itself to set the return address. Because of this self-modifying code, it is not possible to have multiple calls to a subroutine without destroying any previous return address.
-
-Programmers should take care to ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
-
-Subroutine addresses in the original text are referred to as $\alpha$ or $\alpha+n$ because the code in question is relocatable; I have retained this usage, but programmers needing to use these functions should substitute the base address that they have relocated the subroutine to as the value of $\alpha$.
-
-\subsection{Repeated/redundant information}
-
-Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual consistently repeats information regarding the setup of subroutine calls and how they work. I have condensed this where possible; some subroutines use unusual parameterization (such as patching the values of words in the subroutine itself!) and I have retained all of the setup information as it was originally written in these cases.
-
-I have otherwise condensed these repetitions as "standard LPG-21 calling sequence" where appropriate as noted in \ref{subsec:standard-call}.
-
 \subsection{Number representation}
 \subsubsection*{Introduction to fractional fixed-point architecture}
 The LGP-21's number representation is very different from 21st century computing platforms. It is not at all unique; many early computers used it, including the IBM 701\cite{ibm701manual}, the ILLAC I\cite{illiac1954}, the Elliot 405\cite{elliott405}, the RPC-4000\cite{rpc4000manual}, and the LGP-21's predecessor, the LGP-30\cite{lgp30manual}. 
@@ -51,24 +27,24 @@ John von Neumann first proposed this architecture in 1945 for the EDSAC, and exp
 
 A fixed-point fractional representation treats all numbers as fractions lying between $-1$ and $+1$. von Neumann pointed out\cite{burks1946preliminary} that the multiplication of 2 $n$-bit integers results in a value that may require $2n$ bits to represent it, which could easily overflow a register, but the multiplication of \emph{fractions} always results in a number no larger, and usually smaller, than both multiplicands (e.g., $0.5 \times 0.5 = 0.25$). The answer still requires $2n$ bits to represent, but the extra bits end up in the \emph{least} significant digits, preventing overflow from occurring.
 
-The design uses a combined register pair to contain the $2n$ bits; on the LGP-21, the accumulator receives the most significant half, and a hidden register not available to the programmer gets the least significant half. To reduce complexity, he LGP-21 simply throws this second half away; since these are the least significant digits, the (unscaled) error introduced is $2^{-31}$ or less.
+The design uses a combined register pair to contain the $2n$ bits; on the LGP-21, the accumulator receives the most significant half, and a hidden register not available to the programmer gets the least significant half. To reduce complexity, the LGP-21 simply throws this second half away. Since these are the least significant digits, the (unscaled) error introduced is $2^{-31}$ or less.
 
-This advantage in multiplication is offset by a problem this creates with division. Fractional multiplication shrinks numbers, but fractional division potentially expands them.
+This advantage in multiplication is offset by a problem this creates with division: fractional multiplication \emph{shrinks} numbers, but fractional division (potentially) \emph{expands} them.
 
-In a fractional fixed-point architecture, dividing two numbers requires that the absolute magnitude of the divisor has to be strictly greater than the absolute magnitude of the dividend.$$\left| \text{Divisor} \right| > \left| \text{Dividend} \right|$$Getting this wrong means that the theoretical quotient is $\ge 1.0$, and such a value cannot physically fit in the accumulator. The architecture maintains the \emph{hardware} binary point just after the sign bit, so a value $\ge 1.0$ results in an overflow.
+In a fractional fixed-point architecture, dividing two numbers requires that the absolute magnitude of the divisor has to be \emph{strictly greater than} the absolute magnitude of the dividend.$$\left| \text{Divisor} \right| > \left| \text{Dividend} \right|$$Getting this wrong means that the theoretical quotient is $\ge 1.0$, and such a value cannot physically fit in the accumulator. The architecture maintains the \emph{hardware} binary point just after the sign bit, so a value $\ge 1.0$ results in an overflow.
 
-Von Neumann wrote that "\textbf{[t]he programmer must see to it} [emphasis mine - ED] that the left-shift [scale factor] is sufficiently large to ensure this inequality."\cite{burks1946preliminary} The cognitive load of remembering where the \emph{implied} binary point is (via the scaling factor) vs. the \emph{physical} binary point (implemented by the hardware) is placed solely on the programmer. 
+Von Neumann wrote that "\textbf{[t]he programmer must see to it} [emphasis mine - ED] that the left-shift [scale factor] is sufficiently large to ensure this inequality."\cite{burks1946preliminary} The cognitive load of remembering where the \emph{implied} binary point is (via the scaling factor) vs. the \emph{physical} binary point (implemented by the hardware) is placed solely on the programmer.
 
 Modern embedded systems use similar notation (referred to as \emph{Q-notation} or \emph{fixed-point scaling}) to define this manual placement of the implicit binary point within a computer word, and in fact, the original version of this document specifically refers to the scaling factor as $q$.
 
-\subsubsection*{Fractional fixed-point on the LGP-21}
+\subsubsection*{LGP-21 Fractional Fixed-point Implementation}
 \label{sec:fractional-fixed-point}
-The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+1$, with the physical binary point fixed immediately to the right of the sign bit. To work with integers or mixed numbers, the programmer must mentally "shift" this binary point to the right by $n$ bits (as indicated by the $@n$ notation). 
+The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+1$, with the physical binary point fixed immediately to the right of the (leftmost) sign bit. To work with integers or mixed numbers, the programmer must mentally "shift" this binary point to the right by $n$ bits (as indicated by the $@n$ notation). 
 
-For example, a value at $@3$ allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
+For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
 
 \subsection*{Addition/Subtraction Pitfalls}
- Addition and subtraction require that the scale factors ($@n$) of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction. If you add two numbers with different $q$ factors without shifting them appropriately, the machine will blindly align their bits and perform the operation, smashing incommensurate units of completely different mathematical weights into the same columns. 
+Addition and subtraction require that the scale factors (\texttt{@n}) of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction. If you add two numbers with different $q$ factors without shifting them appropriately, the machine will blindly align their bits and perform the operation, smashing incommensurate units of completely different mathematical weights into the same columns. 
 
     For example, if you attempt to add $1.0$ scaled at $\texttt{@1}$ to $1.0$ scaled at $\texttt{@4}$ without normalizing them first:
     \begin{center}
@@ -78,29 +54,71 @@ For example, a value at $@3$ allocates 3 bits for the integer portion of a numbe
         \text{Raw Sum} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
     \end{tabular}
     \end{center}
-    Depending on which scale factor you \emph{think} the result is in, your answer is now either $1.125$ (if you assume the result is $\texttt{@1}$) or $9.0$ (if you assume $\texttt{@4}$). The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
-    
-    It is vital to understand that the LGP-21 hardware itself does not know about scale factors and has no way to check them or track them.  Scale factor occur during multiplication and division; multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
+Depending on which scale factor you \emph{think} the result is in, your answer is now either $1.125$ (if you assume the result is $\texttt{@1}$) or $9.0$ (if you assume $\texttt{@4}$). The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
+ 
+It is vital to understand that the LGP-21 hardware itself does not know about scale factors and has no way to check them or track them.  Scale factor changes occur during multiplication and division: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
 
-    As an example, if an @1 value were to be divided by an @9 one, the resulting scale factor would be $-8$, meaning that to return it to an $@1$ value, the result would need to be shifted right \emph{8} bits, and for an $@9$ result, it would need to be shifted right \emph{17} bits.
+As an example, if an \texttt{@1} value were to be divided by an \texttt{@9} one, the resulting scale factor would be $-8$, meaning that to return it to an \texttt{@1} value, the result would need to be shifted right \emph{8} bits, and for an \texttt{@9} result, it would need to be shifted right \emph{17}(!) bits.
 
-In the subroutines documented below, I've carried over the original $@n$ notation where it was used, most often for referring to values in storage (e.g., $\theta@9$) or the accumulator (accumulator$@1$).
+In the subroutines documented below, I've carried over the original \texttt{@n} notation where it was used, most often for referring to values in storage (e.g., $\theta@9$) or the accumulator (accumulator\texttt{@1}).
 
 \subsection{Document organization}
-The document is organized in broad sections of related code, broadly broken into mathematical functions, a pair of floating-point calculators, input and output support code, utilities, and a grab-bag of sorts, searches, data maintenance/backup, and programming utilities. (The utility that automates self-modifying code loops is particularly engaging!)
+First, the code described in this document spans a wide range of functions. Some of it really is subroutines, some of it what we'd call functions (subroutines that return a specific value or result), and some is what we'd
+call a program, utility. or monitor. The original document simply calls everything a suroutine, and a "calling sequence" is how the code is executed. This means that some "calling sequences" really are a set of machine instructions that perform a subroutine call, while others are a series of operations that the machine operator must perform to load and start the program.
 
-The original documents is a reference and really just has each program described in order with no further organization. The programs were logically broken up into sections by the codes (e.g., \textbf{B1-10.0}), but the sections were not named or described. I've taken the liberty of adding sections to match the codes, with each lettered prefix denoting a new section. This means that some sections contain a fair number of one or two-page descriptions, while others (notably the floating-point calculators) contain only one or two quite extensive ones.
+Because the actual function of the code is highly variable, I've chosen to refer to the individual programs as appropriate, whether a function, subroutine, utility, etc. "Calling sequence" is altered as appropriate for the kind of program in question; it may be "Execution" or "Usage" instead of "Calling Sequence".
+
+The document is organized in broad section, with the broadly broken into mathematical functions, a pair of floating-point calculators, input and output support code, utilities, and a grab-bag of miscellaneous other algorithms and utilities: sorts, searches, data maintenance/backup, and programming tools. (The tool that automates self-modifying code loops is particularly engaging!)
+
+\subsubsection*{Code names}
+The programs do not have names! This is probably because the name was pretty arbitrary as far as the machine was concerned -- you can't load a program by name, etc.; it's all simply reference material for humans.
+As such the names are assigned to organize the programs, from broad functional groups down to exactly which program is which.
+
+The first character of the name establishes which broad area a program falls into: B is mathematical, D is matrixes, J is input/output, and so on. The second character refines this: B1 is trig functions; B3 is exponential/log functions; B4 is roots. There is no rule as to how the refinement is assigned other than personal taste.
+
+The numeric part of the name refines the classification further. \texttt{B1} is trig; \texttt{B1-10} is sine and cosine, \texttt{B1-11} is arctangent, \texttt{B1-12} is arcsin/arccos. Within that numeric classification, we have a point number that differentiates implementations. So \texttt{B1-10.0} (we number the point classifications from \texttt{0}) is mathematics (\texttt{B}), trigonometry (\texttt{1}), sine/cosine (\texttt{-10}), first implementation (\texttt{.1}). As a sample,
+\texttt{B1-10.0} is the \emph{first} sine and cosine implementation, which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation, which accepts radians.
+
+These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents.
+
+\subsection{LGP-21 calling sequences}
+\label{subsec:standard-call}
+Because the LGP-21 has a relatively limited instruction set, subroutine calls are typically handled with code similar to the following:
+
+\begin{center}
+\begin{tabular}{lll}
+    \texttt{B} & \texttt{parameter} & \texttt{; Load \theta@9 into the accumulator} \\
+    \texttt{R} & \texttt{$\alpha+n$} & \texttt{; Store return address at end of sub} \\
+    \texttt{U} & \texttt{$\alpha$} & \texttt{; call the sine routine} \\
+\end{tabular}
+\end{center}
+
+As you can see, a subroutine call \emph{must} modify code to work: a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Because this self-modifying code is the
+\emph{only} way to do a return from a subroutine, it is not possible to have multiple calls to a subroutine without clobbering any previous return address.
+
+This means that programmers must ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
+
+\subsubsection{Address notation}
+Subroutine addresses in the original text are written as $\alpha$ or, for offsets into program code,  $\alpha+n$, because the code in question is relocatable.
+
+The LGP-21 is too primitive to have anything like a linkage editor, so it's the programmer/operator's responsibility to use the LGP-21's Program Input Routine/footnote{or Rhys Weatherly's \texttt{lgp21-tools} assembler to load and relocate subroutines} to load subroutine code and automatically relocate it as it's loaded. The usage of $\alpha$ for the base address of code is to remind the reader that they will need to relocate these library functions by hand and use the new base addresses
+in their code to make subroutine calls work properly.
+
+\subsection{Repeated/redundant information}
+
+Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard B/R/U instruction sequence used to call a function as noted in \ref{subsec:standard-call}. I have tried to condense this where possible.
+
+Some subroutines use unusual parameterization (such as patching the values of words in the subroutine itself!), or are actually programs to be loaded and run, and I have retained all of the setup information and/or programming information as it was originally written in these cases.
 
 \subsection{Acknowledgements and disclaimers}
 Thanks in particular to David Lovett of Usagi Electric for resurrecting a real, physical LGP-21 and starting me down this road; Rhys Weatherly for the lgp21-tools, and Paul Kimpel for the wonderful LGP-21 web emulator that has given me such a lot of pleasure learning the machine.
 
 Thanks also to the many people whose names I don't know\footnote{Send me patches via GitHub so I can credit you, please!}, who have tirelessly made sure that important historical documents like the original German version of this manual and the programs that go with it have been preserved. This document is my small contribution to this historical preservation effort, and I am immensely grateful to those giants upon whose shoulders I stand. 
 
+This work \emph{is} a translation, and I cannot guarantee I have been completely accurate, whether from misunderstanding or transcription error. I've done my best to be sure my interpretation of what's documented here is correct, but I have not run or tested all of the programs referenced, and I can't make any guarantees as to their fitness and accuracy, nor can I be sure that the document I've translated here is in fact 100 percent accurate itself! I have made corrections where
+errors were obvious, but I may have missed things.
 
-
-This work \emph{is} a translation, and I cannot guarantee I have been completely accurate. I've done my best to be sure my interpretation of what's documented here is correct, but I have not run or tested all of the programs referenced, and I can't make any guarantees as to their fitness and accuracy, nor can I be sure that the document I've translated here is in fact accurate itself!
-
-This document will be up on GitHub; please feel free to submit corrections and errata there if you find anything that needs a fix. I intend to license this document such that it can be freely built upon; my only request is that you credit me for the basic work if you create a derivative work from this one.
+To that end, this document will be up on GitHub; please feel free to submit PRs for corrections and errata there if you find anything that needs a fix. I intend to CC license this document such that it can be freely built upon and distributed, but that credit for the basic work is retained.
 
 \newpage
 \section{Trigonometric functions}
