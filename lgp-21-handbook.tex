@@ -33,7 +33,7 @@ This advantage in multiplication is offset by a problem this creates with divisi
 
 In a fractional fixed-point architecture, dividing two numbers requires that the absolute magnitude of the divisor has to be \emph{strictly greater than} the absolute magnitude of the dividend.$$\left| \text{Divisor} \right| > \left| \text{Dividend} \right|$$Getting this wrong means that the theoretical quotient is $\ge 1.0$, and such a value cannot physically fit in the accumulator. The architecture maintains the \emph{hardware} binary point just after the sign bit, so a value $\ge 1.0$ results in an overflow.
 
-Von Neumann wrote that "\textbf{[t]he programmer must see to it} [emphasis mine - ED] that the left-shift [scale factor] is sufficiently large to ensure this inequality."\cite{burks1946preliminary} The cognitive load of remembering where the \emph{implied} binary point is (via the scaling factor) vs. the \emph{physical} binary point (implemented by the hardware) is placed solely on the programmer.
+Von Neumann wrote that "\emph{[t]he programmer must see to it} [emphasis mine - ED] that the left-shift [scale factor] is sufficiently large to ensure this inequality."\cite{burks1946preliminary} The cognitive load of remembering where the \emph{implied} binary point is (via the scaling factor) vs. the \emph{physical} binary point (implemented by the hardware) is placed solely on the programmer.
 
 Modern embedded systems use similar notation (referred to as \emph{Q-notation} or \emph{fixed-point scaling}) to define this manual placement of the implicit binary point within a computer word, and in fact, the original version of this document specifically refers to the scaling factor as $q$.
 
@@ -74,12 +74,12 @@ The document is organized in broad section, with the broadly broken into mathema
 The programs do not have names! This is probably because the name was pretty arbitrary as far as the machine was concerned -- you can't load a program by name, etc.; it's all simply reference material for humans.
 As such the names are assigned to organize the programs, from broad functional groups down to exactly which program is which.
 
-The first character of the name establishes which broad area a program falls into: B is mathematical, D is matrixes, J is input/output, and so on. The second character refines this: B1 is trig functions; B3 is exponential/log functions; B4 is roots. There is no rule as to how the refinement is assigned other than personal taste.
+The first character of the name establishes which broad area a program falls into: \texttt{B} is mathematical, \texttt{D} is matrixes, \texttt{J} is input/output, and so on. The second character refines this: \texttt{B1} is trig functions; \texttt{B3} is exponential/log functions; \texttt{B4} is roots. There is no rule as to how the refinement is assigned other than personal taste.
 
 The numeric part of the name refines the classification further. \texttt{B1} is trig; \texttt{B1-10} is sine and cosine, \texttt{B1-11} is arctangent, \texttt{B1-12} is arcsin/arccos. Within that numeric classification, we have a point number that differentiates implementations. So \texttt{B1-10.0} (we number the point classifications from \texttt{0}) is mathematics (\texttt{B}), trigonometry (\texttt{1}), sine/cosine (\texttt{-10}), first implementation (\texttt{.1}). As a sample,
 \texttt{B1-10.0} is the \emph{first} sine and cosine implementation, which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation, which accepts radians.
 
-These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents.
+These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents. I have not reordered any of the programs to ensure that any cross-referencing between the German and English versions of the document were easy to do.
 
 \subsection{LGP-21 calling sequences}
 \label{subsec:standard-call}
@@ -92,6 +92,8 @@ Because the LGP-21 has a relatively limited instruction set, subroutine calls ar
     \texttt{U} & \texttt{$\alpha$} & \texttt{; call the sine routine} \\
 \end{tabular}
 \end{center}
+
+The \texttt{B} loads $\theta$ into the accumulator; any instruction getting the appropriate theta into the accumulator is valid here. The \texttt{R} saves the return address at the subroutine's return \texttt{U} instruction, and the \texttt{U} to $\alpha$ (the start of the subroutine) calls it. Execution of the main program resumes just after the \texttt{U} to $\alpha$.
 
 As you can see, a subroutine call \emph{must} modify code to work: a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Because this self-modifying code is the
 \emph{only} way to do a return from a subroutine, it is not possible to have multiple calls to a subroutine without clobbering any previous return address.
@@ -129,7 +131,7 @@ To that end, this document will be up on GitHub; please feel free to submit PRs 
 \subsubsection*{B1-10.0}
 
 \subsubsection*{PURPOSE}
-\textbf{B1-10.0} calculates the sine or cosine of an angle given in degrees. If the given angle is greater than 360°, the subroutine reduces it to the corresponding equivalent between 0 and 360° before calculating the function value. A 9th-degree polynomial is used for approximation. \textbf{B1-10.0} uses the standard LGP-21 calling sequence. The angle argument must supplied in the accumulator$@9$. The function value, including its sign, will be in the accumulator$@1$ when the subroutine returns.
+\texttt{B1-10.0} calculates the sine or cosine of an angle given in degrees. If the given angle is greater than 360°, the subroutine reduces it to the corresponding equivalent between 0 and 360° before calculating the function value. A 9th-degree polynomial is used for approximation. \texttt{B1-10.0} uses the standard LGP-21 calling sequence. The angle argument must supplied in the accumulator$@9$. The function value, including its sign, will be in the accumulator$@1$ when the subroutine returns.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -155,7 +157,8 @@ Different calling sequences are provided for sine and cosine. Only one value (ei
     \texttt{U} & \texttt{$\alpha$} & \text{; call the sine routine} \\
 \end{tabular}
 \end{center}
-The \textbf{B} loads $\theta$ into the accumulator; any instruction getting the appropriate theta into the accumulator is valid here. The \textbf{R} saves the return address at the subroutine's return \textbf{U} instruction, and the \textbf{U} to $\alpha$ (the start of the subroutine) calls it. Execution of the main program resumes just after the \textbf{U} to $\alpha$.
+
+This is a standard function call, with the argument passed in the accumulator and the result returned in it.
 
 \paragraph{Cosine}
 \begin{center}
@@ -165,7 +168,7 @@ The \textbf{B} loads $\theta$ into the accumulator; any instruction getting the 
     \texttt{U} & \texttt{$\alpha+4$} & \text{; call the cosine routine} \\
 \end{tabular}
 \end{center}
-The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at four instructions past the origin address of the \textbf{B1-10.0} subroutine.
+The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at four instructions past the origin address of the \texttt{B1-10.0} subroutine.
 
 \subsubsection*{Output}
 When the subroutine returns, the function value, including the correct sign, is in the accumulator$@1$.
@@ -176,8 +179,7 @@ When the subroutine returns, the function value, including the correct sign, is 
     \item \textbf{Time required:} approximately 775 ms.
     \item \textbf{Program input:} the tape contains the program in two versions:
     \begin{itemize}
-%% Add the proper section reference here for the PIR loader.
-        \item Relocatable, hexadecimal. Valid for J1-10.0.
+      \item Relocatable, hexadecimal. Valid for J1-10.0 (section \ref{sec:PIRloader}).
         \item Relocatable, decimal, in coding sheet format.
     \end{itemize}
     \item \textbf{Required I/O devices:} none.
@@ -192,7 +194,7 @@ When the subroutine returns, the function value, including the correct sign, is 
 \subsection*{B1-10.1}
 
 \subsubsection*{PURPOSE}
-\textbf{B1-10.1} calculates the sine or cosine of an angle given in radians. The absolute value of the angle $\theta$ must not exceed 7.9999999 radians. Before calculating the function, the subroutine reduces the angle $\theta$ to an angle $\beta$ whose absolute value in radians is $\le$1.75. A 14th-degree Taylor series is used to calculate the function. The program \textbf{B1-10.1} is a standard LGP-21 subroutine. The angle argument must be in the accumulator when the subroutine is called. The function value is in the accumulator$@1$ when the function returns.
+\texttt{B1-10.1} calculates the sine or cosine of an angle given in radians. The absolute value of the angle $\theta$ must not exceed 7.9999999 radians. Before calculating the function, the subroutine reduces the angle $\theta$ to an angle $\beta$ whose absolute value in radians is $\le$1.75. A 14th-degree Taylor series is used to calculate the function. The program \texttt{B1-10.1} is a standard LGP-21 subroutine. The angle argument must be in the accumulator when the subroutine is called. The function value is in the accumulator$@1$ when the function returns.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -216,7 +218,8 @@ The input variable for B1-10.1 is an angle $\theta$, whose function value is to 
     \texttt{U} & \texttt{$\alpha$} & \text{; Call the subroutine} \\
 \end{tabular}
 \end{center}
-The \textbf{B} instruction loads the value of the angle to be used into the accumulator; any operation that accomplishes this is fine. The \textbf{R} sets the return address in the subroutine's \textbf{U} used for the return branch. Execution continues immediately following the \textbf{U} to the subroutine.
+
+This is a function call; argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
 
 \paragraph{Cosine}
 \begin{center}
@@ -237,8 +240,7 @@ On return, the function value with the appropriate sign is in the accumulator$@1
     \item \textbf{Time required:} approx. 1200 ms.
     \item \textbf{Program format:} the tape contains the program in two ways:
     \begin{itemize}
-%%  FIX - crossreference PIR properly
-        \item Relocatable, hexadecimal, valid for J1-10.0.
+      \item Relocatable, hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader}).
         \item Relocatable, decimal, in coding sheet format.
     \end{itemize}
     \item \textbf{Required input/output devices:} None.
@@ -252,7 +254,9 @@ On return, the function value with the appropriate sign is in the accumulator$@1
 \subsection*{B1-11.0}
 
 \subsubsection*{PURPOSE}
-\textbf{B1-11.0} calculates the arctangent of any number less than 512. The returned value is signed and expressed in degrees. A 15th-degree polynomial is used to approximate the function. \textbf{B1-11.0} is a standard LGP-21 subroutine. The argument must be in the accumulator; the arctangent value is in the accumulator on return to the main program. [Translator note: see section below on result scaling.]
+\texttt{B1-11.0} calculates the arctangent of any number less than 512. The returned value is signed and expressed in degrees. A 15th-degree polynomial is used to approximate the function. \texttt{B1-11.0} is a standard LGP-21 subroutine. The argument must be in the accumulator; the arctangent value is in the accumulator on return to the main program. [Translator note: see section below on result scaling.]
+
+This is a function call; argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -266,7 +270,7 @@ On return, the function value with the appropriate sign is in the accumulator$@1
 \end{center}
 
 \subsubsection*{Input}
-The input variable for \textbf{B1-11.0} is the value $N@9$ whose arctangent is to be computed. This value must be loaded into the accumulator before the subroutine is called.
+The input variable for \texttt{B1-11.0} is the value $N@9$ whose arctangent is to be computed. This value must be loaded into the accumulator before the subroutine is called.
 
 \subsubsection*{Calling sequence}
 \begin{center}
@@ -276,8 +280,7 @@ The input variable for \textbf{B1-11.0} is the value $N@9$ whose arctangent is t
     \texttt{U} & \texttt{$\alpha$} & \text{; call the arctangent routine} \\
 \end{tabular}
 \end{center}
-The \textbf{B} instruction loads the parameter value into the accumulator (as usual, any operation that loads $N$ appropriately is permissible.) The \textbf{R} instruction sets the return address in the subroutine, and the \textbf{U} performs the call to the subroutine. Main-line execution resumes following the \textbf{U} instruction.
-
+This is a standard function call. Load the argument into the accumulator before the call; the value is returned in the accumulator.
 \subsubsection*{Output}
 Upon returning to the main program, the signed principal value of the arctangent in degrees is in the accumulator$@9$. The absolute value will be between 0° and 89.90°.
 
@@ -288,7 +291,7 @@ Upon returning to the main program, the signed principal value of the arctangent
     \item \textbf{Program format -} the tape contains the program in two ways:
     \begin{itemize}
 %% fix reference
-        \item Arbitrarily relocatable hexadecimal, suitable for J1-10.0.
+      \item Arbitrarily relocatable hexadecimal, suitable for J1-10.0 (section \ref{sec:PIRloader}).
         \item arbitrarily relocatable decimal, in coding sheet format.
     \end{itemize}
     \item \textbf{Required input/output devices:} None.
@@ -331,12 +334,12 @@ Because the word size is a fixed 31 bits, increasing $q$ to accommodate larger i
 \subsection*{B1-11.1}
 
 \subsubsection*{PURPOSE}
-The program \textbf{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, the following holds:
+The program \texttt{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, the following holds:
 \begin{align}
     y &= \sqrt{(x^2 + y^2)} \text{ sin } \theta \\
     x &= \sqrt{(x^2 + y^2)} \text{ cos } \theta
 \end{align}
-Solutions are obtained in all four quadrants. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc. \textbf{B1-11.1} is a standard LGP-21 subroutine, requiring an \textbf{R} instruction to modify the return address in the subroutine's terminal \textbf{U} instruction. When calling the subroutine, $y$ must have been stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator. Upon returning to the main program, the result will be in the accumulator.
+Solutions are obtained in all four quadrants. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc. \texttt{B1-11.1} is a standard LGP-21 subroutine, requiring an \texttt{R} instruction to modify the return address in the subroutine's terminal \texttt{U} instruction. When calling the subroutine, $y$ must have been stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator. Upon returning to the main program, the result will be in the accumulator.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -372,7 +375,7 @@ On return from the subroutine, the accumulator$@1$ will contain the result. To c
     \item \textbf{Time required:} approx. 1160 ms.
     \item \textbf{Program format -} the tape contains the program in two versions:
     \begin{itemize}
-        \item Relocatable hexadecimal, valid for J1-10.0.
+      \item Relocatable hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader}).
         \item Relocatable decimal, in coding sheet format.
     \end{itemize}
     \item No input/output devices are required.
@@ -387,7 +390,7 @@ On return from the subroutine, the accumulator$@1$ will contain the result. To c
 \subsection*{B1-12.0}
 
 \subsubsection*{PURPOSE}
-The program \textbf{B1-12.0} calculates either the arcsine or the arccosine of a given number from -1 $\le N \le$ 1. The signed return value is expressed in degrees. A 7th-degree polynomial is used for approximation. \textbf{B1-12.0} is a standard LGP-21 subroutine. When jumping to the subroutine, the argument must be in the accumulator, and the return address must be stored in the subroutine. Upon returning to the main program, the desired function value is in the accumulator.
+The program \texttt{B1-12.0} calculates either the arcsine or the arccosine of a given number from -1 $\le N \le$ 1. The signed return value is expressed in degrees. A 7th-degree polynomial is used for approximation. \texttt{B1-12.0} is a standard LGP-21 subroutine. When jumping to the subroutine, the argument must be in the accumulator, and the return address must be stored in the subroutine. Upon returning to the main program, the desired function value is in the accumulator.
 
 \subsubsection*{The following table:}
 \begin{center}
@@ -462,7 +465,7 @@ Forcing the programmer to provide an input with an even $q$ (like $@2$, $@8$, or
 \subsection*{B3-10.0}
 
 \subsubsection*{PURPOSE}
-The program \textbf{B3-10.0} calculates the exponential function $K^x$, where K = 2, $e$, or 10 and $x: -1 \le x \le 1$. \textbf{B3-10.0} expects $x$ in the accumulator, and returns $K$ in the accumulator.
+The program \texttt{B3-10.0} calculates the exponential function $K^x$, where K = 2, $e$, or 10 and $x: -1 \le x \le 1$. \texttt{B3-10.0} expects $x$ in the accumulator, and returns $K$ in the accumulator.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -517,7 +520,7 @@ On return, the function value is in the accumulator$@4$.
     \item \textbf{Time required:} approx. 775 ms.
     \item \textbf{Program format -} the tape contains the program in two versions:
     \begin{itemize}
-        \item Relocatable hexadecimal, valid for J1-10.0.
+      \item Relocatable hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader})
         \item Relocatable decimal, in coding sheet format.
     \end{itemize}
     \item \textbf{Required input/output devices:} None.
@@ -537,7 +540,7 @@ Recalling that the representation of the largest possible value for any of these
 
 If we instead chose to return the data at a standard library scale like $@9$, this would throw away bits on the right side of the binary point to provide space to on the left-hand side of the binary point to represent values much larger that we would ever need. If, on the other hand, we chose to use $@1$, this would limit the return value's maximum to 1.99, causing an overflow on $2^1$ and most positive $e^x$ and $10^x$ calculations.
 
-By standardizing the output to $@4$, \textbf{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
+By standardizing the output to $@4$, \texttt{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
 
 \newpage
 \subsection{Log 1}
@@ -562,8 +565,8 @@ By standardizing the output to $@4$, \textbf{B3-10.0} allows the maximum possibl
 \newpage
 \section{Program input}
 \subsection{Program Loader 1}
-\label{sec:PIR-1}
 \subsubsection*{J1-10.0}
+\label{sec:PIRloader}
 \subsubsection*{PURPOSE}
 
 \emph{Program Input 1}, J1-10.0, [Translator's note: this program is known more colloquially as "PIR".] is a memory program. It facilitates the reading of hexadecimal tapes—whether arbitrarily relocated or not—and calculates a checksum during the reading process. It can also read and check arbitrarily relocated decimal programs.
@@ -602,38 +605,38 @@ The Flexowriter is the default device; if a different device is required, it mus
 
 \subsubsection*{Hexadecimal input}
 \begin{itemize}
-\item \textbf{MNNKHHHH}
+\item \texttt{MNNKHHHH}
 
-This keyword reads \textbf{NN} hexadecimal words in ascending order into consecutive memory locations, starting at memory location \textbf{HHHH} plus the modifier. The \textbf{K} is a store instruction. The input keyword contains a flag bit (bit 31); 
+This keyword reads \texttt{NN} hexadecimal words in ascending order into consecutive memory locations, starting at memory location \texttt{HHHH} plus the modifier. The \texttt{K} is a store instruction. The input keyword contains a flag bit (bit 31); 
 each of the NN words that are to be modified must also contain a flag bit.
 %% CLARIFY: where us the sign bit? How is this specified? is the "flag bit" the sign bit?
 
 The address modifier (see below) is added to the operand address portion of each flagged word before it is stored.
 
-A checksum is calculated from all \textbf{NN} words as they are being stored plus the input keyword (all values are checksummed without the address modifier). If the calculated checksum does not match the checksum on the tape following these words, an error stop occurs. If the checksums match, the computer requests a new input keyword.
+A checksum is calculated from all \texttt{NN} words as they are being stored plus the input keyword (all values are checksummed without the address modifier). If the calculated checksum does not match the checksum on the tape following these words, an error stop occurs. If the checksums match, the computer requests a new input keyword.
 
 Example: Let the modifier be $1200$ (decimal) and the input keyword be M40K1201' (hexadecimal). The next 64 (40 hex) hexadecimal words are read and modified (if they have a flag bit) and are stored consecutively, beginning in memory location $3000$.
 
-\item \textbf{VNNCHHHH} - 
+\item \texttt{VNNCHHHH} - 
 
-The hexadecimal fill keyword for non-relocatable [absolute] tapes reads in \textbf{NN} hexadecimal words starting with memory location \textbf{HHHH}. \textbf{C} is a store instruction. The input keyword does not contain a flag bit. The most recently-entered address modifier value is added to the operand address portion of all hexadecimal fill words that have a flag bit as they are stored.
+The hexadecimal fill keyword for non-relocatable [absolute] tapes reads in \texttt{NN} hexadecimal words starting with memory location \texttt{HHHH}. \texttt{C} is a store instruction. The input keyword does not contain a flag bit. The most recently-entered address modifier value is added to the operand address portion of all hexadecimal fill words that have a flag bit as they are stored.
 %% Again, clarify where the fuck this flag bit is coming from on the command!
 
-A checksum is calculated from all \textbf{NN} words as they are being stored plus the input keyword (all values are checksummed without the address modifier). If the calculated checksum does not match the checksum on the tape following these words, an error stop occurs. If the checksums match, the computer requests a new input keyword.
+A checksum is calculated from all \texttt{NN} words as they are being stored plus the input keyword (all values are checksummed without the address modifier). If the calculated checksum does not match the checksum on the tape following these words, an error stop occurs. If the checksums match, the computer requests a new input keyword.
 
 %% VERIFY: no example for this one?
 
-\item \textbf{VNNCTTSS} 
+\item \texttt{VNNCTTSS} 
 
-Example: The input keyword \textbf{V40C1100'} causes the following 64 (40 hex) hexadecimal words to be stored, beginning in memory location 1700.
+Example: The input keyword \texttt{V40C1100'} causes the following 64 (40 hex) hexadecimal words to be stored, beginning in memory location $1700$.
 
-When reading hexadecimal tapes with \textbf{V} or \textbf{M} keywords, the Program Input Routine verifies each stored word; specifically, after a word is stored, the value in memory is compared with the read-in value. If the two values do not match, an error stop occurs.
+When reading hexadecimal tapes with \texttt{V} or \texttt{M} keywords, the Program Input Routine verifies each stored word; specifically, after a word is stored, the value in memory is compared with the read-in value. If the two values do not match, an error stop occurs.
 
 %% verify no example here too
 
-\item \textbf{/000TTSS}
+\item \texttt{/000TTSS}
 
-The Modifier Input Keyword sets the address modifier to the address \textbf{TTSS} contained within the input keyword.
+The Modifier Input Keyword sets the address modifier to the address \texttt{TTSS} contained within the input keyword.
 
 When entering hexadecimal tapes, this Address Modifier is added to all keywords and words that contain a flag bit.
 
@@ -641,23 +644,23 @@ When entering decimal instruction words, the modifier is added to the operand ad
 
 The modifier remains unchanged until it is replaced by a new Modifier Input Keyword.
 
-Example: The input keyword \textbf{/0001200'} causes 1200 to be added to all flagged operand addresses and keywords.
+Example: The input keyword \texttt{/0001200'} causes $1200$ to be added to all flagged operand addresses and keywords.
 
-\item \textbf{.000TTSS'}
+\item \texttt{.000TTSS'}
 
-The Absolute Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \textbf{TTSS}. If the PS-32 switch is set to \textbf{ON}, execution continues at the target address.
+  The Absolute Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \texttt{TTSS}. If the \textsf{PS-32} switch is set to \textsf{ON}, execution continues at the target address.
 
-Example: The input keyword .0001663' would cause the computer to jump to 1663 and halt execution (if PS-32 is off).
+    Example: The input keyword $.0001663'$ would cause the computer to jump to $1663$ and halt execution (if \textsf{PS-32} is off).
 
-\item \textbf{.100TTSS'}
+\item \texttt{.100TTSS'}
 
-The Relative Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \textbf{TTSS} plus the modifier. If the PS-32 switch is set to \textbf{ON}, the stop is suppressed.
+  The Relative Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \texttt{TTSS} plus the modifier. If the \textsf{PS-32} switch is set to \textsf{ON}, the stop is suppressed.
 
-Example: If the modifier has been set to 1200, then the input keyword \textbf{.1001663'} would cause a jump to 2863.
+Example: If the modifier has been set to $1200$, then the input keyword \texttt{.1001663'} would cause a jump to $2863$.
 
-\item \textbf{S000TTyy'}
+\item \texttt{S000TTyy'}
 
-The Selection Keyword selects the specific input unit designated by the decimal track address \textbf{TT}. (\textbf{yy} can be any arbitrary sector address; it is ignored, but must be supplied). A list specifying the corresponding input units for specific track addresses can be found in the LGP-21 Programming Manual.
+The Selection Keyword selects the specific input unit designated by the decimal track address \texttt{TT}. (\texttt{yy} can be any arbitrary sector address; it is ignored, but must be supplied). A list specifying the corresponding input units for specific track addresses can be found in the LGP-21 Programming Manual.
 
 %% ADD reference for that manual.
 
@@ -665,55 +668,55 @@ After entering the Selection Keyword, the computer stops. After pressing the Sta
 
 Restarting J1-10.0 by jumping to the start of the program will automatically reselect the primary Flexowriter for input. Reading will then continue via the Flexowriter until a new Selection Keyword selects a different unit.
 
-Example: If 32 refers to a second Flexowriter, then the keyword \textbf{S0003200'} selects this second typewriter for further input.
+Example: If 32 refers to a second Flexowriter, then the keyword \texttt{S0003200'} selects this second typewriter for further input.
 
 \end{itemize}
 \subsubsection*{Decimal input}
 
 \begin{itemize}
-\item \textbf{000TTSS'}
+\item \texttt{000TTSS'}
 
-The Decimal Fill Keyword (Start fill) causes the input program to store decimal words in ascending order into consecutive cells, beginning with memory location \textbf{TTSS}.
+The Decimal Fill Keyword (Start fill) causes the input program to store decimal words in ascending order into consecutive cells, beginning with memory location \texttt{TTSS}.
 
 Any valid address followed by a stop code may be used. Every decimal input should be preceded by a Decimal Fill Keyword (Start fill). The "Start fill" address is stored in the "Start fill" counter. This memory location of the subroutine contains the address for the decimal input. The counter is incremented by 1 each time after a word (not a keyword) is read and stored. The read-in words are stored consecutively until a new Decimal Fill Keyword is read or the input is terminated.
 
-Example: The fill keyword \textbf{;0000400'} would store read-in words beginning with memory location 0400.
+Example: The fill keyword \texttt{;0000400'} would store read-in words beginning with memory location 0400.
 
-\item \textbf{,00000NN'}
+\item \texttt{,00000NN'}
 
-The keyword for entering hexadecimal words causes \textbf{NN} hexadecimal words to be stored, specifically beginning in the memory cell whose address is held in the "Start fill" counter. \textbf{NN} must be specified in decimal and can take a value from 1 to 63. The stored words are not incremented by the address modifier. Leading zeros may be omitted for the hexadecimal words that are to be read in.
+The keyword for entering hexadecimal words causes \texttt{NN} hexadecimal words to be stored, specifically beginning in the memory cell whose address is held in the "Start fill" counter. \texttt{NN} must be specified in decimal and can take a value from 1 to 63. The stored words are not incremented by the address modifier. Leading zeros may be omitted for the hexadecimal words that are to be read in.
 
-Each hexadecimal word and keyword must be followed by a stop code. If a zero is to be entered, it is not necessary to write a \textbf{0}. A stop code alone is sufficient to indicate a zero. Each hexadecimal word must not consist of more than 8 characters.
+Each hexadecimal word and keyword must be followed by a stop code. If a zero is to be entered, it is not necessary to write a \texttt{0}. A stop code alone is sufficient to indicate a zero. Each hexadecimal word must not consist of more than 8 characters.
 
-Example: The input keyword \textbf{,0000003'} followed by the three hexadecimal words \textbf{-2'JK73''} would cause the values \textbf{00000002}, \textbf{0000JK73}, and \textbf{00000000} to be stored into the next three consecutive cells.
+Example: The input keyword \texttt{,0000003'} followed by the three hexadecimal words \texttt{-2'JK73''} would cause the values \texttt{00000002}, \texttt{0000JK73}, and \texttt{00000000} to be stored into the next three consecutive cells.
 
-\item \textbf{A00000NN'}
+\item \texttt{A00000NN'}
 
-The keyword for entering alphanumeric words causes \textbf{NN} alphanumeric words to be stored, beginning in the memory cell whose address is held in the "Start fill" counter. The alphanumeric words are shifted two places to the left and stored without binary conversion. \textbf{NN} must be specified in decimal and can take a value from 1 to 63.
+The keyword for entering alphanumeric words causes \texttt{NN} alphanumeric words to be stored, beginning in the memory cell whose address is held in the "Start fill" counter. The alphanumeric words are shifted two places to the left and stored without binary conversion. \texttt{NN} must be specified in decimal and can take a value from 1 to 63.
 
 Each word can contain up to five characters in 6-bit representation (if more than five characters per word are entered, only the last five are retained). The last stored word receives a group-end indicator, i.e., $1@30$. All characters except tape feed (blank tape), delete code, and stop code can be entered; for example, lowercase letters can be stored.
 
-Example: The input keyword \textbf{A0000004'} followed by the four words \textbf{TOTAL' UNIT'S PRO'DUCED'} would cause the information \textbf{TOTAL UNITS PRODUCED} to be stored into four consecutive memory locations without conversion into binary.
+Example: The input keyword \texttt{A0000004'} followed by the four words \texttt{TOTAL' UNIT'S PRO'DUCED'} would cause the information \texttt{TOTAL UNITS PRODUCED} to be stored into four consecutive memory locations without conversion into binary.
 
-\item \textbf{+00LTTSS'}
+\item \texttt{+00LTTSS'}
 
 The Instruction Input Keyword is treated by the subroutine exactly like an instruction.
 
-The arbitrary instruction \textbf{LTTSS} contained within the keyword—where \textbf{L} is any positive machine instruction and \textbf{TTSS} represents any valid address—is executed immediately after either the input of a subsequent hexadecimal word or the input of a stop code (if no subsequent word is required). The address portion of the input keyword is not altered by the Address Modifier.
+The arbitrary instruction \texttt{LTTSS} contained within the keyword—where \texttt{L} is any positive machine instruction and \texttt{TTSS} represents any valid address—is executed immediately after either the input of a subsequent hexadecimal word or the input of a stop code (if no subsequent word is required). The address portion of the input keyword is not altered by the Address Modifier.
 
 Each hexadecimal keyword and input word must be followed by a stop code. Left-side leading zeros within a word may be omitted. The computer returns to an input command without the execution of the instruction causing a branch. Jump instructions should be avoided.
 
 Note: The instruction contained within the input keyword does not alter the fill counter.
 
-Example: The input keyword \textbf{+00h1637'} followed by the hexadecimal word \textbf{73W08'} would cause the value \textbf{00073W08} to be stored in memory cell 1637.
+Example: The input keyword \texttt{+00h1637'} followed by the hexadecimal word \texttt{73W08'} would cause the value \texttt{00073W08} to be stored in memory cell 1637.
 
-\item \textbf{-000TTSS'}
+\item \texttt{-000TTSS'}
 
-The Sequential Display Input Keyword causes the contents of memory cell \textbf{TTSS} to appear in the accumulator when the computer stops. A start signal causes a return to an input command for a new keyword, provided that the \textbf{PST} switch is off. If the \textbf{PST} switch is on, the contents of \textbf{TTSS$ + i$} (where $i = 1, 2, \dots$) will appear in the accumulator.
+The Sequential Display Input Keyword causes the contents of memory cell \texttt{TTSS} to appear in the accumulator when the computer stops. A start signal causes a return to an input command for a new keyword, provided that the \texttt{PST} switch is off. If the \texttt{PST} switch is on, the contents of \texttt{TTSS$ + i$} (where $i = 1, 2, \dots$) will appear in the accumulator.
 
-With each start signal, $i$ is incremented by 1. It is also possible to obtain the address of the displayed word by switching to single-step operation and starting the machine. (The \textbf{B} instruction that fetched the information just displayed will appear in the accumulator.) \textbf{TTSS} may be any arbitrary valid address.
+With each start signal, $i$ is incremented by 1. It is also possible to obtain the address of the displayed word by switching to single-step operation and starting the machine. (The \texttt{B} instruction that fetched the information just displayed will appear in the accumulator.) \texttt{TTSS} may be any arbitrary valid address.
 
-Example: The input keyword \textbf{-0003263'} would directly display the contents of memory cell $3263$ in the accumulator.
+Example: The input keyword \texttt{-0003263'} would directly display the contents of memory cell $3263$ in the accumulator.
 
 Every entered word whose leftmost four bits correspond either to an "8" (negative instruction) or a zero (positive instruction) is treated as an instruction. The operand address is altered by the Address Modifier, unless the instruction is preceded by an "X". The subroutine allows the inclusion of index tags (used by some interpretive systems) immediately preceding the instructions. The inclusion of an "X" or an index tag does not alter the instruction in memory. If the leftmost four bits of a word correspond to any of the numbers $9$ through $13$, an error stop occurs (see the list of error stops).
 
@@ -742,21 +745,21 @@ The tape contains the program in relocatable hexadecimal form with its own boots
 
 \begin{enumerate}[label=\alph*)]
 \item Place the program tape into the typewriter's reader mechanism and release all levers.
-\item \label{step:input} Set the mode selector switch to \textbf{Manual Input} on the console.
-\item Press \textbf{Start Read} on the Flexowriter.
-\item Press \textbf{Fill Clear} on the console.
-\item Press \textbf{Start Read}.
+\item \label{step:input} Set the mode selector switch to \texttt{Manual Input} on the console.
+\item Press \texttt{Start Read} on the Flexowriter.
+\item Press \texttt{Fill Clear} on the console.
+\item Press \texttt{Start Read}.
 \item If the program is to be relocated, enter the starting address in hexadecimal form via the typewriter (typically the starting address is $0000$); otherwise, omit this step.
-\item Set the mode selector switch to \textbf{Single Step}.
-\item \label{step:run} Press \textbf{Execute} on the console.
+\item Set the mode selector switch to \texttt{Single Step}.
+\item \label{step:run} Press \texttt{Execute} on the console.
 \item Repeat steps \ref{step:input} through \ref{step:run} until "normal" is completely printed out by the computer.
-\item Set the mode selector switch to \textbf{NORMAL}.
-\item Press \textbf{START} on the console.
+\item Set the mode selector switch to \texttt{NORMAL}.
+\item Press \texttt{START} on the console.
 \item The program automatically continues reading in.
 \end{enumerate}
-Note: If the \textbf{PS-32} switch is turned \emph{off}, the computer stops after reading in the hexadecimal input section. If the \textbf{PS-32} switch is turned \emph{on} or if \textbf{START} is pressed, the decimal input section or a hexadecimal object program tape will be read in.
+Note: If the \texttt{PS-32} switch is turned \emph{off}, the computer stops after reading in the hexadecimal input section. If the \texttt{PS-32} switch is turned \emph{on} or if \texttt{START} is pressed, the decimal input section or a hexadecimal object program tape will be read in.
 
-\textbf{PS-32} should be turned \emph{off} before the decimal input section is completely read in; otherwise, the reader mechanism will continue to operate without tape after the read-in process is complete.
+\texttt{PS-32} should be turned \emph{off} before the decimal input section is completely read in; otherwise, the reader mechanism will continue to operate without tape after the read-in process is complete.
 
 The bootstrap always occupies memory cells $0000$ and $0002\dots0008$ (absolute), while the remainder resides in the area designated for the hexadecimal input section.
 
@@ -765,46 +768,46 @@ The bootstrap always occupies memory cells $0000$ and $0002\dots0008$ (absolute)
 The bootstrap remains intact in memory if the program has not been relocated. To re-load the program without the bootstrap, proceed as follows:
 \begin{enumerate}[label=\alph*)]
 \item Place the program tape into the reader, specifically aligning it at the blank tape section between the bootstrap and the program.
-\item Set the mode selector switch to \textbf{Manual Input} on the console.
-\item Enter \textbf{C0000} via the typewriter.
-\item Press \textbf{Fill Clear} on the console.
+\item Set the mode selector switch to \texttt{Manual Input} on the console.
+\item Enter \texttt{C0000} via the typewriter.
+\item Press \texttt{Fill Clear} on the console.
 \item Enter the modifier in hexadecimal form (all 8 characters), or enter 8 zeros if the program is not to be relocated.
-\item Set the mode selector switch to \textbf{Single Step} on the console.
-\item Press \textbf{Execute} on the console.
-\item Set the mode selector switch to \textbf{Manual Input} on the console.
-\item Enter \textbf{U0008}.
-\item Press \textbf{Fill Clear} on the console.
-\item Set the mode selector switch to \textbf{Single Step} on the console.
-\item Press \textbf{Execute}.
-\item Set the mode selector switch to \textbf{NORMAL} on the console.
-\item Press \textbf{Start}. The program will be read in automatically.
+\item Set the mode selector switch to \texttt{Single Step} on the console.
+\item Press \texttt{Execute} on the console.
+\item Set the mode selector switch to \texttt{Manual Input} on the console.
+\item Enter \texttt{U0008}.
+\item Press \texttt{Fill Clear} on the console.
+\item Set the mode selector switch to \texttt{Single Step} on the console.
+\item Press \texttt{Execute}.
+\item Set the mode selector switch to \texttt{NORMAL} on the console.
+\item Press \texttt{Start}. The program will be read in automatically.
 \end{enumerate}
 
-\subsubsection*{The \textbf{C0000} and \textbf{U0008} Instructions}
-In the LGP-21 instruction set, \textbf{C} is the Clear and Transfer instruction (storing the accumulator contents in memory), and \textbf{U} is the Unconditional Jump instruction. Entering \textbf{U0008} manually forces the to skip the initial bootstrap block and jump straight to the start of the primary loader routine at location 0008.
+\subsubsection*{The \texttt{C0000} and \texttt{U0008} Instructions}
+In the LGP-21 instruction set, \texttt{C} is the Clear and Transfer instruction (storing the accumulator contents in memory), and \texttt{U} is the Unconditional Jump instruction. Entering \texttt{U0008} manually forces the to skip the initial bootstrap block and jump straight to the start of the primary loader routine at location 0008.
 
 \subsubsection*{REQUIRED INPUT/OUTPUT UNITS}
 Input units other than the standard typewriter must be specified by a selection code. Output units are not required.
 
 \subsubsection{THE EFFECT OF THE PROGRAM JUMP SWITCHES}
 \begin{itemize}
-\item \textbf{PS-32} (Program Switch 32)
+\item \texttt{PS-32} (Program Switch 32)
 \begin{itemize}
-\item \textbf{OFF}: 
+\item \texttt{OFF}: 
 \begin{itemize}
     \item The computer stops before executing a jump when a Stop and Jump Input Keyword is used.
     \item The computer stops after reading in the hexadecimal input section of the subroutine.
 \end{itemize}
-\item \textbf{ON}
+\item \texttt{ON}
 \begin{itemize}
     \item No stop occurs when a Stop and Jump Input Keyword is used.
     \item No stop occurs after reading in the hexadecimal or decimal section of the subroutine.
 \end{itemize}
 \end{itemize}
-\item \textbf{PST} (Program Switch-Typewriter)
+\item \texttt{PST} (Program Switch-Typewriter)
 \begin{itemize}
-\item \textbf{OFF}: Only the contents of a single, specific memory cell will appear in the accumulator.
-\item \textbf{ON}: Consecutive memory cells can be loaded into the accumulator by repeatedly pressing the Start button.
+\item \texttt{OFF}: Only the contents of a single, specific memory cell will appear in the accumulator.
+\item \texttt{ON}: Consecutive memory cells can be loaded into the accumulator by repeatedly pressing the Start button.
 \end{itemize}
 \end{itemize}
 
@@ -942,7 +945,7 @@ A00000NN  & Alphanumeric Fill \newline
 \newpage
 \subsection{Program Loader 2}
 PURPOSE
-Program J1-10.1 is a general memory loading program. It accepts relocatable decimal programs, hexadecimal words, and alphanumeric words. It also reads non-relocatable hexadecimal programs, calculates checksums, and compares them with the checksums on the hexadecimal tape. Furthermore, this program can be used to load memory contents into the accumulator; commands can be executed directly without being stored; and it allows for manual branching (jumping).
+Program J1-10.1 is an interactive programiming monitor. Similar to J1-10.0, it accepts relocatable decimal programs, hexadecimal words, and alphanumeric words. It also reads non-relocatable hexadecimal programs, calculates checksums, and compares them with the checksums on the hexadecimal tape. Furthermore, this program can be used to load memory contents into the accumulator; commands can be executed directly without being stored; and it allows for manual branching (jumping).
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -1068,38 +1071,36 @@ Scanner Artifact (Driicke): The German text contains the typo Driicke, which is 
 Escaping the Hardware Loop: Because this monitor instruction takes over the machine's primary execution cycle to step through memory addresses sequentially with each physical button press, it puts the hardware into a state that cannot be broken by software input alone. The explicit 4-step sequence forces a hard manual reset of the input buffer via the console switches to restore standard program control.]
 
 S000TTss' Input Device Selection
-This keyword causes the selection of an alternative input device (other than the default Flexowriter). The program reverts to Flexowriter input at the start (with a branch to 0000) and following error stops. The selection codes and their corresponding units are listed in the LGP-21 Programming Manual. 
+This keyword causes the selection of an alternative input device (other than the default Flexowriter). The program reverts to Flexowriter input at the start (with a branch to 0000) and following error stops. The selection codes and their corresponding units are listed in the LGP-21 Programming Manual\cite{lgp21programmingmanual}. 
 
-%%% NOTE: add a reference to the programming manual!
-
-
-The selection codes must be specified in decimal track/sector notation TTSS, followed by a stop code (the sector portion value is irrelevant). For example, if another input device could be selected by the identification number 32, the selection keyword S0003200' causes this device to be selected for this routine's input.
+The selection codes must be specified in decimal track/sector notation \texttt{TTSS}, followed by a stop code (the sector portion value is irrelevant). For example, if another input device could be selected by the identification number 32, the selection keyword \texttt{S0003200'} causes this device to be selected for this routine's input.
 
 Tapes to be read by the program should be capable of being typed out on the typewriter; that is, a carriage return should occur after every four to eight words.
 
-If incorrect information is read, the program selects the typewriter, prints "err", and halts. See under "Error Stops."
+If incorrect information is read, the program selects the typewriter, prints "err", and halts. See under "Error Stops".\ref{subsec:PIRerrors}
 
-[translator notes: Fail-Safe Hardware Routing: The fact that J1-10.1 automatically reverts control back to the primary console ("standard typewriter") upon entry at 0000 or after an error stop is an excellent fail-safe design. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up or isolate the operator; it immediately brings the main console printer back online so the engineer can see the error state and intervene.
+[translator notes: Fail-Safe Hardware Routing: The fact that \texttt{J1-10.1} automatically reverts control back to the primary console ("standard typewriter") upon entry at $0000$ or after an error stop is a fail-safe. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up or isolate the operator; it immediately brings the main console printer back online so the engineer can see the error state and intervene.
 
-Physical Carriage Limits: The explicit instruction that data tapes should contain a carriage return (CR) after every four to eight words highlights the mechanical reality of working with automated Flexowriters. If a continuous stream of data was read off a tape without embedded carriage returns, the physical typing element would slam into the right margin stop, causing mechanical strain or overprinting an unreadable blur of characters at the edge of the log sheet.]
+Physical Carriage Limits: Data tapes should contain a carriage return (CR) after every four to eight words simply because the mechanical realities of working with a hardware Flexowriter as console. If a continuous stream of data was read off a tape without embedded carriage returns, the physical typing element would reach the end of its travel at the right margin and continute to push against the margin as more characters are printed. This both imposes mechanical strain and
+overprints the input as an unreadable blur of characters at the edge of the log sheet.]
 
-CALLING SEQUENCE (AUFRUFFOLGE)
-The program is executed by the following manual operations:
+\subsubsection*{PROGRAM EXECUTION}
+The following steps are necessary to load the program from tape:
+\begin{enumerate}
+  \item Press the \textsf{MANUAL INPUT} lever on the Flexowriter.
+  \item Set the selector switch on the system console to \textsf{MANUAL INPUT}.
+  \item Press \textsf{FILL AND CLEAR} on the console.
+  \item Set the selector switch to \textsf{NORMAL}.
+  \item Press the \textsf{START} button.
+\end{enumerate}
 
-1. Press the "Manual Input" (Eingabe von Hand) lever on the typewriter.
-2. Set the selector switch to "Manual Input" (Eingabe von Hand).
-3. Press "Fill and Clear" (Füllen und Löschen).
-4.Set the selector switch to NORMAL.
-5. Press the START button.
+[notes: Why both \textsf{MANUAL INPUT} switches? This dual mechanical lockout prevented the computer from attempting to read from the console until the operator had explicitly prepared both the peripheral device and the central processing unit to accept manual keypresses.
 
-[notes: Double "Manual Input" Verification: Notice that entering manual input requires a physical action on both the typewriter itself (the input lever) and the main computer console (the selector switch). This dual mechanical lockout prevented the computer from attempting to read from the console until the operator had explicitly prepared both the peripheral device and the central processing unit to accept manual keypresses.
+Why the \textsf{FILL AND CLEAR}? Pressing \textsf{FILL AND CLEAR} clears the machine's primary instruction and input registers, ensuring that when the mode switch is set to \textsf{NORMAL} and \textsf{START} is pressed, the processor begins execution from the starting address of the \texttt{J1-10.1} routine without processing residual data or garbage instructions.]
 
-The "Fill and Clear" Step: Pressing "Fill and Clear" (Füllen und Löschen) typically cleared the machine's primary instruction and input registers, ensuring that when the switch was returned to NORMAL and START was pressed, the processor began execution cleanly from the starting address of the J1-10.1 routine without processing residual data or garbage instructions.]
+\subsubsection*{PROGRAM OPERATION}
 
-OPERATION (BEDIENUNG)
-
-1. Program Input (Programmeingabe)
-The program tape contains the program in two versions: a) arbitrarily relocatable hexadecimal with its own bootstrap, and b) decimal in coding sheet format.
+1. The program tape contains the program in two versions: a) arbitrarily relocatable hexadecimal with its own bootstrap, and b) decimal in coding sheet format.
 
 The input procedure is as follows:
 
