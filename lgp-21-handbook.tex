@@ -21,7 +21,7 @@
 \section{Notes on the Translation}
 \subsection{Number representation}
 \subsubsection*{Introduction to fractional fixed-point architecture}
-The LGP-21's number representation is very different from 21st century computing platforms. It is not at all unique; many early computers used it, including the IBM 701\cite{ibm701manual}, the ILLAC I\cite{illiac1954}, the Elliot 405\cite{elliott405}, the RPC-4000\cite{rpc4000manual}, and the LGP-21's predecessor, the LGP-30\cite{lgp30manual}. 
+The LGP-21's number representation is very different from 21st century computing platforms. It is not at all unique; many early computers used it, including the IBM 701\cite{ibm701manual}, the ILLAC I\cite{illiac1954}, the Elliot 405\cite{elliott405}, the RPC-4000\cite{rpc4000manual}, and the LGP-21's predecessor, the LGP-30\cite{lgp30programmingmanual}. 
 
 John von Neumann first proposed this architecture in 1945 for the EDSAC, and expanded on it in 1946\cite{vonneumann1945first,burks1946preliminary}.
 
@@ -87,7 +87,7 @@ Because the LGP-21 has a relatively limited instruction set, subroutine calls ar
 
 \begin{center}
 \begin{tabular}{lll}
-    \texttt{B} & \texttt{parameter} & \texttt{; Load \theta@9 into the accumulator} \\
+    \texttt{B} & \texttt{parameter} & \texttt{; Load $\theta@9$ into the accumulator} \\
     \texttt{R} & \texttt{$\alpha+n$} & \texttt{; Store return address at end of sub} \\
     \texttt{U} & \texttt{$\alpha$} & \texttt{; call the sine routine} \\
 \end{tabular}
@@ -553,7 +553,7 @@ By standardizing the output to $@4$, \textbf{B3-10.0} allows the maximum possibl
 \subsection{Matrix Multiplication 1}
 \subsection{Matrix Addition and Subtraction 1}
 \subsection{Matrix Transpose 1}
-\subsection{Complex Matrix OPerations Interpreter}
+\subsection{Complex Matrix Operations Interpreter}
 \section{Floating Point}
 \subsection{Floating Point Interpreter 1}
 \subsection{Floating Point Interpreter 2}
@@ -1327,8 +1327,14 @@ Digital Computer Laboratory, \emph{Electronic Digital Computer: Internal Organiz
 \bibitem{elliott405}
 Elliott Brothers (London) Ltd., \emph{The Elliott 405 Electronic Data Processing System: Reference Manual}, London, UK, 1956.
 
-\bibitem{lgp30manual}
+\bibitem{lgp30programmingmanual}
 Royal McBee Computer Corporation, \emph{LGP-30 Programming Manual}, Port Chester, NY, 1957.
+
+\bibitem{lgp21maintenancetraining} General Precision Electronic Computer Company, \emph{LGP-21 Maintenance and Training Manual}, Burbank, CA, 1963
+
+\bibitem{lgp21subroutinemanualgerman} Eurocomp GmbH, \emph{LGP-21 Unterprogramm-Handbuch}, Minden, Westphalia, 1963
+
+\bibitem{lgp21programmingmanual} General Precision Electronic Computer Company, Burbank, CA, 1963
 
 \bibitem{rpc4000manual}
 General Precision Electronic Computer Company, \emph{RPC-4000 Programmers Reference Manual}, Burbank, CA, 1960.
