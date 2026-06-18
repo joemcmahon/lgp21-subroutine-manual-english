@@ -86,10 +86,11 @@ These break up reasonably well into sections and subsections, so I've done that 
 Because the LGP-21 has a relatively limited instruction set, subroutine calls are typically handled with code similar to the following:
 
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{parameter} & \texttt{; Load $\theta@9$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+n$} & \texttt{; Store return address at end of sub} \\
-    \texttt{U} & \texttt{$\alpha$} & \texttt{; call the sine routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & \texttt{N}       & Bring $N$ into the accumulator. \\
+$\alpha$      & \texttt{R}            & \texttt{L+\textit{offset}}    & Store the return address in the subroutine. \\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to the subroutine entry. \\
 \end{tabular}
 \end{center}
 
@@ -101,14 +102,16 @@ As you can see, a subroutine call \emph{must} modify code to work: a \texttt{U} 
 This means that programmers must ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
 
 \subsubsection{Address notation}
-Subroutine addresses in the original text are written as $\alpha$ or, for offsets into program code,  $\alpha+n$, because the code in question is relocatable.
+Subroutine addresses in the original text are written as \texttt{L} or, for offsets into program code,  \texttt{L+n}. 
 
-The LGP-21 is too primitive to have anything like a linkage editor, so it's the programmer/operator's responsibility to use the LGP-21's Program Input Routine/footnote{or Rhys Weatherly's \texttt{lgp21-tools} assembler to load and relocate subroutines} to load subroutine code and automatically relocate it as it's loaded. The usage of $\alpha$ for the base address of code is to remind the reader that they will need to relocate these library functions by hand and use the new base addresses
+Addresses in the main program are written as $\alpha$ or $\alpha+n$.
+
+The LGP-21 is too primitive to have anything like a linkage editor, so it's the programmer/operator's responsibility to use the LGP-21's Program Input Routine\footnote{or Rhys Weatherly's \texttt{lgp21-tools} assembler, which can include and relocate subroutines} to load subroutine code and automatically relocate it as it's loaded. The usage of \texttt{L} for the base address of code is to remind the reader that they will need to relocate these library functions by hand and use the new base addresses
 in their code to make subroutine calls work properly.
 
 \subsection{Repeated/redundant information}
 
-Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard B/R/U instruction sequence used to call a function as noted in \ref{subsec:standard-call}. I have tried to condense this where possible.
+Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard \texttt{B}/\texttt{R}/\texttt{U} instruction sequence used to call a function as noted in \ref{subsec:standard-call}. I have tried to condense this where possible.
 
 Some subroutines use unusual parameterization (such as patching the values of words in the subroutine itself!), or are actually programs to be loaded and run, and I have retained all of the setup information and/or programming information as it was originally written in these cases.
 
@@ -131,7 +134,9 @@ To that end, this document will be up on GitHub; please feel free to submit PRs 
 \subsubsection*{B1-10.0}
 
 \subsubsection*{PURPOSE}
-\texttt{B1-10.0} calculates the sine or cosine of an angle given in degrees. If the given angle is greater than 360°, the subroutine reduces it to the corresponding equivalent between 0 and 360° before calculating the function value. A 9th-degree polynomial is used for approximation. \texttt{B1-10.0} uses the standard LGP-21 calling sequence. The angle argument must supplied in the accumulator$@9$. The function value, including its sign, will be in the accumulator$@1$ when the subroutine returns.
+\texttt{B1-10.0} calculates the sine or cosine of an angle value in degrees. If the angle supplied is greater than 360°, the value is reduced to an angle between 0° and 360° before the function value is calculated. A 9th-degree polynomial is used for approximation.
+
+\texttt{B1-10.0} uses the standard LGP-21 calling sequence. The angle argument must supplied in the accumulator$@9$. The function value, including its sign, will be in the accumulator$@1$ when the subroutine returns.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -144,34 +149,38 @@ To that end, this document will be up on GitHub; please feel free to submit PRs 
 \end{center}
 
 \subsubsection*{Input}
-The input variable for B1-10.0 is an angle in degrees, $\theta$, for which the function value is to be calculated. $\theta$ must be in the accumulator$@9$ when the jump to the subroutine occurs. The angle is reduced to its value mod 360 by the subroutine before evaluation.
+The input variable for B1-10.0 is an angle in degrees, $\theta$, for which the function value is to be calculated. $\theta$ must be in the accumulator$@9$ when the jump to the subroutine occurs. The angle is reduced to an angle between 0° and 360° by the subroutine before evaluation.
 
 \subsubsection*{Calling Sequence}
 Different calling sequences are provided for sine and cosine. Only one value (either sine or cosine) can be calculated per subroutine call.
 
 \paragraph{Sine}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$\theta$} & \text{; Load $\theta@9$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+49$} & \text{; Store return address at end of sub} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the sine routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{$L+49$}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{$L$}       & \text{; call the sine routine}\\
 \end{tabular}
 \end{center}
+
 
 This is a standard function call, with the argument passed in the accumulator and the result returned in it.
 
 \paragraph{Cosine}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$\theta$} & \text{; Load $\theta@9$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+49$} & \text{; Save return address at end of sub} \\
-    \texttt{U} & \texttt{$\alpha+4$} & \text{; call the cosine routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+49}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L+4}       & \text{; call the cosine routine}\\
 \end{tabular}
 \end{center}
-The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at four instructions past the origin address of the \texttt{B1-10.0} subroutine.
+
+The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at the origin address of the \texttt{B1-10.0} subroutine plus 4 words.
 
 \subsubsection*{Output}
-When the subroutine returns, the function value, including the correct sign, is in the accumulator$@1$.
+When the subroutine returns, the properly-signed function value is in the accumulator$@1$.
 
 \subsubsection*{OPERATION}
 \begin{itemize}
@@ -194,7 +203,9 @@ When the subroutine returns, the function value, including the correct sign, is 
 \subsection*{B1-10.1}
 
 \subsubsection*{PURPOSE}
-\texttt{B1-10.1} calculates the sine or cosine of an angle given in radians. The absolute value of the angle $\theta$ must not exceed 7.9999999 radians. Before calculating the function, the subroutine reduces the angle $\theta$ to an angle $\beta$ whose absolute value in radians is $\le$1.75. A 14th-degree Taylor series is used to calculate the function. The program \texttt{B1-10.1} is a standard LGP-21 subroutine. The angle argument must be in the accumulator when the subroutine is called. The function value is in the accumulator$@1$ when the function returns.
+\texttt{B1-10.1} calculates the sine or cosine of an angle $\theta$supplied in radians. The absolute value of the argument must not exceed $7.9999999$. Before calculating the function, the subroutine reduces the angle $\theta$ to an angle $\beta$ whose absolute value in radians is $\le$1.75. A 14th-degree Taylor series is used to calculate the function.
+
+The program \texttt{B1-10.1} is a standard LGP-21 subroutine. The angle argument must be in the accumulator when the subroutine is called. The function value is in the accumulator$@1$ when the function returns.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -207,29 +218,32 @@ When the subroutine returns, the function value, including the correct sign, is 
 \end{center}
 
 \subsubsection*{Input}
-The input variable for B1-10.1 is an angle $\theta$, whose function value is to be calculated. $\theta$ must be in the accumulator$@3$ and have a value <= 7.9999999 when the call to the subroutine occurs. The subroutine reduces the angle to an equivalent angle $\beta$ with an absolute value <= 1.75.
+The input variable for B1-10.1 is an angle $\theta$, whose function value is to be calculated. $\theta$ must be in the accumulator$@3$ and have a value <= $7.9999999$ when the call to the subroutine occurs. The subroutine reduces the angle to an equivalent angle $\beta$ with an absolute value <= $1.75$.
 
 \subsubsection*{Calling Sequence}
 \paragraph{Sine}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$\theta$} & \text{; load $\theta@3$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+16$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; Call the subroutine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@3$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+16}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & \text{; call the sine routine}\\
 \end{tabular}
 \end{center}
 
-This is a function call; argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
+This is a standard LGP-21 function call; the argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
 
 \paragraph{Cosine}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$\theta$} & \text{; load $\theta@3$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+16$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha+45$} & \text{; call the cosine routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@3$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+16}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L+45}       & \text{; call the cosine routine}\\
 \end{tabular}
 \end{center}
-The calling sequence is exactly the same as for the sine, except that we jump to the cosine entry point to the subroutine.
+
+The calling sequence is exactly the same as for the sine, except that we jump to the cosine entry point to the subroutine, 45 words past the start of the subroutine.
 
 \subsubsection*{Output}
 On return, the function value with the appropriate sign is in the accumulator$@1$.
@@ -254,9 +268,11 @@ On return, the function value with the appropriate sign is in the accumulator$@1
 \subsection*{B1-11.0}
 
 \subsubsection*{PURPOSE}
-\texttt{B1-11.0} calculates the arctangent of any number less than 512. The returned value is signed and expressed in degrees. A 15th-degree polynomial is used to approximate the function. \texttt{B1-11.0} is a standard LGP-21 subroutine. The argument must be in the accumulator; the arctangent value is in the accumulator on return to the main program. [Translator note: see section below on result scaling.]
+\texttt{B1-11.0} calculates the arctangent of any number less than 512. The returned value is signed and expressed in degrees. A 15th-degree polynomial is used to approximate the function.
 
-This is a function call; argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
+\texttt{B1-11.0} is a standard LGP-21 subroutine. The argument must be in the accumulator; the arctangent value is in the accumulator on return to the main program. [Translator note: see section below on result scaling.]
+
+This is a standard LGP-21 function call: the argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -274,13 +290,16 @@ The input variable for \texttt{B1-11.0} is the value $N@9$ whose arctangent is t
 
 \subsubsection*{Calling sequence}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@9$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+51$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the arctangent routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $N$       & \text{; Load $N@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+51}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & \text{; call the arctangent routine}\\
 \end{tabular}
 \end{center}
+
 This is a standard function call. Load the argument into the accumulator before the call; the value is returned in the accumulator.
+
 \subsubsection*{Output}
 Upon returning to the main program, the signed principal value of the arctangent in degrees is in the accumulator$@9$. The absolute value will be between 0° and 89.90°.
 
@@ -306,11 +325,12 @@ A slight modification to the subroutine call can be made to allow larger input v
     \toprule
     Memory location & Contents (old) & Contents (new) \\
     \midrule
-    $\alpha+56$ & 1@9 & 1@q \\
-    $\alpha+59$ & 2@9 & 2@q \\
+    \texttt{L+56} & 1@9 & 1@$q$ \\
+    \texttt{L+59} & 2@9 & 2@$q$ \\
     \bottomrule
 \end{tabular}
 \end{center}
+
 The argument passed in the accumulator must be rescaled as well to the same $q$ scaling value when jumping to the subroutine.
 
 \subsubsection*{Translator's notes}
@@ -336,10 +356,13 @@ Because the word size is a fixed 31 bits, increasing $q$ to accommodate larger i
 \subsubsection*{PURPOSE}
 The program \texttt{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, the following holds:
 \begin{align}
-    y &= \sqrt{(x^2 + y^2)} \text{ sin } \theta \\
-    x &= \sqrt{(x^2 + y^2)} \text{ cos } \theta
+    y &= \sqrt{x^2 + y^2} \sin \theta \\
+    x &= \sqrt{x^2 + y^2} \cos \theta
 \end{align}
-Solutions are obtained in all four quadrants. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc. \texttt{B1-11.1} is a standard LGP-21 subroutine, requiring an \texttt{R} instruction to modify the return address in the subroutine's terminal \texttt{U} instruction. When calling the subroutine, $y$ must have been stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator. Upon returning to the main program, the result will be in the accumulator.
+\noindent
+The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc.
+
+\texttt{B1-11.1} uses a standard LGP-21 subroutine call, but the $y$ value must be stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator prior to the call. Upon returning to the main program, the result will be in the accumulator$@1$.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -356,15 +379,17 @@ The input variables for the program are the values $x$ and $y$ , which must have
 
 \subsubsection*{Calling Sequence}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{Y} & \text{; load $Y@q$ into the accumulator} \\
-    \texttt{C} & \texttt{$\alpha+34$} & \text{; save into subroutine parameter storage} \\
-    \texttt{B} & \texttt{X} & \text{; load $X@q$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+10$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the arctangent routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-3$      & \texttt{B} & $Y$                  & \text{; Load $Y@q$ into the accumulator}\\
+$\alpha+2$    & \texttt{C} & \texttt{L+34} & \text{; save into subroutine parameter storage} \\
+$\alpha+1$   & \texttt{B} & \texttt{X} & \text{; load $X@q$ into the accumulator} \\
+$\alpha$   & \texttt{R} & \texttt{L+10} & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}          & \texttt{L}       & \text{; call the arctangent routine}\\
 \end{tabular}
 \end{center}
-Store $y$ in the designated parameter storage, $\alpha+34$ (any operation that puts it there is fine). Load $x$ into the accumulator (again, any operation accomplishing this is fine). Remember that $x$ and $y$ must be scaled to the same $q$ value.
+
+Store $y$ in the designated parameter storage, \texttt{L+34} (any operation that puts it there is fine). Load $x$ into the accumulator (again, any operation accomplishing this is fine). Remember that $x$ and $y$ must be scaled to the same $q$ value.
 
 \subsubsection*{Output}
 On return from the subroutine, the accumulator$@1$ will contain the result. To convert to degrees, multiply this value by 180; to convert to radians, multiply the value by $\pi$.
@@ -384,19 +409,22 @@ On return from the subroutine, the accumulator$@1$ will contain the result. To c
 
 \newpage
 
-\subsection{Arcsin/arccos 1}
+\subsection{$\arcsin$/$\arccos$ 1}
 \label{sec:arcsin_arccos_1}
 
 \subsection*{B1-12.0}
 
 \subsubsection*{PURPOSE}
-The program \texttt{B1-12.0} calculates either the arcsine or the arccosine of a given number from -1 $\le N \le$ 1. The signed return value is expressed in degrees. A 7th-degree polynomial is used for approximation. \texttt{B1-12.0} is a standard LGP-21 subroutine. When jumping to the subroutine, the argument must be in the accumulator, and the return address must be stored in the subroutine. Upon returning to the main program, the desired function value is in the accumulator.
+The program \texttt{B1-12.0} calculates either the arcsine or the arccosine of a given number from -1 $\le N \le$ 1. The signed return value is expressed in degrees. A 7th-degree polynomial is used for approximation.
 
-\subsubsection*{The following table:}
+\texttt{B1-12.0} is a standard LGP-21 subroutine. When jumping to the subroutine, the argument must be in the accumulator, and the return address must be stored in the subroutine. Upon returning to the main program, the desired function value is in the accumulator$@9$.
+
+
+\subsubsection*{Memory usage}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
-    Memory requirements & 2 track, 32 sectors \\
+    Program storage & 2 track, 32 sectors \\
     Buffer usage & Sectors 12, 16, 18, 19, 20, 21, \\
      & 23, 24, 28 of Track 63 \\
     \bottomrule
@@ -409,41 +437,46 @@ The value $N@1$ , with -1 $\le N \le$ 1 must be in the accumulator when the func
 \subsubsection*{Calling Sequence}
 \paragraph{Arcsin}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+21$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the arcsin routine} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B} & $N$                  & \text{; Load $N@1$ into the accumulator}\\
+$\alpha$   & \texttt{R} & \texttt{L+21} & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}          & \texttt{L}       & \text{; call the $\arcsin$ routine}\\
 \end{tabular}
 \end{center}
-Load N into the accumulator, set the return address at $\alpha+21$ , and jump to $\alpha$ to compute the arcsin. Mainline execution continues after the jump.
+\noindent
+Load N into the accumulator, set the return address at \texttt{L+21} , and jump to \texttt{L} to compute the $\arcsin$. Mainline execution continues after the jump.
 
 \paragraph{Arccos}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+21$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha+211$} & \text{; call the arcsin routine [cite: 186]} \\
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B} & $N$                  & \text{; Load $N@1$ into the accumulator}\\
+$\alpha$   & \texttt{R} & \texttt{L+21}         & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}  & \texttt{L+211}    & \text{; call the $\arcsin$ routine}\\
 \end{tabular}
 \end{center}
-Load $N$ into the accumulator, set the return address at $\alpha+21$ , and jump to $\alpha+211$ to compute the arccos. Mainline execution continues after the jump.
+Load $N$ into the accumulator, set the return address at \texttt{L+21} , and jump to \texttt{L+211} to compute the $\arccos$. Mainline execution continues after the jump.
 
 \subsubsection*{Output}
-Output is returned in the accumulator$@9$ in radians; the value of the function is - $\pi$/2 to $\pi$/2 for arcsin, and 0 to $\pi$ for arccos.
+Output is returned in the accumulator$@9$ in radians; the value of the function is - $\pi$/2 to $\pi$/2 for $\arcsin$, and 0 to $\pi$ for $\arccos$.
 
 \subsubsection*{Notes}
 Since calculating the arcsine or arccosine requires calculating a square root, a program for this has been included in this subroutine. It can be used independently with the following calling sequence:
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$value$} & \text{; load $value$ with an \emph{even} $q$} \\
-    & & \text{; into the accumulator} \\
-    & & \text{; (see translator notes)} \\
-    \texttt{R} & \texttt{$\alpha+150$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha+100$} & \text{; call the square root routine} \\
+\begin{tabular}{llll}
+$\alpha-1$ &   \texttt{B} & \texttt{value} & \text{; load \texttt{value} with an \emph{even} $q$} \\
+    & & & \text{; into the accumulator} \\
+    & & & \text{; (see translator notes)} \\
+$\alpha$ &   \texttt{R} & \texttt{L+150} & \text{; set return address} \\
+$\alpha+1$ &   \texttt{U} & \texttt{L+100} & \text{; call the square root routine} \\
 \end{tabular}
 \end{center}
+
 The square root is returned in the accumulator. Note that the $q$ value of the result is \emph{half} of the argument's $q$ value.
 
 \subsubsection*{Translator's note}
+\label{subsub:halfQ}
 There's a lot hiding inside that throwaway "the $q$ value of the result is half of the argument's $q$ value". You may also be wondering why the $q$ value of the argument \emph{must} be even, especially since we're doing all this math in $@1$'s and $@9$'s.
 
 This all goes back, again, to the fractional fixed-point math of the LGP-21. In modern floating-point math, the hardware (or software) manages all the exponents for you, but on the LGP-21, something interesting happens when we take the square root of a scaled number.
@@ -485,28 +518,28 @@ Each of the exponential functions has a separate entry point into the subroutine
 
 \paragraph{$2^x$}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+9$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha$} & \text{; call the $2^x$ routine} \\
+\begin{tabular}{llll}
+$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
+$\alpha$ &    \texttt{R} & \texttt{L+9} & \text{; set return address} \\
+$\alpha+1$ &    \texttt{U} & \texttt{L} & \text{; call the $2^x$ routine} \\
 \end{tabular}
 \end{center}
 
 \paragraph{$e^x$}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+9$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha+2$} & \text{; call the ex routine} \\
+\begin{tabular}{llll}
+$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
+$\alpha$ &    \texttt{R} & \texttt{L+9} & \text{; set return address} \\
+$\alpha+1$ &    \texttt{U} & \texttt{L+2} & \text{; call the ex routine} \\
 \end{tabular}
 \end{center}
 
 \paragraph{$10^x$}
 \begin{center}
-\begin{tabular}{lll}
-    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-    \texttt{R} & \texttt{$\alpha+9$} & \text{; set return address} \\
-    \texttt{U} & \texttt{$\alpha+3$} & \text{; call the $10^x$ routine} \\
+\begin{tabular}{llll}
+$\alpha-1$ 	& \texttt{B} 	& \texttt{$N$} 	& \text{; load $N@1$ into the accumulator} \\
+$\alpha$ 	& \texttt{R} 	& \texttt{L+9} 	& \text{; set return address} \\
+$\alpha+1$ 	& \texttt{U} 	& \texttt{L+3} 	& \text{; call the $10^x$ routine} \\
 \end{tabular}
 \end{center}
 Each of the entry points is a standard LGP-21 subroutine call; mainline execution resumes directly following the unconditional jump to the subroutine.
@@ -544,9 +577,210 @@ By standardizing the output to $@4$, \texttt{B3-10.0} allows the maximum possibl
 
 \newpage
 \subsection{Log 1}
+\label{sec:logarithm_function}
+
+\subsection*{B3-11.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{B3-11.0} calculates the logarithm of a positive number to the base 2, $e$, or 10. A 7th-degree polynomial is utilized as the approximation method. 
+
+\noindent
+\texttt{B3-11.0} uses an altered multi-argument LGP-21 function call sequence. The function argument must reside in the accumulator, but the two words immediately following the jump to the subroutine must contain the $q$ of the argument and the desired base of the logarithm. The return value
+is in the accumulator on return.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 1 track, 58 words \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+\noindent
+The required input consists of:
+\begin{enumerate}
+    \item $N$: The positive number whose logarithm is to be calculated.
+    \item $Q$: The $q$ factor of $N$.
+    \item $K$: The desired base of the logarithm.
+\end{enumerate}
+
+\noindent
+$N$ must be a positive number greater than zero ($N > 0$) and must reside in the accumulator with a positive $q$ factor when branching to the subroutine. 
+
+\noindent
+The $q$ factor must lie within the range $0 \le q \le 31$. In the calling sequence, $Q$ is stored in the sector portion of a \texttt{Z} instruction that immediately follows the branch instruction.
+
+\noindent
+$K$, the desired base of the logarithm, is also stored in the sector portion of a \texttt{Z} instruction.
+\begin{itemize}
+    \item For $\log_2 N$, $K = \texttt{00}$
+    \item For $\log_e N$, $K = \texttt{01}$
+    \item For $\log_{10} N$, $K$ can take any value other than \texttt{00} or \texttt{01}. 
+\end{itemize}
+\noindent
+The \texttt{Z} instruction containing $K$ is the final entry in the calling sequence.
+
+\subsubsection*{CALLING SEQUENCE}
+\begin{center}
+\begin{tabular}{llll}
+$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
+$\alpha$ &    \texttt{R} & \texttt{L+24} & \text{; set return address} \\
+$\alpha+1$ &    \texttt{U} & \texttt{L} & \text{; call the log routine} \\
+    & & & \text{; The following parameter constants} \\
+    & & & \text{; are effectively scaled at $@29$} \\
+$\alpha+2$ &    \texttt{Z} & \texttt{00$Q$} & \text{; The $q$ value of $N$} \\
+$\alpha+3$ &    \texttt{Z} & \texttt{00$K$} & \text{; Desired base $K$} \\
+\end{tabular}
+\end{center}
+\noindent
+As usual, any instruction sequence leaving $N$ in the accumulator prior to the call is fine as long as it leaves $N$ there with a positive $q$. The instruction at location $\alpha$ stores the address ($\alpha+2$) of the \texttt{Z} instruction containing $Q$ into the subroutine's internal tracking mechanism, giving the subroutine the address of $Q$ and $K$.\footnote{Translator's note: the subroutine figures out the return address by taking the address supplied by the \texttt{R} instruction and adding 2 to skip over the two parameter words. It then updates a \texttt{U} instruction in \emph{itself} to jump back to the proper return address}.
+
+Execution resumes following the second parameter constant upon return from the subroutine.
+
+\subsubsection*{OUTPUT}
+\noindent
+Upon the return branch to the main program, the calculated logarithm to the desired base resides in the accumulator$@6$.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Accuracy:} \\
+    Any potential error is less than $3 \times 10^{-8}$.
+
+    \item \textbf{Execution time:} \\
+    Approximately 1350 ms.
+
+    \item \textbf{Program input:} \\
+    The program tape contains the routine in two formats:
+    \begin{itemize}
+      \item Relocatable hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader})
+        \item Relocatable decimal, in coding sheet format.
+    \end{itemize}
+
+    \item \textbf{Required input/output devices:} \\
+    None.
+
+    \item \textbf{Overflow:} \\
+    Overflow is neither checked upon entry to the subroutine nor reset upon exit.
+
+    \item \textbf{Error Stops:} \\
+  \begin{tabular}{lp{9cm}} % Adjust the 9cm width to fit your page margins
+    \toprule
+    \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
+    \midrule
+    \texttt{main program+8}  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1\texttt{@30})$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
+    \bottomrule
+  \end{tabular}
+\end{enumerate}
+
+\subsubsection*{Translator's Notes}
+To a modern programmer accustomed to software exceptions and terminal logs, or one not quite as modern who's used to core dumps, the behavior of \texttt{B3-11.0} upon encountering an invalid argument ($N \le 0$) might seem strange. The program halting at location \texttt{L+8} is clear enough; that leaves execution realtively close to where the error occurred. But why set the accumulator to $N - (1\texttt{@30})$?
+
+$1\texttt{@30}$ denotes the integer value 1 scaled to a $q$ factor of 30, which places a single \texttt{1} bit at Bit 30 (representing a quantitative value of $2^{-30}$). This is the next-to-last usable bit in the word.
+
+Let's say a programmer accidentally passed a negative fraction; for example, $N = -0.5$ at a $q$ of 1. This value natively resides in the accumulator as:
+\begin{center}
+    \texttt{11000000000000000000000000000000}
+\end{center}
+\noindent
+When the error trap, occurs, the program subtracts $1@30$ from the argument and leaves it in the accumulator. Subtracting a bit so low in the word forces a massive binary borrow chain to propagate all the way up to the first available \texttt{1} bit at the MSB side:
+\begin{verbatim}
+  11000000000000000000000000000000  (N = -0.5@1)
+- 00000000000000000000000000000010  (1@30)
+----------------------------------
+  10111111111111111111111111111110  (Result remaining in Accumulator)
+\end{verbatim}
+
+Remember that the LGP-21 doesn't have a big console with a lot of lights; it just has a small oscilloscope tube with a custom mask that displays the accumulator, the current address, and the instruction to be executed, painting a visual representation of the bits. A \texttt{0} bit is drawn at the baseline, while a \texttt{1} bit is drawn higher. The LGP-21 runs slowly enough that this does a pretty good job os showing the machine status continuously.
+
+When this subroutine executes its error stop, the oscilloscope will be displaying a static image of the current contents of the accumulator. Reading from left to right (Bit 0 to Bit 31), the operator would see:
+\begin{itemize}
+    \item A single \textbf{HIGH} dash at the far left edge (Bit 0, confirming a negative sign).
+    \item A single \textbf{LOW} dash immediately following it (Bit 1, dropped to 0 by the borrow).
+    \item An unbroken, massive \textbf{wall of 29 HIGH dashes} stretching across the screen (Bits 2 through 30, flipped to 1).
+    \item A final \textbf{LOW} dash at the absolute right margin (Bit 31, remaining 0).
+\end{itemize}
+
+This striking visual pattern, a solid block of high dashes bracketed by a low one on the left, serves as an immediate, non-textual diagnostic flag. A seasoned operator could glance at the oscilloscope screen from across the room and instantly diagnose that the logarithm routine had been fed an illegal negative vector, making it unnecessary to print or punch memory contents to debug the issue.
+\newpage
 
 \section{Root Extraction}
 \subsection{Square Root}
+\subsection{Square Root 1}
+\label{sec:square_root_1}
+
+\subsection*{B4-10.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{B4-10.0} calculates the square root of a positive number. The number must reside in the accumulator at an even $q$ factor. The program utilizes Newton's method to solve the equation:
+\begin{equation}
+    0 = x^2 - N
+\end{equation}
+by means of successive approximations:
+\begin{equation}
+    x_{i+1} = x_i + \frac{1}{2} \left( \frac{N}{x_i} - x_i \right)
+\end{equation}
+The program operates as a subroutine and is invoked via a calling sequence in the main program. Upon branching to the subroutine, the argument must reside in the accumulator, and the return address must be stored within the subroutine. Upon return to the main program, the calculated square root is held in the accumulator.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 51 words \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+\noindent
+The input variable for ``Square Root 1'' is $N$, the positive number whose square root is to be calculated.
+
+\noindent
+$N$ must reside in the accumulator with an even $q$ factor when branching to the subroutine.
+
+\subsubsection*{CALLING SEQUENCE}
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & \texttt{L}       & Bring $N$ into the accumulator at an even $q$. \\
+$\alpha$       & \texttt{R}            & \texttt{L+50}    & Store the return address in the subroutine. \\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to the subroutine entry. \\
+\end{tabular}
+
+\medskip
+\noindent
+This function uses a standard LGP-21 function call. The only notable factor is that $N$ must have an even $q$.\footnote{See \label{subsub:halfQ} for why.}
+
+\subsubsection*{OUTPUT}
+\noindent
+Upon the return branch to the main program, the square root of the argument $N$ resides in the accumulator at $q_N / 2$. For example, if $N$ is \texttt{@24}, then $\sqrt{N}$ will be \texttt{@12}.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Accuracy:} \\
+    No error is greater than $2^{-30}$.
+
+    \item \textbf{Execution Time:} \\
+    Approximately 775~ms.
+
+    \item \textbf{Program input:} \\
+    The program tape contains the routine in two formats:
+    \begin{itemize}
+      \item Relocatable hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader})
+        \item Relocatable decimal, in coding sheet format.
+    \end{itemize}
+
+    \item \textbf{Required Input/Output Units:} \\
+    None.
+
+    \item \textbf{Overflow:} \\
+    Overflow is ignored and is not reset upon return.
+
+    \item \textbf{Error Stops:} \\
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
+        \midrule
+        \texttt{L+24}            & $N$ is negative. After pressing the \textsf{START} button, the accumulator is cleared, and control returns directly to the main program. \\
+        \bottomrule
+    \end{tabular}
+\end{enumerate}
+\newpage
 \subsection{Nth Root}
 
 \section{Matrix Operations}
