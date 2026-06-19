@@ -1,0 +1,364 @@
+\section{Trigonometric functions}
+
+\subsection{Sine-Cosine 1}
+\label{sec:sine_cosine_1}
+
+\subsubsection*{B1-10.0}
+
+\subsubsection*{PURPOSE}
+\texttt{B1-10.0} calculates the sine or cosine of an angle value in degrees. If the angle supplied is greater than 360°, the value is reduced to an angle between 0° and 360° before the function value is calculated. A 9th-degree polynomial is used for approximation.
+
+\texttt{B1-10.0} uses the standard LGP-21 calling sequence. The angle argument must supplied in the accumulator$@9$. The function value, including its sign, will be in the accumulator$@1$ when the subroutine returns.
+
+\subsubsection*{Memory usage}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Memory for program & 1 track \\
+    Buffer usage & Sectors 2, 4, 5, 6, 7, 45 of track 63 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Input}
+The input variable for B1-10.0 is an angle in degrees, $\theta$, for which the function value is to be calculated. $\theta$ must be in the accumulator$@9$ when the jump to the subroutine occurs. The angle is reduced to an angle between 0° and 360° by the subroutine before evaluation.
+
+\subsubsection*{Calling Sequence}
+Different calling sequences are provided for sine and cosine. Only one value (either sine or cosine) can be calculated per subroutine call.
+
+\paragraph{Sine}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{$L+49$}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{$L$}       & \text{; call the sine routine}\\
+\end{tabular}
+\end{center}
+
+
+This is a standard function call, with the argument passed in the accumulator and the result returned in it.
+
+\paragraph{Cosine}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+49}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L+4}       & \text{; call the cosine routine}\\
+\end{tabular}
+\end{center}
+
+The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at the origin address of the \texttt{B1-10.0} subroutine plus 4 words.
+
+\subsubsection*{Output}
+When the subroutine returns, the properly-signed function value is in the accumulator$@1$.
+
+\subsubsection*{OPERATION}
+\begin{itemize}
+    \item \textbf{Accuracy:} The value is accurate to within 5 x $10^{-7}$.
+    \item \textbf{Time required:} approximately 775 ms.
+    \item \textbf{Program input:} the tape contains the program in two versions: %
+    \begin{itemize}
+      \item Relocatable, hexadecimal. Valid for J1-10.0 (section \ref{sec:PIRloader}).
+        \item Relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required I/O devices:} none.
+    \item \textbf{Overflow:} ignored on entry and not reset on exit.
+\end{itemize}
+
+\newpage
+
+\subsection{Sine-Cosine 2}
+\label{sec:sine_cosine_2}
+
+\subsection*{B1-10.1}
+
+\subsubsection*{PURPOSE}
+\texttt{B1-10.1} calculates the sine or cosine of an angle $\theta$supplied in radians. The absolute value of the argument must not exceed $7.9999999$. Before calculating the function, the subroutine reduces the angle $\theta$ to an angle $\beta$ whose absolute value in radians is $\le$1.75. A 14th-degree Taylor series is used to calculate the function.
+
+The program \texttt{B1-10.1} is a standard LGP-21 subroutine. The angle argument must be in the accumulator when the subroutine is called. The function value is in the accumulator$@1$ when the function returns.
+
+\subsubsection*{Memory usage}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Memory for program & 1 track \\
+    Buffer usage & Sectors 8 and 49 of track 63 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Input}
+The input variable for B1-10.1 is an angle $\theta$, whose function value is to be calculated. $\theta$ must be in the accumulator$@3$ and have a value <= $7.9999999$ when the call to the subroutine occurs. The subroutine reduces the angle to an equivalent angle $\beta$ with an absolute value <= $1.75$.
+
+\subsubsection*{Calling Sequence}
+\paragraph{Sine}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@3$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+16}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & \text{; call the sine routine}\\
+\end{tabular}
+\end{center}
+
+This is a standard LGP-21 function call; the argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
+
+\paragraph{Cosine}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $\theta$       & \text{; Load $\theta@3$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+16}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L+45}       & \text{; call the cosine routine}\\
+\end{tabular}
+\end{center}
+
+The calling sequence is exactly the same as for the sine, except that we jump to the cosine entry point to the subroutine, 45 words past the start of the subroutine.
+
+\subsubsection*{Output}
+On return, the function value with the appropriate sign is in the accumulator$@1$.
+
+\subsubsection*{OPERATION}
+\begin{itemize}
+    \item \textbf{Accuracy:} The error in radian measure is less than 8 x $10^{-9}$.
+    \item \textbf{Time required:} approx. 1200 ms.
+    \item \textbf{Program format:} the tape contains the program in two ways:
+    \begin{itemize}
+      \item Relocatable, hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader}).
+        \item Relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output devices:} None.
+    \item \textbf{Overflow:} Ignored and not reset.
+\end{itemize}
+
+\newpage
+
+\subsection{Arctangent 1}
+\label{sec:arctangent_1}
+\subsection*{B1-11.0}
+
+\subsubsection*{PURPOSE}
+\texttt{B1-11.0} calculates the arctangent of any number less than 512. The returned value is signed and expressed in degrees. A 15th-degree polynomial is used to approximate the function.
+
+\texttt{B1-11.0} is a standard LGP-21 subroutine. The argument must be in the accumulator; the arctangent value is in the accumulator on return to the main program. [Translator note: see section below on result scaling.]
+
+This is a standard LGP-21 function call: the argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
+
+\subsubsection*{Memory usage}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Memory for program & 1 track \\
+    Buffer usage & Sectors 4, 5, 6, 7, 8, 9, 10, \\
+     & 13, 50, and 51 of track 63 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Input}
+The input variable for \texttt{B1-11.0} is the value $N@9$ whose arctangent is to be computed. This value must be loaded into the accumulator before the subroutine is called.
+
+\subsubsection*{Calling sequence}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B}            & $N$       & \text{; Load $N@9$ into the accumulator}\\
+$\alpha$      & \texttt{R}            & \texttt{L+51}    &\text{; Store return address at end of sub}\\
+$\alpha+1$      & \texttt{U}            & \texttt{L}       & \text{; call the arctangent routine}\\
+\end{tabular}
+\end{center}
+
+This is a standard function call. Load the argument into the accumulator before the call; the value is returned in the accumulator.
+
+\subsubsection*{Output}
+Upon returning to the main program, the signed principal value of the arctangent in degrees is in the accumulator$@9$. The absolute value will be between 0° and 89.90°.
+
+\subsubsection*{OPERATION}
+\begin{itemize}
+    \item \textbf{Accuracy:} The absolute error is no greater than 5 x $10^{-7}$ degrees.
+    \item \textbf{Time required:} 950 ms.
+    \item \textbf{Program format -} the tape contains the program in two ways:
+    \begin{itemize}
+%% fix reference
+      \item Arbitrarily relocatable hexadecimal, suitable for J1-10.0 (section \ref{sec:PIRloader}).
+        \item arbitrarily relocatable decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output devices:} None.
+    \item \textbf{Overflow:} Neither considered at input nor reset at output.
+\end{itemize}
+
+\subsubsection*{REMARKS}
+A slight modification to the subroutine call can be made to allow larger input values whose arctangents are closer to 90° (absolute) by changing the contents of memory locations $\alpha+56$ and $\alpha+59$ to rescaled values of 1 and 2.
+
+\begin{center}
+\begin{tabular}{lll}
+    \toprule
+    Memory location & Contents (old) & Contents (new) \\
+    \midrule
+    \texttt{L+56} & 1@9 & 1@$q$ \\
+    \texttt{L+59} & 2@9 & 2@$q$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+The argument passed in the accumulator must be rescaled as well to the same $q$ scaling value when jumping to the subroutine.
+
+\subsubsection*{Translator's notes}
+\subsubsection*{Arctangent calculations near 90 degrees}
+The $q$ value above is an LGP-21 fixed-point scaling factor\footnote{see \ref{sec:fractional-fixed-point}}, allowing the routine to process much larger numbers and yield accurate results for angles close to 90º. Unlike modern mathematical functions, which seamlessly handle scaling or accept floating-point infinities, or which permit passing more than one parameter to a subroutine(!), this function requires the programmer to adjust the input boundary parameters by patching the constants inside the function itself.
+
+In the default configuration ($@9$), the maximum value the machine can physically represent is $2^9-1$ or 511.999999. As an angle approaches 90º, its tangent approaches infinity. Since the arctangent is the inverse function, this means that your application cannot use the $@9$ constants if the input values need to be larger than 511; calculating with the $@9$ constants will overflow.
+
+Changing the scaling of the patched values (and of the incoming parameter!) to a larger scaling factor $q$, of 10 or greater, expands the range of the input. We still cannot represent mathematical infinity, but we can process much larger input values, allowing us to get significantly closer to a true 90º output.
+
+\subsubsection*{Warnings}
+The subroutine does not validate that the $q$ value used for the patchable constants and your input argument match! If you patch the internal constants at $\alpha+56$ and $\alpha+59$ to use a custom scale factor (say, $@12$) , you must scale your input argument to that exact same scale factor before calling the routine. Cross-scaled parameters and constants will silently yield erroneous results and possible overflow conditions.
+
+Because the word size is a fixed 31 bits, increasing $q$ to accommodate larger integers directly reduces the number of bits available to the fractional side of the word. If you push $q$ too high, you will lose precision on return values for smaller input values.
+
+\newpage
+
+\subsection{Arctangent of a Vector 1}
+\label{sec:vector_evolution_of_arctangent_1}
+
+\subsection*{B1-11.1}
+
+\subsubsection*{PURPOSE}
+The program \texttt{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, the following holds:
+\begin{align}
+    y &= \sqrt{x^2 + y^2} \sin \theta \\
+    x &= \sqrt{x^2 + y^2} \cos \theta
+\end{align}
+\noindent
+The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc.
+
+\texttt{B1-11.1} uses a standard LGP-21 subroutine call, but the $y$ value must be stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator prior to the call. Upon returning to the main program, the result will be in the accumulator$@1$.
+
+\subsubsection*{Memory usage}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Memory required for program & 2 tracks, 17 sectors \\
+    Buffer usage & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Input}
+The input variables for the program are the values $x$ and $y$ , which must have the same $q$. $y$ must be stored in the subroutine, and $x$ must be in the accumulator when the subroutine is called.
+
+\subsubsection*{Calling Sequence}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-3$      & \texttt{B} & $Y$                  & \text{; Load $Y@q$ into the accumulator}\\
+$\alpha+2$    & \texttt{C} & \texttt{L+34} & \text{; save into subroutine parameter storage} \\
+$\alpha+1$   & \texttt{B} & \texttt{X} & \text{; load $X@q$ into the accumulator} \\
+$\alpha$   & \texttt{R} & \texttt{L+10} & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}          & \texttt{L}       & \text{; call the arctangent routine}\\
+\end{tabular}
+\end{center}
+
+Store $y$ in the designated parameter storage, \texttt{L+34} (any operation that puts it there is fine). Load $x$ into the accumulator (again, any operation accomplishing this is fine). Remember that $x$ and $y$ must be scaled to the same $q$ value.
+
+\subsubsection*{Output}
+On return from the subroutine, the accumulator$@1$ will contain the result. To convert to degrees, multiply this value by 180; to convert to radians, multiply the value by $\pi$.
+
+\subsubsection*{Operation}
+\begin{itemize}
+    \item \textbf{Accuracy:} No error exceeds +4 x $10^{-8}$ in the partial result.
+    \item \textbf{Time required:} approx. 1160 ms.
+    \item \textbf{Program format -} the tape contains the program in two versions:
+    \begin{itemize}
+      \item Relocatable hexadecimal, valid for J1-10.0 (section \ref{sec:PIRloader}).
+        \item Relocatable decimal, in coding sheet format.
+    \end{itemize}
+    \item No input/output devices are required.
+    \item \textbf{Overflow:} Ignored at subroutine call, and not reset at exit.
+\end{itemize}
+
+\newpage
+
+\subsection{$\arcsin$/$\arccos$ 1}
+\label{sec:arcsin_arccos_1}
+
+\subsection*{B1-12.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{B1-12.0} calculates either the arcsine or the arccosine of a given number from -1 $\le N \le$ 1. The signed return value is expressed in degrees. A 7th-degree polynomial is used for approximation.
+
+\texttt{B1-12.0} is a standard LGP-21 subroutine. When jumping to the subroutine, the argument must be in the accumulator, and the return address must be stored in the subroutine. Upon returning to the main program, the desired function value is in the accumulator$@9$.
+
+
+\subsubsection*{Memory usage}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 2 track, 32 sectors \\
+    Buffer usage & Sectors 12, 16, 18, 19, 20, 21, \\
+     & 23, 24, 28 of Track 63 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Input}
+The value $N@1$ , with -1 $\le N \le$ 1 must be in the accumulator when the function is called.
+
+\subsubsection*{Calling Sequence}
+\paragraph{Arcsin}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B} & $N$                  & \text{; Load $N@1$ into the accumulator}\\
+$\alpha$   & \texttt{R} & \texttt{L+21} & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}          & \texttt{L}       & \text{; call the $\arcsin$ routine}\\
+\end{tabular}
+\end{center}
+\noindent
+Load N into the accumulator, set the return address at \texttt{L+21} , and jump to \texttt{L} to compute the $\arcsin$. Mainline execution continues after the jump.
+
+\paragraph{Arccos}
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$      & \texttt{B} & $N$                  & \text{; Load $N@1$ into the accumulator}\\
+$\alpha$   & \texttt{R} & \texttt{L+21}         & \text{; set return address} \\
+$\alpha+1$      & \texttt{U}  & \texttt{L+211}    & \text{; call the $\arcsin$ routine}\\
+\end{tabular}
+\end{center}
+Load $N$ into the accumulator, set the return address at \texttt{L+21} , and jump to \texttt{L+211} to compute the $\arccos$. Mainline execution continues after the jump.
+
+\subsubsection*{Output}
+Output is returned in the accumulator$@9$ in radians; the value of the function is - $\pi$/2 to $\pi$/2 for $\arcsin$, and 0 to $\pi$ for $\arccos$.
+
+\subsubsection*{Notes}
+Since calculating the arcsine or arccosine requires calculating a square root, a program for this has been included in this subroutine. It can be used independently with the following calling sequence:
+\begin{center}
+\begin{tabular}{llll}
+$\alpha-1$ &   \texttt{B} & \texttt{value} & \text{; load \texttt{value} with an \emph{even} $q$} \\
+    & & & \text{; into the accumulator} \\
+    & & & \text{; (see translator notes)} \\
+$\alpha$ &   \texttt{R} & \texttt{L+150} & \text{; set return address} \\
+$\alpha+1$ &   \texttt{U} & \texttt{L+100} & \text{; call the square root routine} \\
+\end{tabular}
+\end{center}
+
+The square root is returned in the accumulator. Note that the $q$ value of the result is \emph{half} of the argument's $q$ value.
+
+\subsubsection*{Translator's note}
+\label{subsub:halfQ}
+There's a lot hiding inside that throwaway ``the $q$ value of the result is half of the argument's $q$ value''. You may also be wondering why the $q$ value of the argument \emph{must} be even, especially since we're doing all this math in $@1$'s and $@9$'s.
+
+This all goes back, again, to the fractional fixed-point math of the LGP-21. In modern floating-point math, the hardware (or software) manages all the exponents for you, but on the LGP-21, something interesting happens when we take the square root of a scaled number.
+
+If you have a value $X$ scaled to factor $q$, its internal integer representation in the machine is actually $X = x \cdot 2^q$. When you take the square root of that internal machine representation, look at what happens to the exponent:
+\begin{equation}
+    \sqrt{X} = \sqrt{x \cdot 2^q} = \sqrt{x} \cdot 2^{q/2}
+\end{equation}
+If your scale factor q is an odd number (like the standard $@1$ or the $@9$ used elsewhere in these library functions), then $q/2$ is a fraction (4.5)! You cannot shift a binary word by 4.5 bits, meaning that you can't make the result of the square root operation commensurate to any $q$.
+
+Forcing the programmer to provide an input with an even $q$ (like $@2$, $@8$, or $@18$) means that the resulting scale factor after the square root function finishes will be an integer ($@1$, $@4$, or $@9$, respectively) and that the result will be valid. 
+
+\newpage

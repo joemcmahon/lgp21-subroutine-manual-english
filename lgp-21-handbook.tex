@@ -107,7 +107,7 @@ $\alpha+1$      & \texttt{U}            & \texttt{L}       & Unconditional branc
 
 In this example a \texttt{B} loads the argument into the accumulator, but any instruction that gets the appropriate value into the accumulator is just as valid. The \texttt{R} saves the return address ($\alpha+2$) in the subroutine, and the main program's \texttt{U} to the start of the subroutine calls it. Execution of the main program resumes just after the \texttt{U} to \texttt{L} at $\alpha+2$.
 
-This means that calling a subroutine implies that code emph{must} be modified for a return to work: specifically, a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Multiple calls to a subroutine therefore will  clobber any previous return address.
+This means that calling a subroutine implies that code \emph{must} be modified for a return to work: specifically, a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Multiple calls to a subroutine therefore will  clobber any previous return address.
 
 This means that re-entrant code is not natively supported by the hardware. Programmers must ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
 
@@ -206,7 +206,7 @@ When the subroutine returns, the properly-signed function value is in the accumu
 \begin{itemize}
     \item \textbf{Accuracy:} The value is accurate to within 5 x $10^{-7}$.
     \item \textbf{Time required:} approximately 775 ms.
-    \item \textbf{Program input:} the tape contains the program in two versions:
+    \item \textbf{Program input:} the tape contains the program in two versions: %
     \begin{itemize}
       \item Relocatable, hexadecimal. Valid for J1-10.0 (section \ref{sec:PIRloader}).
         \item Relocatable, decimal, in coding sheet format.
@@ -1223,10 +1223,156 @@ The subroutine utilizes the Interpretive System internally to calculate floating
 \newpage
 
 \subsection{Matrix Addition and Subtraction 1}
+\label{subsec:matrix_addition_subtraction_1}
+
+\subsection*{D1-14.0}
+
+\subsubsection*{PURPOSE}
+The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-14.0} adds or subtracts two matrices $A$ and $B$ and stores the resulting product matrix in a designated memory area. 
+
+The input consists of the elements of both matrices, each having $i$ rows and $j$ columns. All data must be supplied in floating-point format. The matrices do not need to be square. The dimensions $i$ and $j$ must both be strictly less than 64. The cumulative number of elements across matrices $A$, $B$, and the output matrix must not exceed the available memory space.
+
+\noindent
+``Matrix Addition and Subtraction 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
+\begin{enumerate}
+	\item the starting address of the Interpretive System,
+	\item the dimensions and starting addresses of the matrices,
+	\item the arithmetic operation desired (addition or subtraction), and
+	\item the starting memory address of the storage area for the destination matrix. 
+\end{enumerate}
+\noindent
+Upon return to the main program, the resulting matrix resides in the designated memory cells.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 1 track (64 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+The input variables are the individual elements of the two matrices $A$ and $B$, each containing $i$ rows and $j$ columns. The elements of both matrices must be stored identically—either both in row-major order or both in column-major order—in consecutive memory cells.\footnote{This is significantly more flexible than the Matrix Multiplication routine (\texttt{D1-13.0}). Because addition and subtraction are purely element-by-element operations, the subroutine doesn't actually care about row vs. column orientation, as long as both inputs share the exact same structure. The execution loop simply scans linearly across both matrices.} This means that the first element of the second row immediately follows the last element of the first row (if stored row-by-row), or the first element of the second column immediately follows the last element of the first column (if stored column-by-column).
+
+\noindent
+The data must comply with the floating-point layout required by Interpretive System 1. The matrices must be of identical dimensions. The values $i$ and $j$ must both be strictly less than 64. Although storing the input matrix elements inherently requires only $2(ij)$ sectors, a continuous block of $3(ij)$ memory cells is required across the system to accommodate both inputs and the resulting workspace.
+
+\subsubsection*{CALLING SEQUENCE}
+The following information must be supplied by the calling sequence in the exact sequential order specified below:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item $F_0$: The starting address of the Interpretive System in decimal track/sector notation.
+    \item $A$: The starting address of matrix $A$ in decimal track/sector notation.
+    \item The size of the matrices, with row count $i$ formatted as a decimal track address and column count $j$ formatted as a decimal sector address.
+    \item The instruction \texttt{A} or \texttt{S}, depending on whether addition or subtraction is desired. This operation symbol is written directly in the instruction field; the starting address of matrix $B$ is specified in the address field of the exact same word.\footnote{Another memory-saving optimization: instead of wasting an entire word on an operation flag or setting up a parsing branch, the subroutine reads this parameter word at $\alpha+5$ and injects it directly into its internal math loop as an executable instruction; the address of the second matrix $B$ is \emph{also} packed into this instruction; the instruction (\texttt{A} for Add, \texttt{S} for Subtract) is executed dynamically against the current matrix address via self-modifying code.}
+    \item $C$: The starting address of the destination storage area for the resulting matrix in decimal track/sector notation.
+\end{enumerate}
+A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of ``Matrix Addition and Subtraction 1''.
+
+\medskip
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{$L_0$}       & Store parameter tracking address in the subroutine. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}            & \texttt{A}       & Starting address of matrix $A$. \\
+$\alpha + 4$      & \texttt{Z}            & \texttt{iijj}    & Dimensions of the matrices: rows (\texttt{ii}) and columns (\texttt{jj}). \\
+$\alpha + 5$      & \texttt{A}/\texttt{S} & \texttt{B}       & Operation (\texttt{A} or \texttt{S}) and starting address of matrix $B$. \\
+$\alpha + 6$      & \texttt{Z}            & \texttt{C}       & Starting address of destination area for the resulting matrix. \\
+$\alpha + 7$      & ---                   & ---              & Return to main program (execution resumes here).
+\end{tabular}
+
+\medskip
+\noindent
+The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+
+\subsubsection*{OUTPUT}
+The individual elements of the resulting matrix $C_{ij}$ are saved in floating-point format in consecutive memory cells, beginning at address $C$.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Program Input:} \\
+    The subroutine tape is distributed in two formats:
+    \begin{enumerate}[label=\alph*), itemsep=2pt, topsep=2pt]
+        \item arbitrarily relocatable, hexadecimal format, compatible with \texttt{J1-10.0}; and
+        \item arbitrarily relocatable, decimal coding sheet format.
+    \end{enumerate}
+    
+    \item \textbf{Required Input/Output Units:} \\
+    None.
+    
+    \item \textbf{Overflow:} \\
+    Overflow is ignored during the entry initialization phase and is not reset upon subroutine exit.
+\end{enumerate}
+
+\subsubsection*{REMARKS}
+The subroutine relies internally on the Interpretive System to process all floating-point math steps. The subroutine internally enables and disables the interpreter prior to returning control to the main program; control is returned in native hardware mode.
+
+Either matrix $A$ or $B$ may be updated in place if desired. If an independent destination area is chosen, its memory bounds must not overlap with either $A$ or $B$.
 \newpage
 
-\subsection{Matrix Transpose 1}
-\newpage
+\subsection{Matrix Transposition 1}
+\label{subsec:matrix_transposition_1}
+
+\subsection*{D1-15.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{D1-15.0} transposes a square matrix stored in memory and saves the transposed results into designated cells. The input consists of the elements of a square matrix whose rank is strictly less than 32. Both fixed-point and floating-point data formats are supported. The total number of elements must not exceed the available memory space.
+
+\noindent
+``Matrix Transposition 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
+\begin{enumerate}
+	\item the rank and starting address of the matrix, and 
+	\item the destination starting address for the transposed matrix. 
+\end{enumerate}
+\noindent
+Upon return to the main program, the transposed matrix resides in the specified memory locations.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 1 track, 58 sectors (122 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+The input variables are the elements of a square matrix, stored either row-by-row or column-by-column in consecutive memory cells. In a row-major configuration, the first element of the second row immediately follows the last element of the first row; in a column-major configuration, the first element of the second column immediately follows the last element of the first column. 
+
+\noindent
+The data values may be supplied either in standard raw fixed-point fractional format or in the floating-point format dictated by Interpretive System 1 (\texttt{H1-11.0}). The rank $N$ must satisfy $2 < N \le 31$. Although storing the matrix elements inherently requires only $N^2$ sectors, a maximum workspace block of $2N^2$ memory cells is required if the destination area is separate.
+
+\subsubsection*{CALLING SEQUENCE}
+The following information must be supplied by the calling sequence in the exact sequential order specified below:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item $N$: The rank (dimension) of the matrix, scaled at $q=15$.
+    \item $M$: The starting memory address of the matrix, specified in decimal track/sector notation.
+    \item $T$: The starting memory address of the destination storage area for the transposed matrix in decimal track/sector notation.
+\end{enumerate}
+
+Parameters $N$ and $M$ are packed into a single parameter word at location $\alpha+2$. If $N$ is greater than 15, the packed configuration requires hexadecimal entry format. 
+
+\noindent
+The source address $M$ and destination address $T$ may be identical (in-place transposition). However, if the transposed matrix is to be written to a different memory region, that region must not overlap with the original matrix block.
+
+\medskip
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{L}       & Store the parameter keyword tracking address in the subroutine. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \dots                 & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$. \\
+$\alpha + 3$      & \texttt{Z}            & \texttt{T}       & Starting address for the transposed matrix. \\
+$\alpha + 4$      & ---                   & ---              & Return to main program (execution resumes here).
+\end{tabular}
+
+\medskip
+\noindent
+The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+
+\subsubsection*{OUTPUT}
+The individual elements of the transposed matrix are saved starting at location $T$. If the original matrix was stored row-by-row, the columns will be laid out row-by-row in the transposed matrix. Conversely, if the original matrix was stored column-by-column, the rows will be laid out column-by-column in the destination block.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}\newpage
 
 \subsection{Complex Matrix Operations Interpreter}
 \newpage
