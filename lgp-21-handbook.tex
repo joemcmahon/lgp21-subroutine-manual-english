@@ -8,6 +8,7 @@
 \usepackage{tabularx}
 \usepackage{booktabs} % Highly recommended for professional manual tables
 \usepackage{longtable}
+\usepackage{hyperref}
 
 \title{$\sqrt{Eurocomp}$ LGP-21 Subroutine Handbook}
 \author{Equinox Deschanel}
@@ -43,7 +44,7 @@ The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+
 
 For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
 
-\subsection*{Addition/Subtraction Pitfalls}
+\subsubsection*{Addition/Subtraction Pitfalls}
 Addition and subtraction require that the scale factors (\texttt{@n}) of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction. If you add two numbers with different $q$ factors without shifting them appropriately, the machine will blindly align their bits and perform the operation, smashing incommensurate units of completely different mathematical weights into the same columns. 
 
     For example, if you attempt to add $1.0$ scaled at $\texttt{@1}$ to $1.0$ scaled at $\texttt{@4}$ without normalizing them first:
@@ -80,11 +81,23 @@ The numeric part of the name refines the classification further. \texttt{B1} is 
 \texttt{B1-10.0} is the \emph{first} sine and cosine implementation, which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation, which accepts radians.
 
 These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents. I have not reordered any of the programs to ensure that any cross-referencing between the German and English versions of the document were easy to do.
+\subsection{LGP-21 coding conventions}
+\subsubsection{Address notation}
+Subroutine addresses in the original text are written as \texttt{L} or, for offsets into program code,  \texttt{L+n}. 
 
-\subsection{LGP-21 calling sequences}
-\label{subsec:standard-call}
-Because the LGP-21 has a relatively limited instruction set, subroutine calls are typically handled with code similar to the following:
+Addresses in the main program are written as $\alpha$ or $\alpha+n$.
 
+The LGP-21 is too primitive to have anything like a linkage editor, so it's the programmer/operator's responsibility to use the LGP-21's Program Input Routine\footnote{or Rhys Weatherly's \texttt{lgp21-tools} assembler, which can include and relocate subroutines.} to load subroutine code and automatically relocate it as it's loaded. The usage of \texttt{L} for the base address of code is to remind the reader that they will need to relocate these library functions by hand and use the new base addresses
+in their code to make subroutine calls work properly.
+
+\subsubsection{Calling sequences}
+Because the LGP-21 libraries were written by multiple programmers, and there was no oversight body to enforce a One True Way of doing things, there is a Cambrian explosion of alternatives. Very capable programmers not only coded their algorithms, but cleverly spaced their storage so that the data was under the disk's read head when an instruction wanted to access memory.\footnote{See the story of Mel\cite{mel}, who originally wrote for the LGP-30; his code was famous for using instructions as data, and exploiting the weird corners of the instruction set to do things like have loops with no exit which nevertheless eventually exit.}
+
+Fortunately, none of those programming tricks are used here\footnote{As far as I know. Heaven knows what's actually lurking in the library code itself.}, but the ``let a million flowers bloom'' philosophy does show itself in the multiple ways there are to call subroutines.
+
+\label{subsec:standard-call1}
+\subsubsection*{Accumulator-only parameters}
+One calling convention streamlines the call as much as possible by loading the parameter into the accumulator, setting the return address in a \texttt{U} instruction in the subroutine at an agreed-upon offset, and then jumping to the subroutine:
 \begin{center}
 \begin{tabular}{llll}
 \textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
@@ -94,20 +107,29 @@ $\alpha+1$      & \texttt{U}            & \texttt{L}       & Unconditional branc
 \end{tabular}
 \end{center}
 
-The \texttt{B} loads $\theta$ into the accumulator; any instruction getting the appropriate theta into the accumulator is valid here. The \texttt{R} saves the return address at the subroutine's return \texttt{U} instruction, and the \texttt{U} to $\alpha$ (the start of the subroutine) calls it. Execution of the main program resumes just after the \texttt{U} to $\alpha$.
+In this example a \texttt{B} loads the argument into the accumulator, but any instruction that gets the appropriate value into the accumulator is just as valid. The \texttt{R} saves the return address ($\alpha+2$) in the subroutine, and the main program's \texttt{U} to the start of the subroutine calls it. Execution of the main program resumes just after the \texttt{U} to \texttt{L} at $\alpha+2$.
 
-As you can see, a subroutine call \emph{must} modify code to work: a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Because this self-modifying code is the
-\emph{only} way to do a return from a subroutine, it is not possible to have multiple calls to a subroutine without clobbering any previous return address.
+This means that calling a subroutine implies that code emph{must} be modified for a return to work: specifically, a \texttt{U} (unconditional jump) instruction in the subroutine must be altered to set the return address. Multiple calls to a subroutine therefore will  clobber any previous return address.
 
-This means that programmers must ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
+This means that re-entrant code is not natively supported by the hardware. Programmers must ensure that they carefully manage the hierarchy of subroutine calls to prevent a second call to a subroutine, directly or indirectly, before it returns.
 
-\subsubsection{Address notation}
-Subroutine addresses in the original text are written as \texttt{L} or, for offsets into program code,  \texttt{L+n}. 
+\subsubsection*{Inlined parameters}
+\label{subsec:standard-call2}
+A second calling convention, with longer, in-memory parameter lists, looks like this:
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{L}       & Modify subroutine instruction with key word address. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \dots                 & \dots            & A fixed number of parameter words \\
+$\alpha + n$      & ---                   & ---              & Return to main program. \\
+\end{tabular}
+\end{center}
+\noindent
+This call looks exceedingly strange if you're used to the previous calling convention. If we were doing exactly the same operation as before (altering a \texttt{U} instruction to set the return, then jumping to the subroutine), we'd just jump right back, so that can't be right, and it isn't.
 
-Addresses in the main program are written as $\alpha$ or $\alpha+n$.
-
-The LGP-21 is too primitive to have anything like a linkage editor, so it's the programmer/operator's responsibility to use the LGP-21's Program Input Routine\footnote{or Rhys Weatherly's \texttt{lgp21-tools} assembler, which can include and relocate subroutines} to load subroutine code and automatically relocate it as it's loaded. The usage of \texttt{L} for the base address of code is to remind the reader that they will need to relocate these library functions by hand and use the new base addresses
-in their code to make subroutine calls work properly.
+This convention uses the \texttt{R} instruction to load the address of the \emph{parameters} and store it into a \texttt{B} instruction at the start of the subroutine instead. Jumping to the subroutine loads the address of the parameters ($\alpha+2$) into the accumulator, allowing the subroutine to add an offset to this address to set it to $\alpha+n$, which can then be stored locally in a \texttt{U} instruction to do the actual return to the caller, and to have a pointer to the parameters as well!
 
 \subsection{Repeated/redundant information}
 
@@ -703,7 +725,6 @@ This striking visual pattern, a solid block of high dashes bracketed by a low on
 \newpage
 
 \section{Root Extraction}
-\subsection{Square Root}
 \subsection{Square Root 1}
 \label{sec:square_root_1}
 
@@ -781,19 +802,449 @@ Upon the return branch to the main program, the square root of the argument $N$ 
     \end{tabular}
 \end{enumerate}
 \newpage
-\subsection{Nth Root}
+\subsection{$n$-th Root}
+\label{sec:nth_root}
 
+\subsection*{B4-11.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{B4-11.0} calculates the $n$-th root of any non-negative value. The exponent $n$ must be an integer such that $2 \le n \le 20$. The results are calculated using an iterative method according to the formula:
+\begin{equation}
+    y_{i+1} = y_i + \frac{1}{n} \left( \frac{A}{y_i^{n-1}} - y_i \right)
+\end{equation}
+where $y_i$ represents the $i$-th approximation of the root.
+
+\noindent
+\texttt{B4-11.0} uses a calling sequence similar to \ref{sec:logarithm-function}, except it has only one secondary parameter. The number $A$ whose root is to be taken is loaded into the accumulator with an appropriate scale factor (see below), and the degree of the root $n$ is stored in a \texttt{Z} instruction following the \texttt{R} that calls the subroutine. On return to the main program, the desired root resides in the accumulator$@q/n$.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 1 track (64 words) \\
+\textbf{Temporary Storage:} Sectors 01, 02, 04, 05, 44, 53, 54, and 60 of track 63.
+
+\subsubsection*{INPUT}
+\noindent
+The input variables for \texttt{B4-11.0} are $A$, the non-negative value whose root is to be calculated, and $n$, the integer specifying the degree of the root ($2 \le n \le 20$). 
+
+\noindent
+Upon branching to the subroutine, $A$ must reside in the accumulator scaled to a $q$ factor that is exactly divisible by $n$.\footnote{This is similar to the requirement that a number whose square root is being taken is divisible by two; however, $n$ only needs to divide $A$'s $q$ factor exactly to be acceptable. As an example, if we had A@12, then the square, cube, fourth, and sixth roots of $A$ could all be taken, as all are even divisors of 12.}
+
+\subsubsection*{CALLING SEQUENCE}
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{B}            & $A$              & Bring $A$ into accumulator at a $q$ divisible by $n$. \\
+$\alpha$          & \texttt{R}            & \texttt{L+16}    & Store the parameter address in the subroutine. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to the subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}            & \texttt{08nn}    & Parameter $n$ encoded as a decimal sector address. \\
+\end{tabular}
+
+\medskip
+\noindent
+The instruction at location $\alpha - 1$ brings the value $A$ into the accumulator at a $q$ factor that is divisible by $n$. (Any instruction sequence that achieves this result is permissible.) 
+
+The instruction at location $\alpha$ stores the address ($\alpha + 2$) containing the parameter instruction for $n$ within the subroutine, and execution resumes at $\alpha+3$.\footnote{The subroutine takes the parameter address supplied via the \texttt{R} instruction, recalculates the return address, and adjusts its own code to properly return.}
+
+\subsubsection*{OUTPUT}
+\noindent
+Upon the return branch to the main program, the $n$-th root of the argument resides in the accumulator scaled to a $q$ factor of $q_A / n$. For example, if $n = 3$ and $q_A = 12$, the result $\sqrt[3]{A}$ will have a $q$ of \texttt{@4}.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Accuracy:} \\
+    The result is guaranteed accurate to eight decimal places.
+    
+    \item \textbf{Execution time:} \\
+    Between 2 and 60 seconds. Execution times are significantly longer when calculating high-degree roots of small values.
+    
+    \item \textbf{Required input/output devices:} \\
+    None.
+    
+    \item \textbf{Overflow:} \\
+    Overflow is ignored upon entry and is not reset upon exit.
+    
+    \item \textbf{Error stops:} \\
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
+        \midrule
+        \texttt{L+61}            & The requested root is an imaginary value (i.e., an even-degree root of a negative number). Pressing the \textsf{START} button clears the accumulator and returns execution directly to the main program. \\
+        \bottomrule
+    \end{tabular}
+\end{enumerate}
+\newpage
 \section{Matrix Operations}
-\subsection{Matrix Functions 1}
+\label{sec:matrix_operations}
+
+\subsection{Matrix Programs 1}
+\label{subsec:matrix_programs_1}
+
+The program \texttt{D1-10.0} is a collection of five routines, all of which utilize the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). This suite consists of the following programs:
+
+\medskip
+\noindent
+\begin{tabular}{llll}
+\toprule
+\textbf{Program} & \textbf{SC Number} & \textbf{Title} \\
+\midrule
+\texttt{D1-11.0} & 2044               & Matrix Inversion 1 \\
+\texttt{D1-12.0} & 2045               & Matrix-Vector Multiplication 1 \\
+\texttt{D1-13.0} & 2046               & Matrix Multiplication 1 \\
+\texttt{D1-14.0} & 2047               & Matrix Addition/Subtraction 1 \\
+\texttt{D1-15.0} & 2048               & Matrix Transposition 1 \\
+\bottomrule
+\end{tabular}
+
+\subsubsection*{TRANSLATOR NOTE}
+The \ref{H1-11.0} floating-point interpreter provides a software floating-point implementation for the LGP-21, and is used extensively in the matrix routines.
+
+\newpage
+
 \subsection{Matrix Inversion 1}
+\label{subsec:matrix_inversion_1}
+
+\subsection*{D1-11.0}
+
+\subsubsection*{PURPOSE}
+\texttt{D1-11.0} utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}) to replace the elements of a square matrix $A$ with the elements of its inverse, $A^{-1} = B$. The input data must consist of the elements of a square, non-singular matrix whose rank is greater than 1, formatted as floating-point values. The total number of matrix elements must not exceed the available memory space.
+
+
+``Matrix Inversion 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. Furthermore, before branching to the subroutine, the starting address of the Interpretive System must be stored within the subroutine's internal tracking workspace. The calling sequence must supply both the rank of the matrix and its starting memory address. Upon return to the main program, the calculated inverse matrix occupies the exact memory locations originally held by the input matrix.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Storage:} 2 tracks (128 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+The input variables are the individual elements of an $N \times N$ matrix, stored sequentially in a row-major configuration (i.e., the first element of the second row immediately follows the final element of the first row). These data values must comply with the floating-point format dictated by Interpretive System 1. The matrix must be non-singular. 
+
+
+Although storing the original matrix elements inherently requires only $N^2$ memory locations, a continuous block of $N^2 + N$ sequential memory cells starting at base address $M$ is strictly required for execution workspace.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
+
+
+Prior to executing the branch to the subroutine, the starting address of the Interpretive System \ref{sec:interpretiveSystem} must be stored into memory location \texttt{L+163}, where \texttt{L} represents the starting address of the Matrix Inversion code. This initialization can be performed manually by the operator immediately after loading the subroutine tape, or it may be handled programmatically by initialization instructions within the main program.
+
+\subsubsection*{CALLING SEQUENCE}
+The calling sequence must provide the following parameters:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item $N$: The rank (dimension) of the matrix, scaled at $q=1$, with $N > 1$.
+    \item $M$: The starting memory address of the matrix, specified in decimal track/sector notation.
+\end{enumerate}
+Both parameters $N$ and $M$ are packed into a single parameter word. If $N$ is greater than 15, the packed configuration requires hexadecimal entry format. 
+
+\medskip
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{L+14}    & Modify subroutine instruction with key word address. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \dots                 & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
+$\alpha + 3$      & ---                   & ---              & Return to main program.
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent
+The \texttt{E} instruction at location $\alpha - 1$ is only required if the preceding instruction executed by the main program was an interpretive pseudo-instruction. The instruction at location $\alpha$ copies the address of the packed parameter word ($\alpha + 2$) into the subroutine's entry loop. 
+
+The instruction at location $\alpha + 1$ executes an unconditional branch to \texttt{L}, the base address of the subroutine. Location $\alpha + 2$ holds the packed descriptor word detailing $N$ at a $q$ of 15 and $M$ at a $q$ of 29. Location $\alpha + 3$ contains the next instruction of the main program, which receives control upon subroutine exit.
+
+\subsubsection*{OUTPUT}
+The result of Matrix Inversion 1 is the inverted $N \times N$ matrix $B$, stored in row-major order starting at memory location $M$. The elements are held in continuous sequential memory locations such that element $b_{21}$ immediately follows element $b_{1n}$, and so forth.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Program Input:} \\
+    The subroutine tape is provided in two distribution formats:
+    \begin{enumerate}[label=\alph*), itemsep=2pt, topsep=2pt]
+        \item arbitrarily relocatable, hexadecimal format, compatible with \texttt{J1-10.0}; and
+        \item arbitrarily relocatable, decimal coding sheet format.
+    \end{enumerate}
+    
+    \item \textbf{Required Input/Output Units:} \\
+    None.
+    
+    \item \textbf{Overflow:} \\
+    Overflow does not disrupt the entry phase and is not reset upon subroutine exit.
+    
+    \item \textbf{Error Stops:} \\
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
+        \midrule
+        \texttt{L+759}           & The matrix is singular. Mathematical inversion is impossible. Execution stops; do not attempt to bypass or resume. \\
+        \bottomrule
+    \end{tabular}
+\end{enumerate}
+
+\subsubsection*{REMARK}
+While Matrix Inversion 1 heavily depends on the Interpretive System during calculation, an exit sequence is executed internally prior to returning control to the main program; control returns to the main program in native hardware execution mode.
+
+\subsubsection*{TRANSLATOR'S NOTES}
+Gauss-Jordan elimination is probably the most sophisticated algorithm usable for this purpose on the LGP-21, but is has some pitfalls. Because it performs a larger total number of arithmetic operations than, say, Gaussian elimination with back-substitution, it is even more vulnerable to subtractive cancellation and catastrophic loss of significance.
+
+Subtractive cancellation occurs when you subtract two nearly identical numbers. The leading bits, which match, cancel each other out and leave zeros.
+
+For instance, consider two numbers that match out to 25 bits:
+$$\begin{array}{rcc}
+1.0110110110110110110110110 & 101 & \times 2^e \\
+
+1.0110110110110110110110110 & 011 & \times 2^e \\
+\hline
+0.0000000000000000000000000 & 010 & \times 2^e \\
+\end{array}$$
+
+After the subtraction, the only remaining non-zero significant bit are the last two. The floating-point interpreter will normalize this result by shifting it left, which shifts in zeroes from the right side of the word. Because the original numbers only had 30 bits of precision, those newly-added lower bits are \emph{garbage}! You now have a value where the error is as large as the signal itself.
+
+In a classic Gauss-Jordan implementation, you aren't just clearing elements below the pivot; you are simultaneously clearing elements \emph{above} the pivot to force the left side of the matrix to be a pure identity matrix. This requires roughly $\frac{n^3}{2}$ multiplications and subtractions compared to the $\frac{n^3}{3}$ required by Gaussian elimination. Every extra row operation is another opportunity for a subtractive cancellation event to add errors to your data.
+
+If a pivot element becomes very small (usually due to an earlier subtractive cancellation), dividing the rest of the row by that tiny pivot scales up any existing truncation errors dramatically. When that row is subsequently subtracted from all the other rows, that amplified noise propagates through the entire matrix.
+
+\ref{sec:D1-11.0} uses a couple of techniques to help prevent this:
+\begin{itemize}
+	
+\item \textbf{Partial Pivoting}: The routine scans down the current column to find the element with the largest absolute magnitude and swaps that row to the pivot position. This ensures that you are always dividing by the largest possible number, keeping the multipliers less than or equal to 1.0, which drastically decreases error amplification.
+
+\item \textbf{The L+759 Hard Stop}: If the largest available pivot is zero (or dangerously close to it under the interpreter's precision bounds), the routine realizes that it has hit a singular or ill-conditioned matrix where subtractive cancellation has wiped out all meaningful data. Rather than returning a useless result, it hits the brakes and halts.
+\end{itemize}
+\newpage
+
 \subsection{Matrix/Vector Multiplication 1}
+\newpage
+\subsection{Matrix-Vector Multiplication 1}
+\label{subsec:matrix_vector_multiplication_1}
+
+\subsection*{D1-12.0}
+
+\subsubsection*{PURPOSE}
+This program uses the Floating-Point Interpretive System 1 (\ref{H1-11.0}). \texttt{D1-12.0} multiplies a matrix by a column vector and stores the resulting product vector in a designated set of memory locations. 
+
+The input consists of a matrix with $i$ rows and $j$ columns, and a column vector containing $j$ elements. All data must be supplied in floating-point format. The matrix does not need to be square. The dimensions $i$ and $j$ must each be less than 64. The total number of elements across the matrix, vector, and product vector must not exceed the available memory space.
+
+\noindent
+``Matrix-Vector Multiplication 1'' operates as a subroutine invoked via a calling sequence in the main program. H1-11.0 must be memory-resident, but should be shut down via an explicit exit from the Interpretive System before the subroutine is called. 
+
+The calling sequence must supply: 
+\begin{enumerate}
+	\item the starting address of the Interpretive System,
+	\item the dimensions and starting address of the matrix,
+	\item the starting address of the column vector, and
+	\item the starting address for the destination product vector. Upon return to the main program, the calculated product vector resides in the specified memory cells.
+\end{enumerate}
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Storage:} 1 track, 32 sectors (96 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+The input variables are:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item The elements of a matrix with $i$ rows and $j$ columns, stored sequentially in row-major order (i.e., the first element of the second row immediately follows the last element of the first row).
+    \item The elements of a column vector stored in consecutive memory cells. The number of elements in the vector must equal the number of columns ($j$) in the matrix.
+\end{enumerate}
+\noindent
+The data must be formatted in a style compatible with Floating-Point Interpretive System 1. The dimensions $i$ and $j$ must each be strictly less than 64, though they do not need to be equal. The cumulative number of elements from the matrix, input vector, and output vector must not exceed available memory capacity.
+
+\subsubsection*{CALLING SEQUENCE}
+The following information must be supplied by the calling sequence in the exact order specified below:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item $F$: The starting address of the Interpretive System in decimal track/sector notation.
+    \item $M$: The starting address of the matrix in decimal track/sector notation.
+    \item The dimensions of the matrix, with row count $i$ formatted as a decimal track address and column count $j$ formatted as a decimal sector address.
+    \item $V$: The starting address of the column vector in decimal track/sector notation.
+    \item $P$: The starting address for the destination product vector in decimal track/sector notation.
+\end{enumerate}
+\noindent
+A sample calling sequence is illustrated below, where \texttt{L} denotes the starting address of this subroutine.
+
+\medskip
+\noindent
+\begin{center}
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{XE}           & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{$L_0$}   & Store the Interpretive System entry address in subroutine. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}            & \texttt{M}       & Starting address of the matrix. \\
+$\alpha + 4$      & \texttt{Z}            & \texttt{iijj}    & Matrix dimensions: rows (\texttt{ii}) and columns (\texttt{jj}). \\
+$\alpha + 5$      & \texttt{Z}            & \texttt{V}       & Starting address of the column vector. \\
+$\alpha + 6$      & \texttt{Z}            & \texttt{P}       & Starting address of the destination product vector. \\
+$\alpha + 7$      & ---                   & ---              & Return to main program.
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent
+The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the immediately preceding instruction was an Interpretive System pseudo-instruction. The instruction at location $\alpha$ copies the address of the Interpretive System's key word parameter ($\alpha + 2$) into the subroutine setup loop.
+
+\noindent
+The instruction at location $\alpha + 1$ executes an unconditional branch to \texttt{L}, the base address of the subroutine. Locations $\alpha + 2$ through $\alpha + 6$ function as inline data parameters defining the operational addresses and dimensions. Location $\alpha + 7$ contains the first instruction of the main program to be executed after exiting the subroutine.
+
+\subsubsection*{OUTPUT}
+The individual elements of the calculated product vector are saved sequentially in consecutive memory cells, beginning at address $P$.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Program Input:} \\
+    The subroutine tape is distributed in two formats:
+    \begin{enumerate}[label=\alph*), itemsep=2pt, topsep=2pt]
+        \item arbitrarily relocatable, hexadecimal format, compatible with \texttt{J1-10.0}; and
+        \item arbitrarily relocatable, decimal coding sheet format.
+    \end{enumerate}
+    
+    \item \textbf{Required Input/Output Units:} \\
+    None.
+    
+    \item \textbf{Overflow:} \\
+    Overflow is ignored during the execution initialization phase and is not reset upon subroutine exit.
+\end{enumerate}
+
+\subsubsection*{NOTES}
+The subroutine relies heavily on the Interpretive System for processing all floating-point vector math. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is handed back to the main program in native hardware execution mode.
+
+\subsubsection*{TRANSLATOR'S NOTE}
+The calling sequence for this particular subroutine may look extremely odd for those of us who are familiar with the more common sequence, which stores the return address directly into the subroutine's \texttt{U} instruction that returns control to the caller. We store the return address into an instruction, and then \emph{immediately jump to it}? How is that even going to work?
+
+Speculating slightly, because I have not seen/dumped the code in question, this is my best guess on how it works.
+\begin{itemize}
+	\item The \texttt{R} instruction in the main program stores the return address ($\alpha+2$) into $L_0$. Note that the current address + 2 is the start of the parameter list to be passed to the subroutine.
+	\item The \texttt{U} instruction at $\alpha+1$ jumps to $L_0$.
+	\item A \texttt{B} instruction at $L_0$ loads $\alpha+2$, the parameter list's address into the accumulator.
+	\item The subroutine adds 5 to the accumulator to get the actual return address (the word following the parameter list).
+	\item The subroutine then stores the return address into a \texttt{U} instruction that it will use for the return to the main program.
+\end{itemize}
+\noindent
+This lets the \texttt{B} instruction at $L_0$ do double duty; it serves to save the ``return address'' (actually the parameter list address for the call) and to set up the calculation of the real return address by loading it into the accumulator.
+\newpage
+
 \subsection{Matrix Multiplication 1}
+\subsection{Matrix Multiplication 1}
+\label{subsec:matrix_multiplication_1}
+\subsection*{D1-13.0}
+
+\subsubsection*{PURPOSE}
+The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-13.0} calculates the product matrix $C$ resulting from the matrix equation:
+\begin{equation}
+    AB = C
+\end{equation}
+The product of an $n \times m$ matrix $A$ and an $m \times p$ matrix $B$ is an $n \times p$ matrix $C$. The input consists of the individual elements of both matrices $A$ and $B$, which must be supplied in floating-point format. The matrix dimensions must be strictly less than 64.\footnote{\textbf{Translator's note:} The limit of 64 is an architectural artifact of the LGP-21's memory, which is physically structured as 64 tracks of 64 sectors each. Capping dimensions at 64 allows index calculation loops to stay bound within simple track-selection logic without risking multi-track pointer overflow.} The cumulative number of elements across matrices $A$, $B$, and the output matrix $C$ must not exceed the available memory space.
+
+``Matrix Multiplication 1'' operates as a subroutine invoked via a calling sequence from the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
+\begin{enumerate}
+	\item the starting address of the Interpretive System,
+	\item the dimensions and starting address of matrix $A$,
+	\item the dimensions and starting address of matrix $B$, and
+	\item the starting memory address for the destination product matrix $C$.
+\end{enumerate} 
+\noindent
+Upon return to the main program, the calculated product matrix is in the target memory locations.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Storage:} 2 tracks, 50 sectors (178 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+The input variables are:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item The elements of matrix $A$ ($n \times m$), stored row-by-row in continuous sequential cells.
+    \item The elements of matrix $B$ ($m \times p$), stored row-by-row in continuous sequential cells. The number of rows in matrix $B$ must precisely equal the number of columns in matrix $A$.
+\end{enumerate}
+\noindent
+All matrices must be stored in a row-major configuration, meaning the first element of the second row immediately follows the terminal element of the first row.
+
+The data must conform to the floating-point layout required by \ref{H1-11.0}. Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ cells to accommodate the inputs and the trailing results workspace.
+
+\subsubsection*{CALLING SEQUENCE}
+The calling sequence must provide the following information in the exact sequential order specified below:
+\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
+    \item $F$: The starting address of the Interpretive System in decimal track/sector notation.
+    \item $A$: The starting address of matrix $A$ in decimal track/sector notation.
+    \item The size of matrix $A$, with row count $n$ formatted as a decimal track address and column count $m$ formatted as a decimal sector address.
+    \item $B$: The starting address of matrix $B$ in decimal track/sector notation.
+    \item The size of matrix $B$, with row count $m$ formatted as a decimal track address and column count $p$ formatted as a decimal sector address.
+    \item $C$: The starting address of the destination storage area for the product matrix in decimal track/sector notation.
+\end{enumerate}
+A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of this subroutine.
+
+\medskip
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}            & \texttt{$L_0$}       & Store parameter keyword tracking address in subroutine.\footnote{\textbf{Translator's note:} As discussed at \ref{jump-to-return-what}, the \texttt{R} calculates the location $\alpha+2$, effectively the parameter list address, and embeds it into the instruction at \texttt{$L_0$}. The jump to the subroutine executes a \texttt{B} which loads the address of the parameters, adds an offset of $+8$ to compute the final return address, and saves it locally to properly do the return.} \\
+$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}            & \texttt{A}       & Starting address of matrix $A$. \\
+$\alpha + 4$      & \texttt{Z}            & \texttt{nnmm}    & Dimensions of matrix $A$: rows (\texttt{nn}) and columns (\texttt{mm}). \\
+$\alpha + 5$      & \texttt{Z}            & \texttt{B}       & Starting address of matrix $B$. \\
+$\alpha + 6$      & \texttt{Z}            & \texttt{mmpp}    & Dimensions of matrix $B$: rows (\texttt{mm}) and columns (\texttt{pp}). \\
+$\alpha + 7$      & \texttt{Z}            & \texttt{C}       & Starting address of destination product matrix $C$. \\
+$\alpha + 8$      & ---                   & ---              & Return to main program (execution resumes here).
+\end{tabular}
+
+\medskip
+\noindent
+The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+
+\subsubsection*{OUTPUT}
+The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured with $n$ rows and $p$ columns, stored row-by-row in continuous sequential memory cells starting at location $C$. Element $c_{21}$ immediately follows element $c_{1p}$, and so forth.
+
+\subsubsection*{OPERATING DETAILS}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Program Input:} \\
+    The subroutine tape is distributed in two formats:
+    \begin{enumerate}[label=\alph*), itemsep=2pt, topsep=2pt]
+        \item arbitrarily relocatable, hexadecimal format, compatible with \texttt{J1-10.0}; and
+        \item arbitrarily relocatable, decimal coding sheet format.
+    \end{enumerate}
+    
+    \item \textbf{Required Input/Output Units:} \\
+    None.
+    
+    \item \textbf{Overflow:} \\
+    Overflow is ignored during the entry configuration phase and is not reset upon subroutine exit.
+    
+    \item \textbf{Error Stops:} \\
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
+        \midrule
+        \texttt{L+241}           & Inner matrix dimensions mismatch: the number of columns in matrix $A$ ($m$) does not equal the number of rows in matrix $B$ ($m$). Mathematical multiplication is undefined. Do not attempt to resume execution; the input data dimensions must be corrected. \\
+        \bottomrule
+    \end{tabular}
+\end{enumerate}
+
+\subsubsection*{NOTES}
+The subroutine utilizes the Interpretive System internally to calculate floating-point steps. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is returned in native hardware mode.
+\newpage
+
 \subsection{Matrix Addition and Subtraction 1}
+\newpage
+
 \subsection{Matrix Transpose 1}
+\newpage
+
 \subsection{Complex Matrix Operations Interpreter}
+\newpage
+
 \section{Floating Point}
 \subsection{Floating Point Interpreter 1}
+\label{H1-11.0}
+\newpage
+
 \subsection{Floating Point Interpreter 2}
+\label{H1-11.1}
+\newpage
+
 \section{Number Conversions}
 \subsection{Decimal/Hexidecimal Conversion}
 \newpage
@@ -1574,6 +2025,8 @@ Royal McBee Computer Corporation, \emph{LGP-30 Programming Manual}, Port Chester
 \bibitem{rpc4000manual}
 General Precision Electronic Computer Company, \emph{RPC-4000 Programmers Reference Manual}, Burbank, CA, 1960.
 
+\bibitem{storyofmel}
+E.~Nigh, ``The Story of Mel,'' first posted to Usenet newsgroup \texttt{net.followup}, May 1983. [Online; accessed June 2026]. Available: \url{https://users.cs.utah.edu/\~elb/folklore/mel.html}
 \end{thebibliography}
 
 \end{document}
