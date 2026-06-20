@@ -516,6 +516,126 @@ The individual elements of the transposed matrix are saved starting at location 
 \subsubsection*{REMARK}
 Unlike the other routines in the matrix suite, this subroutine \emph{does not} invoke or use the Floating-Point Interpretive System internally.\footnote{Because matrix transposition is a purely structural index manipulation (swapping element positions $(i,j)$ with $(j,i)$), the subroutine does not perform any actual arithmetic on the matrix values themselves, so it's completely unnecessary to incur the massive overhead of the floating-point interpreter \texttt{H1-11.0}. We're just moving data, so it doesn't matter if it's native fixed-point integers or multi-word floating-point interpreter variables.}
 \newpage
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Complex Matrix Operations Interpreter}
+\subsection{Complex Operations Interpretive System}
+\label{subsec:complex_interpreter}
+
+\subsection*{H1-10.0}
+
+\subsubsection*{PURPOSE}
+The program \texttt{H1-10.0} enables the user to process algebraic expressions involving complex numbers in the form $(a+bi)$ as seamlessly as if they were standard real numbers. Additionally, the system provides integrated left and right logical bit-shifting capabilities. It also allows for dynamic address modification and loop-termination testing against a target end-address without ever needing to exit the interpretive execution loop.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 3 tracks (192 words) \\
+\textbf{Temporary Storage:} None
+
+\subsubsection*{INPUT}
+For every complex data element, both the real and imaginary parts must be stored at the identical binary scaling factor ($q$-factor) in consecutive memory cells. Specifically, the real part must reside at memory cell \texttt{ttss} and the imaginary part at cell \texttt{ttss+1}.
+
+\noindent
+Because each complex number occupies two discrete memory locations, the subroutine implements simulated registers to facilitate instruction execution. These architecture registers consist of a simulated pseudo-accumulator located at cell \texttt{L+33} and a simulated address register located at cell \texttt{L+219}, where \texttt{L} denotes the starting base address of the subroutine. In addition to these active components, the program records the transient state of the physical hardware accumulator at cell \texttt{L+59}.
+
+\noindent
+The interpretive engine processes 15 distinct operations. For all arithmetic commands, the address field \texttt{ttss} references the memory cell containing the real component, though the internal loop automatically processes both parts of the complex value. For all other non-arithmetic commands, \texttt{ttss} functions as a standard single-word memory address. Only the instructions explicitly detailed below are structurally valid within an interpretive instruction sequence.
+
+\paragraph{1. Arithmetic Instructions}
+\begin{description}[leftmargin=1.5em, itemsep=4pt]
+    \item[\texttt{Bttss} (Bring):] The elements at locations \texttt{ttss} and \texttt{ttss+1} replace the contents of the pseudo-accumulator. The source memory remains unchanged.
+    \item[\texttt{Attss} (Add):] The elements at locations \texttt{ttss} and \texttt{ttss+1} are added to the pseudo-accumulator. The result replaces the contents of the pseudo-accumulator.
+    \item[\texttt{Sttss} (Subtract):] The elements at locations \texttt{ttss} and \texttt{ttss+1} are subtracted from the pseudo-accumulator. The result replaces the contents of the pseudo-accumulator.
+    \item[\texttt{Mttss} (Multiply):] The pseudo-accumulator is multiplied by the complex value stored at \texttt{ttss} and \texttt{ttss+1}. The product replaces the contents of the pseudo-accumulator.\footnote{\textbf{Translator's note:} A complex multiplication $(a+bi)(c+di)$ requires computing $(ac-bd) + (ad+bc)i$. Performing this in a single interpretive step saves a massive amount of main-program setup and temporary storage management.}
+    \item[\texttt{Dttss} (Divide):] The pseudo-accumulator is divided by the complex value stored at \texttt{ttss} and \texttt{ttss+1}. The quotient replaces the contents of the pseudo-accumulator.
+    \item[\texttt{Httss} (Hold):] The contents of the pseudo-accumulator are copied into memory cells \texttt{ttss} and \texttt{ttss+1}. The pseudo-accumulator remains unchanged.
+    \item[\texttt{Cttss} (Clear):] The contents of the pseudo-accumulator are copied into memory cells \texttt{ttss} and \texttt{ttss+1}, and the pseudo-accumulator is subsequently reset to zero.
+\end{description}
+
+\paragraph{2. Auxiliary Instructions}
+\begin{description}[leftmargin=1.5em, itemsep=4pt]
+    \item[\texttt{XRO0nn} (Shift Right):] Shifts both components of the pseudo-accumulator right by \texttt{nn} binary places ($0 \le \texttt{nn} \le 10$).
+    \item[\texttt{XPO0nn} (Shift Left):] Shifts both components of the pseudo-accumulator left by \texttt{nn} binary places ($0 \le \texttt{nn} \le 10$).
+    \item[\texttt{Uttss} (Unconditional Jump):] Transfers execution control. The next pseudo-instruction to be interpreted is fetched from cell \texttt{ttss}. This jump cannot be used to exit the interpreter; \texttt{ttss} must point to a valid complex pseudo-instruction.
+    \item[\texttt{XE0000} (Exit):] Explicit exit from the Interpretive System. The instruction immediately following \texttt{XE0000} is executed as a native hardware instruction.
+\end{description}
+
+\paragraph{3. Address Modification Instructions}
+\begin{description}[leftmargin=1.5em, itemsep=4pt]
+    \item[\texttt{Ettss} (Set Address Register):] The address portion of the word stored at cell \texttt{ttss} is loaded into the simulated address register. Memory remains unchanged.
+    \item[\texttt{Ittss} (Increment Address):] Increments the current value of the simulated address register by the value \texttt{ttss}.
+    \item[\texttt{Yttss} (Inject Address):] Embeds the current value of the simulated address register directly into the address portion of the instruction word at cell \texttt{ttss}. The address register itself and all other memory remains unchanged.
+    \item[\texttt{Zttss} (Test and Skip):] Subtracts the current value of the simulated address register from the literal value \texttt{ttss}. If the result is exactly zero, the next pseudo-instruction is skipped (execution jumps to the second following word). If the result is non-zero, execution continues normally with the immediately following instruction.
+\end{description}
+
+\subsubsection*{CALLING SEQUENCE}
+A template for entering the interpretive loop is illustrated below, where \texttt{L} denotes the starting address of the interpreter.
+
+\medskip
+\noindent
+\begin{tabular}{llll}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha$          & \texttt{R}            & \texttt{L}       & Store parameter tracking address inside the interpreter. \\
+$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to interpreter entry. \\
+$\alpha + 2$      & \dots                 & \dots            & First complex pseudo-instruction to be interpreted. \\
+$\vdots$          & $\vdots$              & $\vdots$         & Sequence of complex operations. \\
+$\alpha + n$      & \texttt{XE}           & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha + n + 1$  & \dots                 & \dots            & First native hardware instruction (execution resumes here).
+\end{tabular}
+
+\medskip
+\noindent
+The \texttt{R} instruction at location $\alpha$ automatically captures the address of the initial pseudo-instruction ($\alpha + 2$) and saves it internally within the interpreter's program counter tracker.
+
+\subsubsection*{OPERATING DETAILS}
+
+\paragraph{1. Execution Time}
+The following table outlines the maximum execution durations required for each individual complex operation, measured in drum rotations and milliseconds.
+
+\medskip
+\noindent
+\begin{tabular}{crr|crr}
+\toprule
+\textbf{Instruction} & \textbf{Drum Rotations} & \textbf{Time (ms)} & \textbf{Instruction} & \textbf{Drum Rotations} & \textbf{Time (ms)} \\
+\midrule
+\texttt{B}           & 11                      & 561                & \texttt{P}           & 17                      & 1167\footnote{Notice how left-shifting is significantly slower than right-shifting. On a magnetic disk memory system like the LGP-21, bit-shifting requires track-recirculation delays and masking. Left shifts require repeated additions or multiplication loops to slide data up toward the sign bit, adding extra revolutions, whereas right shifts could take advantage of standard hardware truncation.}               \\
+\texttt{A}           & 14                      & 714                & \texttt{U}           & 8                       & 408                \\
+\texttt{S}           & 14                      & 714                & \texttt{XE} (Exit)   & 6                       & 306                \\
+\texttt{M}           & 22                      & 1122               & \texttt{E} (Set Addr)& 9                       & 459                \\
+\texttt{D}           & 41                      & 2091               & \texttt{I}           & 6                       & 306                \\
+\texttt{H}           & 14                      & 714                & \texttt{Y}           & 8                       & 408                \\
+\texttt{C}           & 14                      & 714                & \texttt{Z} ($=0$)    & 11                      & 561                \\
+\texttt{R} (Shift R) & 14                      & 714                & \texttt{Z} ($\ne0$)  & 13                      & 663                \\
+\bottomrule
+\end{tabular}
+
+\paragraph{2. Program Input:}
+The subroutine tape is distributed in two formats:
+\begin{enumerate}[label=\alph*), itemsep=2pt, topsep=2pt]
+    \item arbitrarily relocatable, hexadecimal format, compatible with \texttt{J1-10.0}; and
+    \item arbitrarily relocatable, decimal coding sheet format.
+\end{enumerate}
+
+\paragraph{3. Required Input/Output Units:} None.
+
+\paragraph{4. Error Stops:}
+\medskip
+\noindent
+\begin{tabular}{lp{6.5cm}l}
+    \toprule
+    \textbf{Location} & \textbf{Meaning} & \textbf{Remedy} \\
+    \midrule
+    \texttt{L+122}    & Negative Instruction encountered (Illegal format). & Fatal error. Do not force resume. \\
+    \texttt{L+135}    & Invalid \texttt{N-} Type instruction variation.    & Fatal error. Do not force resume. \\
+    \texttt{L+154}    & Invalid \texttt{T-} Type instruction variation.    & Fatal error. Do not force resume. \\
+    \bottomrule
+\end{tabular}
+
+\paragraph{5. Overflow:}
+Overflow status is ignored during interpretive entry execution loops and is not explicitly reset upon subroutine exit.
+
+\subsubsection*{REMARKS}
+The first instruction inside the interpretive sequence (location $\alpha+2$) must not be an \texttt{XE0000} command, as it would cause an immediate, unintended system exit before any operation can occur.
+
+\subsubsection*{TRANSLATOR NOTES}
+The inclusion of index/address pseudoinstructions (\texttt{E}, \texttt{I}, \texttt{Y}, \texttt{Z}) elevates this interpreter from a simple complex-math math library to a self-contained environment. It can handle full multi-row matrix array traversal directly inside the complex domain without ever exiting the interpreter loop to do data manipulation and control flow.
 \newpage

@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{lmodern} % Latin Modern (a cleaner, scalable version of Computer Modern)
+\usepackage{array}
 \usepackage{amsmath}   % For all your fixed-point math formulas
 \usepackage{xcolor}    % Great for adding subtle colors to your code
 \usepackage{booktabs}
@@ -9,6 +10,28 @@
 \usepackage{booktabs} % Highly recommended for professional manual tables
 \usepackage{longtable}
 \usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{tikz}
+
+% Define a custom command to draw the crossed/X'ed box with a subtle nudge
+\newcommand{\xbox}{%
+  \raisebox{-1pt}{%
+    \begin{tikzpicture}
+      \node[inner sep=0pt, minimum size=3.8mm, draw] (char) {};
+      \draw (char.south west) -- (char.north east);
+      \draw (char.south east) -- (char.north west);
+    \end{tikzpicture}%
+  }%
+}
+
+% Define an empty box of the exact same size, lifted by the same amount
+\newcommand{\emptybox}{%
+  \raisebox{-1pt}{%
+    \begin{tikzpicture}
+      \node[inner sep=0pt, minimum size=3.8mm, draw] (char) {};
+    \end{tikzpicture}%
+  }%
+}
 
 \title{$\sqrt{Eurocomp}$ LGP-21 Subroutine Handbook}
 \author{Equinox Deschanel}
