@@ -108,6 +108,37 @@ This call looks exceedingly strange if you're used to the previous calling conve
 
 This convention uses the \texttt{R} instruction to load the address of the \emph{parameters} and store it into a \texttt{B} instruction at the start of the subroutine instead. Jumping to the subroutine loads the address of the parameters ($\alpha+2$) into the accumulator, allowing the subroutine to add an offset to this address to set it to $\alpha+n$, which can then be stored locally in a \texttt{U} instruction to do the actual return to the caller, and to have a pointer to the parameters as well!
 
+\subsubsection*{Deep Wizardry: Floating-Point Parameters}
+
+A third, even more astounding calling sequence passes a multi-word floating-point\footnote{While the LGP-21 lacks floating-point \emph{hardware}, it relies entirely on a software-driven floating-point math \emph{interpreter}. See Section~\ref{H1-10.1}.} number to a subroutine as an argument.
+
+\begin{table}[h]
+\centering
+\setlength{\extrarowheight}{3pt}
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\ \hline
+$\alpha-1$        & \texttt{B}           & \texttt{N}       & Bring word 1 of floating-point number $N$. \\ \hline
+$\alpha$          & \texttt{R}           & \texttt{L+offset}& Store the return address ($\alpha+2$) inside the subroutine. \\ \hline
+$\alpha+1$        & \texttt{U}           & \texttt{L}       & Unconditional branch to the subroutine entry. \\ \hline
+\end{tabular}
+\end{table}
+
+Now wait a minute, I hear you say. A floating-point number is \emph{three} words long. That cannot possibly fit in the single-word hardware accumulator—what kind of trickery is this?
+
+You're right. The full floating-pint number doesn't get loaded; only its first word does. But the \texttt{B} instruction itself at cell $\alpha-1$ now contains the exact piece of metadata the subroutine needs: \emph{the starting memory address \texttt{N} of the floating-point block}\footnote{My reaction was ``You are \emph{kidding} me'' with a significant expletive titre.}. 
+
+This explains why the manual repeatedly states that ``loading this value into the accumulator by any means'' is acceptable for some subroutines, but does \emph{not} say that for this one\footnote{Gun, see foot.}. The \texttt{B} here is essential to the program working. It relies on the code modified by the \texttt{R} instruction to find and read its caller:
+\begin{enumerate}
+    \item The subroutine picks up the return address ($\alpha+2$) deposited by the \texttt{R} instruction into cell \texttt{L+offset}.
+    \item It subtracts 3 from that value to locate cell $\alpha-1$ (the \texttt{B} instruction).
+	\item It modifies the next instruction, a \texttt{B}, to set its address to $\alpha-1$.
+    \item The modified \texttt{B} instruction loads the literal 32-bit instruction word stored at $\alpha-1$...that contains the address of the floating-point number.
+    \item It strips away the \texttt{B} opcode bits using a bitmask, leaving behind only the raw address \texttt{N}.
+	\item Now the subroutine has the address of the first of the three words making up the floating-point number, and can proceed.
+\end{enumerate}
+The value loaded into the accumulator at step $\alpha-1$ is \emph{entirely ignored}. The \texttt{B} instruction's sole purpose in this calling sequence is to serve as an \emph{executable static data pointer}, which the subroutine finds and dissects to find words 2 and 3 (\texttt{N+1} and \texttt{N+2}) of the floating-point parameter.
+
 \subsection{Repeated/redundant information}
 
 Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard \texttt{B}/\texttt{R}/\texttt{U} instruction sequence used to call a function as noted in \ref{subsec:standard-call}. I have tried to condense this where possible.

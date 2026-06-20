@@ -9,9 +9,14 @@
 \usepackage{tabularx}
 \usepackage{booktabs} % Highly recommended for professional manual tables
 \usepackage{longtable}
-\usepackage{hyperref}
+\usepackage[hypertexnames=false]{hyperref}
 \usepackage{xurl}
 \usepackage{tikz}
+\usepackage{epigraph}
+
+% Customize the epigraph layout parameters
+\setlength{\epigraphwidth}{0.65\textwidth}
+%\setlength{\epigraphrule}{0pt} % Removes the divider line for a cleaner look
 
 % Define a custom command to draw the crossed/X'ed box with a subtle nudge
 \newcommand{\xbox}{%
@@ -40,6 +45,21 @@
 \begin{document}
 
 \maketitle
+
+\begin{titlepage}
+\clearpage\thispagestyle{empty}
+\vspace*{\fill}
+
+\epigraph{``Our need will be the real creator.''}{--- Plato, \textit{The Republic}}
+
+\vspace{1.5em}
+
+\epigraph{``The enemy of art is the absence of limitations.''}{--- Orson Welles}
+
+\vspace*{\fill}
+\clearpage
+\end{titlepage}
+
 \tableofcontents
 \newpage
 \include{chapters/translation-notes}
