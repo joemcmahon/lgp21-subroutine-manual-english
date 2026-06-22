@@ -1,12 +1,8 @@
-\section{Floating Point}
-\subsection{Floating Point Interpreter 1}
-\label{H1-11.0}
 \section{Floating-Point Interpretive Systems}
 \label{sec:floating_point_interpreters}
-
-\subsection{Floating-Point Interpretive System 1}
+\subsection{Floating Point Interpreter 1}
+\label{H1-11.0}
 \label{subsec:floating_point_1}
-
 \subsection*{H1-11.0}
 
 \subsubsection*{PURPOSE}
@@ -342,7 +338,7 @@ The following table illustrates the raw machine printout format paired with its 
 \subsection*{SQUARE ROOT 2, Program B4-10.1}
 ``Square Root 2'' calculates the square root of a positive number located in the floating-point accumulator. The result is placed in the floating-point accumulator upon return to the cell of the main program following the \texttt{R0000} instruction.
 
-\section*{CALLING SEQUENCE}
+\section*{RUNNING THE INTEPRETER}
 
 The ``Floating-Point Interpreter System 1'' is invoked via a calling sequence from the main program. Prior to branching into the system, the starting address of the floating-point instructions to be interpreted must be supplied to the system. The floating-point instructions must immediately follow the branch instruction. An example is provided below:
 
@@ -506,16 +502,6 @@ Remember that when the interpreter is running all instructions are pseudo-instru
 
 Pseudo-instructions utilizing addresses from \texttt{0000} to \texttt{0009} have special meanings. When pseudo-instructions use these addresses, they do not refer to the actual storage at these addresses, but instead invoke functions in the interpreter. The interpreter utilizes 16 such special instructions, including \texttt{D 000y} and \texttt{M 000y}. Although instructions \texttt{D 000y} and \texttt{M 000y} may carry a literal value of $y$ between 1 and 9, standard instructions like \texttt{D ttss} and \texttt{M ttss} (while in interpreter mode) cannot reference any cell between \texttt{0000} and \texttt{0009}\footnote{The addresses from \texttt{0000} to \texttt{0009}, inclusive, trigger transcendental functions, etc. \emph{when the floating-point interpreter is running}. In normal execution mode, they're used just the same as any other location in the machine.}.
 
-\section*{EXAMPLE}
-
-The following sample program demonstrates how floating-point instructions are structured for the interpreter system, and how input data must be formatted to achieve the desired output.
-
-Given a fourth-degree polynomial of the form:
-\[ Ax^4 + Bx^3 + Cx^2 + Dx + E = y \]
-The value of $y$ is to be calculated and printed.
-
-The Interpreter System is assumed to be stored starting at address \texttt{0300}. The main program is stored starting at address \texttt{4200}. The data values are stored sequentially starting at cell \texttt{4306}.
-
 \section*{PROGRAMMING EXAMPLE}
 
 This example demonstrates how to evaluate a fourth-degree polynomial using the Floating-Point Interpreter System's extended instruction set. The polynomial is structured as:
@@ -621,7 +607,7 @@ R & ttss & Compare: If (A Reg.) - ttss = 0, skip next instruction; else loop \\
 \bottomrule
 \end{tabular}
 \end{table}
-
+\newpage
 \subsection*{Special Behavior for Null Addresses}
 When the address field \texttt{ttss} of an interpreter command equals \texttt{0000} (or a designated function selector ID within Track 00), the default memory interaction is overridden to perform specialized administrative or algorithmic operations rather than referencing physical memory cell zero.
 
@@ -654,10 +640,7 @@ H & $e^{\text{(Acc)}}$ $\rightarrow$ Acc \hfill [Exponential Function] \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 \newpage
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Floating Point Interpreter 2}
 \label{H1-11.1}
 \subsection*{H1-11.1}
@@ -990,11 +973,474 @@ Where the exponent boundaries are hardcoded at: $-99 \le E_{10} \le +99$.
     \end{verbatim}
 \end{itemize}
 
-\subsection*{The Termination Stop-Codes}
+\subsubsection*{Termination Stopcodes}
 The system defines two distinct classes of termination stop-codes. Their behavior varies fundamentally based on their context and placement on the data coding sheet:
 \begin{enumerate}
     \item \textbf{Group Termination Code:} Signifies the end of the current numerical data block. It commands the system to immediately begin reading the next subsequent address and data group on the tape.
     \item \textbf{Master Input Stop-Code:} Signifies the total completion of data entry. It triggers an automatic terminal carriage return, shuts down the tape reader pipeline, and gracefully jumps execution control back to the next sequential line of the user's main program.
 \end{enumerate}
 
+\subsubsection*{Input example}
+Table \ref{data-input-table} demonstrates how data should be punched to be read by the \texttt{I0000} instruction. Data is entered in groups, starting with the address where the data should be stored, followed by the (signed) mantissa, a space, and the (signed) exponent, followed by a stopcode to terminate the number. The input routine will continue reading numbers until a lone stopcode is entered, ending the group. If two lone stopcodes are entered, input ends and execution resumes immediately following the \texttt{I0000} instruction.
+
+\begin{center}
+\small
+\ttfamily
+\begin{tabular}{crcccccrccrcc}
+\toprule
+&\textbf{INPUT CONTROL WORD} & \textbf{S} & \multicolumn{4}{c}{\textbf{SIGNED DECIMAL NUMBERS}} &  & \textbf{S} & &\\
+&(Starting Address)          & \textbf{T} &   &Part 1&'& Part 2                     &  & \textbf{T} & &\\
+&                            & \textbf{O} & &$d_1d_2\dots d_7$ & & $d_8d_9 \ e_1e_2$          &  & \textbf{O} & &\\
+&                            & \textbf{P} &                   &                         &     &   &  & \textbf{P} & &\\
+\midrule
+1&5500                        & '$^{\dagger}$          & - & 3300000           &'& 00~-&04                        & '          & \hfill [Group 1] &\\
+2&                            &            &   & 3141592$^{\ddagger}$           &'& 65~-&08                        & '          & &\\
+3&                            &            & - & 0000592           &'& 34~-&11                        & '          & &\\
+4&							&            &   &                   &'$^{\P}$&                                  &           & &\\
+\midrule
+5&2134                        & '          &   & \phantom{000000}0 &'&                              &      & '          & \hfill [Group 2] &\\
+6&                            &            &   & \phantom{00000}30 &'&50~-&\phantom{00}               & '          & &\\
+7&                            &            &   & \phantom{0000}750 &'&00~+&\phantom{00}               & '          & &\\
+8&                            &            & - & 0100000           &'&00~+&\phantom{00}               & '          & &\\
+9&							&            &   &                   &'$^{\S}$&                                &  &'$^{\parallel}$           & &\\
+\bottomrule
+\end{tabular}
+\vspace{1em}
+\captionof{table}{Sample Data Input Format}
+\label{data-input-table}
+\end{center}
+
+\vspace{1em}
+\nopagebreak
+\medskip
+\noindent$^{\dagger}$ The stopcode (\texttt{'}) immediately following the initial address ends the address and starts number entry for the input group.
+
+\medskip
+\noindent$^{\ddagger}$ A single stopcode with no numeric input terminates the input group.
+
+\medskip
+\noindent$^{\P}$ Positive quantities are encoded with \emph{no} prefix; negative values should have an explicit minus sign (\texttt{-}). Do not punch a plus sign (\texttt{+}) for positive values.
+
+\medskip
+\noindent$^{\S}$ This single stopcode ends the second data group.
+
+\medskip
+\noindent$^{\parallel}$ This stopcode following the group terminator stopcode tells the interpreter to exit input mode and resume execution.
+
+\medskip
+
+\noindent Reading the data in Table \ref{data-input-table} results in the following data in memory. Group 1 is read and the floating-point numbers are built\footnote{Translator's note: I've preserved the original manual's representation here; suffice it to say that the values indicated are handwaving the actual values in memory.} starting at location \texttt{5500}:
+\noindent\texttt{5500} \texttt{-33000.0} \\
+\texttt{5501} \textit{(Exponent for $-33000.0$)} \\
+\texttt{5502} \texttt{3.14159265} \\
+\texttt{5503} \textit{(Exponent for $3.14159265$)} \\
+\texttt{5504} \texttt{-0.00000059234} \\
+\texttt{5505} \textit{(Exponent for $-0.00000059234$)}
+
+All exponents are strictly maintained at a $q$ of $@29$. The physical stopcode trailing the final number of the group (located in the column immediately following Group 1) triggers the system to automatically advance and read the next starting target address of the second data group (\texttt{2134}\footnote{Note that these addresses don't need to be ordered. The input routine will happily build two-word floating-point numbers wherever you indicate.}). The second group is processed and stored as follows:
+\noindent\texttt{2134} $\rightarrow$ \texttt{Zero (0.0)} \\
+\texttt{2135} $\rightarrow$ \texttt{Zero (0.0)} \\
+\texttt{2136} $\rightarrow$ \texttt{30.50} \\
+\texttt{2137} $\rightarrow$ \textit{(Exponent for $30.50$)} \\
+\texttt{2138} $\rightarrow$ \texttt{750000.0} \\
+\texttt{2139} $\rightarrow$ \textit{(Exponent for $750000.0$)} \\
+\texttt{2140} $\rightarrow$ \texttt{-10000000000000.0} \\
+\texttt{2141} $\rightarrow$ \textit{(Exponent for $-10000000000000.0$)}
+
+\vspace{1em}
+\noindent The processing loop for the second data group is terminated by a single stop-code just as Group 1 was. Note the \emph{second} stopcode, which serves to signal the interpreter that input is complete and execution may continue.
+\medskip
+\noindent\textbf{Special case:} Please note that any number meant to be input as a literal value of zero \emph{must} be explicitly encoded and punched onto the tape as \texttt{0'} rather than as just a stopcode (\texttt{'})\footnote{This is different from other input routines, particularly the \ref{J1-10.0} loader.}. Explicitly entering the zero values is necessary to allow the input routine to differentiate a true numerical zero from a structural group-termination/input-termination command.
+
+\subsection*{6. Data Output}
+The output format works to make the numbers a consistent size on the page, and to have a consistent format. Each number has:
+\begin{itemize}
+	\item a leading character for the sign. This will be a space for positive numbers, and $-$ for negative ones,
+	\item the mantissa of the floating-point number, in leading-decimal format,
+	\item a separator space,
+	\item the sign of the exponent (this is either $+$ or $-$, and \emph{always} appears),
+	\item the two-digit exponent itself, and
+	\item a tab character.
+\end{itemize}
+
+The \texttt{space}/$-$ convention means that positive and negative numbers will align properly to the left down a column.
+
+The tab character enables the user to easily create well-formatted output on the Flexowriter by setting the hardware tab stops.
+
+Control is immediately returned to the main program loop after printing is complete. A single floating-point number is processed and output per subroutine invocation. The actual printed format of a number looks like this:
+
+\begin{center}
+\small
+\begin{tabular}{rl}
+% Row 1: The printed text format string (with explicit leading space)
+Positive&\texttt{\phantom{-}.xxxxxxx\ $\pm$ee[Tab]} \\
+Negative&\texttt{-.xxxxxxx\ $\pm$ee[Tab]} \\
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent This physical teleprinter serialization format represents the standard mathematical expression:
+\begin{equation*}
+\pm\text{.\texttt{xxxxxxx}} \cdot 10^{\pm\text{\texttt{ee}}}
+\end{equation*}
+
+\subsubsection*{Output Examples}
+The following examples illustrate how specific numerical values are printed:
+
+\begin{center}
+\small
+\ttfamily
+\begin{tabular}{lll}
+\toprule
+\textbf{Printed Output} & \textbf{Mathematical Value} & \textbf{Notes} \\
+\midrule
+-.5060000+04            & -5060.0                     & Negative mantissa, positive exponent \\
+\phantom{-}.9375000-02  & 0.009375                    & Leading space for positive mantissa \\
+-.1000000-06            & -0.0000001                  & Extreme fractional negative \\
+\phantom{-}.1000000+30  & $1.0 \times 10^{30}$        & Large positive value \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Note how the leading column remains perfectly uniform; the decimal points align vertically on the page regardless of whether the value carries a negative sign or an implicit positive blank space.
+
+\subsubsection*{Output Limits and Constraints}
+The formatting routine enforces the following mathematical boundaries during execution:
+\begin{itemize}
+	\item \textbf{Decimal Exponent Range:} $-99 \le ee \le +99$.
+	\item \textbf{Decimal Mantissa Bounds:} $0.1000000 \le \lvert\text{mantissa}\rvert \le 0.9999999$, or exactly zero.
+	\item \textbf{Internal Binary Exponent Range:} $-333 \le \text{exponent} \le +333$.
+\end{itemize}
+
+An underflow condition occurs when where the internal binary exponent drops below $-333$; this causes the routine to automatically print a clean zero. Conversely, an overflow condition where the binary exponent exceeds $+333$ triggers a terminal range error stop, halting the interpreter loop.
+
+\subsection*{7. FUNCTION SUBROUTINES}
+
+\subsubsection*{SINE-COSINE}
+This subroutine calculates the sine or cosine of a given value expressed in radians, using a 9th degree polynomial to approximate the value. To use, load the angle into the floating-point accumulator then execute the appropriate pseudo-instruction (\texttt{S0000} for sine or \texttt{C0000} for cosine). The result is placed in the floating-point accumulator. The following table shows the method for calculating the function values depending on the exponent of the argument.
+
+\begin{center}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Exponent (binary)} & \textbf{Sine X} & \textbf{Cosine X} & \textbf{Notes}\\
+\midrule
++26 to +127 & Range error & Range error & \\
+-8 to +25   & Polynomial evaluation & Polynomial evaluation & \\
+-20 to -9   & Sine X = X & Polynomial evaluation & $\sin X \approx X$ for small angles \\
+-127 to -21 & Sine X = 0 & Cosine X = 1.0 & Exceeds precision \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{ARCTANGENT}
+This subroutine calculates the angle that corresponds to a given tangent argument. Load the tangent value into the floating-point accumulator and execute the \textbf{A0000} pseudo-instruction. The result is returned in radians in the floating-point accumulator.
+
+\subsubsection*{LOGARITHM AND EXPONENTIAL FUNCTION}
+Load the independent variable \texttt{X} into the floating-point accumulator and execute the appropriate pseudo-instruction (\texttt{N0000} for $log_e$ and \texttt{H0000} for $e^x$); the resulting value is returned in the floating-point accumulator.
+
+\subsubsection*{SQUARE ROOT}
+This subroutine, which is included in the interpreter system, calculates the square root of the number in the floating-point accumulator and returns it there.
+
+\bigskip
+\hrule
+\bigskip
+
+\subsection*{8. OPERATION}
+Input is floating-point numbers loaded from tape or in memory, or from numbers in the pseudo-registers from previous operations.
+
+\subsubsection*{Running the interpreter}
+Entry to the interpreter is via a subroutine call using an \texttt{R}/\texttt{U} sequence. Similar to the Floating-point Interpreter I,
+the \texttt{R} instruction sets the address portion of a \texttt{B} instruction at $L_0$, which in this case acts as an executable pointer back
+to the pseudo-instructions inline after the \texttt{U}. The interpreter extracts the address of the code to be interpreted from this \texttt{B}
+instruction. It does \emph{not} set a return address, but instead uses the \texttt{E0000} instruction to detect the end of the interpreted
+pseudo-instructions, and branches back to the (fixed-point) instruction following the end of the floating-point code.
+
+\begin{tabular}{llll}
+$\alpha$             & R                    & $L_0$            &; Store starting address of floating-point instructions. \\
+$\alpha+1$           & U                    & $L_0$            &; Entry into the interpreter system. \\
+$\alpha+2$           & \multicolumn{2}{l}{\dots}               &; Floating-point instructions. \\
+$\alpha+3$           & \multicolumn{2}{l}{\dots}               &; \\
+$\alpha+n$           & E                    & 0000             &; Exit from the interpreter system.\\
+$\alpha+n+1$         & \multicolumn{2}{l}{\dots}               &; Resume fixed-point instructions. \\
+\end{tabular} 
+
+\subsubsection*{Memory Requirements}
+If the starting address of H1-11.1 is defined as $L_0$, then the routines on this tape must be loaded as follows (using the corresponding input and modifier key words).
+
+\begin{center}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Program} & \textbf{Input key word} & \textbf{Modifier key word} & \textbf{Memory required} \\
+\midrule Interpreter system & $L_0$      &   & 11 tracks \\
+Data input           & $L_0+1100$ & $L_0$ & 6 tracks \\
+Data output          & $L_0+1700$ & $L_0$ & 4 tracks \\
+Sine - Cosine        & $L_0+2100$ & $L_0$ & 2 tracks \\
+Arctangent           & $L_0+2300$ & $L_0$ & 83 sectors \\
+Logarithm            & $L_0+2419$ & $L_0$ & 45 sectors \\
+Exponential function & $L_0+2500$ & $L_0$ & 2 tracks \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Scratch Storage} --- The program uses cells 6300 to 6363 as working storage.
+
+\subsubsection*{Program Stops}
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Memory Location} & \textbf{Meaning} & \textbf{Remedy / Action} \\
+\midrule
+$L_0+0947$ & \parbox[t]{5cm}{Negative argument for square root} & \parbox[t]{4cm}{Press \textsf{START}. The psuedo-instruction exits with the original argument in the accumulator.} \\
+\midrule
+$L_0+0312$ & \parbox[t]{5cm}{Exponent 333 for Hold or Clear} & \parbox[t]{4cm}{Press \textsf{START}. Hold or Clear pseudo-instructions are bypassed.} \\
+\midrule
+$L_0+0710$ & \parbox[t]{5cm}{Division by zero or non-floated number} & Execution cannot continue. \\
+\midrule
+$L_0+1808$ & \parbox[t]{5cm}{Exponent > 99 during data input} & \parbox[t]{4cm}{Press \textsf{START}. The Flexowriter tabs to the next stop without printing, and the code exits to the core interpreter.} \\
+\midrule
+$L_0+2100$ & \parbox[t]{5cm}{Argument for $sin$/$cos \ge 2^26$} & \parbox[t]{4cm}{Press \textsf{START}. The \texttt{S0000} or \texttt{C0000} operation is skipped.} \\
+\midrule
+$L_0+2426$ & \parbox[t]{5cm}{Argument for $\log_e X \le 0$} & \parbox[t]{4cm}{Press \textsf{START}. The pseudo-instruction returns zero and control returns to the main program.} \\
+\midrule
+$L_0+2629$ & \parbox[t]{5cm}{Argument for $e^X \ge 128$} & \parbox[t]{4cm}{Press \textsf{START}. The pseudo-instruction is skipped.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Program Control Switches}
+The \textsf{PS-16} switch on the console can be used as a ``breakpoint'' facility to halt execution at selected points.
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Console Switch} & \textbf{Setting} & \textbf{Action} \\
+\midrule
+\textsf{PS-16} & \textbf{ON}  & Execution stops at \texttt{Z0000} instructions. \\
+               & \textbf{OFF} & Execution continues past \texttt{Z0000} instructions. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Precision and Accuracy}
+\begin{itemize}
+	\item \textbf{Sine-Cosine:} Maximum error is $5 \times 10^{-8}$.
+	\item \textbf{Data Output:} The maximum error is limited to:
+	\begin{itemize}
+		\item $1$ unit in the last decimal place of the mantissa if $\text{EXP}_{10} \le 30$.
+		\item $5$ units in the last decimal place of the mantissa if $\text{EXP}_{10} \le 99$.
+	\end{itemize}
+\end{itemize}
+
+\textbf{Translator's note:} To print a floating-point number, the data output routine has to convert a binary exponent ($2^x$) into a decimal exponent ($10^y$). Mathematically, this requires multiplying or dividing the mantissa by powers of 10 (or powers of $\log_{10}(2)$) until the binary scaling is cleared out.
+\begin{enumerate}
+	\item For $\le 30$: For these exponents, the conversion can be done using exact or very tightly bounded multiplication factors that fit cleanly within a single or double-word of 31-bit precision. The rounding error is kept to a minimum of 1 unit in the last place.
+	\item For $> 30$: For very large numbers (up to $10^{99}$), the output routine has to repeatedly multiply by large powers of 10. Because of the LGP-21's 31-bit word size, the intermediate multiplication constants themselves have to be rounded to fit. As the algorithm repeatedly loops and multiplies to scale down large exponents, the rounding errors in these constants also multiply.
+\end{enumerate}
+
+By the time the conversion routine finishes working through a number like $10^{95}$, the accumulated rounding error corrupts the bottom bits of the mantissa, producing an output that could be off by up to 5 units in the 7th decimal digit.
+
+\section*{Notes}
+
+\begin{enumerate}
+\item A program can exit H1-11.1 interpreter mode and return to it without the contents of the pseudo-registers being lost.
+\item The starting address of the system should be at sector 00 of a track. Otherwise, many of the addresses that refer to track 63 are not optimal.
+\item It's good practice to load the entirety of H1-11.1, and to then punch out the individual sub-libraries by means of J4-10.2 or J4-10.3. This enables you to load only the parts that you require using J1-10.0 or by means of J5-10.0. This allows you to verify checksums on load.
+\item Instructions with zero addresses do not actually refer to location 0000, but are used to indicate special pseudo-instructions. The interpreter has 14 pseudo-instructions with zero addresses, plus the two special shift instructions \texttt{D000y} and \texttt{M000y}. These instructions set their address part to values from 0001 to 0009, meaning that the division and normal multiplication instructions must not use these addresses in interpreter mode.
+\end{enumerate}
+
+\begin{tabular}{lp{8cm}}
+	\textbf{INSTRUCTION} & \textbf{RESULT, IF ADDRESS XXXX $\ne$ 0} \\
+	\midrule
+	\texttt{Z} & (Address reg.) $-$ (\texttt{XXXX}) $= 0$? yes $\rightarrow$ skip next instruction; no $\rightarrow$ do not skip \\
+	\texttt{B} & (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+	\texttt{Y} & (Address reg.) $\rightarrow$ address part of (\texttt{XXXX}) \\
+	\texttt{R} & Address of R plus 2 $\rightarrow$ address part of (\texttt{XXXX}) \\
+	\texttt{I} & (Address reg.) $+$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+	\texttt{D} & (Accumulator) $/$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+	\texttt{N} & (M Reg.) $\times$ (\texttt{XXXX}) $+$ (Accumulator) $\rightarrow$ (Accumulator) \\
+	\texttt{M} & (M Reg.) $\times$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+	\texttt{P} & (\texttt{XXXX}) $\rightarrow$ (M Reg.) \\
+	\texttt{E} & Address part of (\texttt{XXXX}) $\rightarrow$ address part of the (Accumulator) \\
+	\texttt{U} & Take next instruction from \texttt{XXXX} \\
+	\texttt{T} & Jump if (Accumulator) is negative \\
+	\texttt{-T} & Jump if (Accumulator) is negative or if PST is turned on \\
+	\texttt{H} & (Accumulator) $\rightarrow$ (\texttt{XXXX}) \\
+	\texttt{C} & (Accumulator) $\rightarrow$ (\texttt{XXXX}); 0 $\rightarrow$ (Accumulator) \\
+	\texttt{A} & (Accumulator) $+$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+	\texttt{S} & (Accumulator) $-$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
+\end{tabular}
+
+\vspace{0.5cm}
+
+\begin{tabular}{lp{8cm}}
+	\textbf{INSTRUCTION} & \textbf{RESULT, IF ADDRESS = 0 *} \\
+	\midrule
+	\texttt{Z} & Stop (PS-16); continue calculating after \textsf{START} is pressed \\
+	\texttt{B} & Make (Accumulator) positive \\
+	\texttt{Y} & Form complement of the (Accumulator) \\
+	\texttt{R} & $\sqrt{\texttt{(Accumulator)}} \rightarrow$ (Accumulator) \\
+	\texttt{I} & Input of floating-point data \\
+	\texttt{D} & (Accumulator) $/ 2^y \rightarrow$ (Accumulator) [address is not 0000, but 0001 to 0009] \\
+	\texttt{N} & $\text{Log}_e$ (Accumulator) $\rightarrow$ (Accumulator) \\
+	\texttt{M} & (Accumulator) $\times 2^y \rightarrow$ (Accumulator) [address is not 0000, but 0001 to 0009] \\
+	\texttt{P} & Print (Accumulator) \\
+	\texttt{E} & Exit interpreter mode \\
+	\texttt{U} & Swap (Accumulator) and (M Reg.) \\
+	\texttt{T} & Make (Accumulator) negative \\
+	\texttt{-T} & Jump if (Accumulator) is negative or if \textsf{PST} switch is on \\
+	\texttt{H} & $e^{\text{(Accumulator)}} \rightarrow$ (Accumulator) \\
+	\texttt{C} & Cosine (Accumulator) $\rightarrow$ (Accumulator) \\
+	\texttt{A} & Arctangent (Accumulator) $\rightarrow$ (Accumulator) \\
+	\texttt{S} & Sine (Accumulator) $\rightarrow$ (Accumulator) \\
+\end{tabular}
+
+\noindent
+\subsubsection{Coding sheet for Horner's Method example}
+[\textbf{Translator's note:} This coding example and its data are simply oddly bunged on to the end of the chapter; best guess is that someone wanted a coding example of how to use the interpreter, and someone threw together a quick demo.]
+
+\begin{tabular}{|p{0.18\textwidth}|c|p{0.10\textwidth}|p{0.18\textwidth}|c|p{0.18\textwidth}|p{0.28\textwidth}|}
+	\hline
+	\textbf{Input} & \textbf{S} & \textbf{Loc.} & \textbf{Opcode} & \textbf{S} & \textbf{Address} & \textbf{Comments} \\
+	\textbf{keyword} & \textbf{T} & & \textbf{\& Addr.} & \textbf{T} & \textbf{Contents} & \\
+	& \textbf{O} & & & \textbf{O} & & \\
+	& \textbf{P} & & & \textbf{P} & & \\
+	\hline
+    ;0004200 & ' & & & & & Word counter to Track 04, Sector 00. \\
+	/0004200 & ' & & & & & Origin to Track 04, Sector 00. \\
+		      & & 00 & xR 1400 & ' & & Set interpreted section pointer in interpreter\\
+		      & & 01 & xU 1400 & ' & & Begin interpreting floating-point code \\
+		      & & 02 & xI 0000 & ' & & Read coefficients from Flexowriter (see below)\\
+		      & & 03 &  E 0018 & ' & 4306 & Set starting \\
+		      & & 04 &  Y 0006 & ' & 4306 & address \\
+		      & & 05 &  B 0013 & ' & Zero & \\
+		      & & 06 &  A [    ] & ' & $a_n$ & This address will be overwritten \\
+		      & & 07 & xL 0002 & ' & $a(4306+2n)$ & Increment address \\
+		      & & 08 &  Y 0006 & ' & $a(4306+2n)$ & register by 2 \\
+		      & & 09 & xZ 4316 & ' & & Check for completion \\
+		      & & 10 &  U 0015 & ' & & Not finished \\
+		      & & 11 & xP 0000 & ' & & Print result before exit \\
+			  & & 12 & xE 0000 & ' & & Exit interpreter \\
+			  & & 13 & xZ 0000 & ' & & Stop machine (fixed-point opcode) \\
+			  & & 14 &  U 0000 & ' & & Swap accumulator into instruction counter \\
+			  & & 15 & xU 0000 & ' & & Swap Accu. / M. Reg. \\
+			  & & 16 & xM 4304 & ' & & Multipl. by $x$ \\
+			  & & 17 &  U 0006 & ' & & Return for next term \\
+			  & & 18 & xZ 4306 & ' & & Initial coefficient \\
+			  000XXXX & & 19 & & ' & & \\
+		\hline
+\end{tabular}
+
+\subsection*{Data input sheet for Horner's Method input}
+\begin{center}
+\small
+\ttfamily
+\begin{tabular}{|c|r|c|c|c|c|c|c|c|c|c|c|}
+	\hline
+	& \textbf{INPUT CONTROL WORD} & \textbf{S} & \multicolumn{4}{c|}{\textbf{SIGNED DECIMAL NUMBERS}} &   & \textbf{S}\\
+	& (Starting Address)          & \textbf{T} &         & Part 1 & ' & Part 2                        &   & \textbf{T}\\
+	&                              & \textbf{O} &   & $d_1d_2\dots d_7$ & & $d_8d_9$         &$e_1e_2$   & \textbf{O}\\
+	&                              & \textbf{P} &   &        &   &                                    &   & \textbf{P}\\
+	\hline
+	1 & 4304                       &'&   & 1090000 & ' & 00~+ & 09           & ' \\
+	2 &                            & &   & 0120000 & ' & 00~- & 09           & ' \\
+	3 &                            & &   & 0340000 & ' & 00~- & 09           & ' \\
+	3 &                            & &   & 0560000 & ' & 00~- & 09           & ' \\
+	3 &                            & &   & 0780000 & ' & 00~- & 09           & ' \\
+	3 &                            & &   & 0900000 & ' & 00~- & 09           & '\\
+	9 &                            &'&   &         &   &                     &  & '\\
+	\hline
+\end{tabular}
+\end{center}
+
+\section*{Translator's Notes}
+\subsection*{Why do we have \emph{two} floating point packages?}
+Modern programmers would look at this documentation and immediately start trying to figure out how to get rid of one of these two packages. Why would anyone want, or need, two separate floating point packages?
+
+The following is speculation, based off the architectures of the two interpreters and years of experience with human nature, so take it with a grain of salt. If we ever have a real LGP-21 programmer around to ask, who actually \emph{used} both, we can nail it down for sure. But having said that, it appears that there two different floating-point interpreters because there were two different audiences who needed floating point.
+
+The first set of users would be people who are familiar with the LGP-21 and the fixed-point frctional architecture; who are comfortable thinking about numbers in terms of $q$ and who have relatively lightweight requirements for floating-point operations. They will be writing code mostly in LGP-21 native mode, and occasionally dropping into floating point for a few calculations. Basic I/O of floating point works fine for them. Interpreter 1 is their choice.
+
+The second set of users are primarily engineers, mathematicians, scientists...anyone whose native way of thinking about math is ``things you do with real numbers''. They want an instruction set that natively Does The Thing, using floating point numbers. Power-of-10 scaling makes perfect sense to them, but bit-twiddling and screwing around with representation is a distraction from the work they need to get done. Their attitude is effectively: \emph{``I just want to work with actual numbers. These fixed-point fractions are too weird.''}
+
+There are tradeoffs; we can see some of them from the descriptions of the two interpreters:
+\begin{itemize} 
+	\item Interpreter 2 has a pad word following each mantissa-exponent pair, interpreter 1 doesn't. Is this because the all-float interpreter 2 runs \emph{slower} than the limited interpreter 1? Or is it a brilliant speed hack that makes it run \emph{faster}? 
+	\item Code written for interpreter 1 is \emph{probably} faster, up to a point, but after the ratio of fixed-point to floating-point operations tilts far enough toward floating-point, the overhead to move in and out of floating-point mode and the overhead to move \emph{data} in and out will eventually make the interpreter 1 program larger than the same program written for interpreter 2, which doesn't have the mode-switch overhead, and eventually \emph{may} make it slower.
+	\item An Interpreter 2 program may be slower than an Interpreter 1 program, but it is likely to be \emph{smaller} because the mode-switch overhead is no longer needed.
+\end{itemize}
+
+We won't know for sure until we find a programmer who used both, or two programmers who have had a 50-plus year argument about which is better.
+
+\subsection*{Why interpreters?}
+A modern programmer's second thought is ``why are the LGP-21's floating point implementations \emph{interpreters?}'' Couldn't we just write some nice libraries and call it a day?
+
+On a more modern machine with a stack or other good support for subroutine calls, sure. (We'll pretend it doesn't have native floating point.) Let's say we're doing \texttt{fmul(fadd(a,b),fadd(c+d))}. We'd put a on the stack, call the conversion routine, push b on the stack, convert it, call the float-add function, put c on, convert, put d on, convert, call float-add, call float-multiply, done!
+
+On the LGP-21, there are \emph{so many} more operations. We have no stack, so everything has to go in temporary storage. We can't hold a two-word (mantissa and exponent) number in the regular accumulator, so we'll have to do something like this\footnote{This is only the instructions needed to set up to \emph{do} the operations; we're skipping the actual functions and the wiring necessary to do things like set up return addresses, find arguments, etc. Those are assumed to be library overhead and not something the caller codes...but that overhead exists too.}:
+
+\begin{tabular}{lll}
+	\textbf{Operation} & \textbf{Estimated} & \textbf{Description} \\
+	                   & \textbf{instructions} & \\
+	\texttt{fread(a)} & 3 & read value for \texttt{a} \\
+	\texttt{fread(b)} & 3 & read value for \texttt{b} \\
+	\texttt{fread(c)} & 3 & read value for \texttt{c} \\
+	\texttt{fread(d)} & 3 & read value for \texttt{d} \\
+    \texttt{fadd(a, b, t1)} & 3 & \texttt{a + b} to \texttt{t3}\\
+    \texttt{fadd(c, d, t2)} & 3 & \texttt{c + d} to \texttt{t4}\\
+	\texttt{fmul(t1, t2, t1)} & 3 & Final result in \texttt{t1}\\
+	\texttt{print(t1)} & 3 & Print it	\\
+\end{tabular}
+
+Assuming that we can use a \texttt{B}/\texttt{R}/\texttt{U} calling sequence for each of these operations, that's 24 instructions to evaluate the expression; 4 words to store the values of \texttt{a}, \texttt{b}, \texttt{c}, and \texttt{d} that we read; and 6 for temp storage \texttt{t1}, \texttt{t2}, and \texttt{t3}; a total of 34 words. If we use an interpreter that ``natively'' understands floating point, we can do this:
+
+\begin{tabular}{llll}
+$\alpha$             & R                    & $L_0$            &\texttt{; Start of interpreter} \\
+$\alpha+1$           & U                    & $L_0$            &\texttt{; Entry into the interpreter system} \\
+$\alpha+2$           & I                    & 0000			   &\texttt{; read a, b, c, d as float} \\
+$\alpha+2$           & B                    & \texttt{a}        &\texttt{; Load a} \\
+$\alpha+3$           & A                    & \texttt{b}        &\texttt{; Add b} \\
+$\alpha+4$           & H                    & \texttt{t1}     &\texttt{; Store result in t1} \\
+$\alpha+5$           & B                    & \texttt{c}        &\texttt{; Load c}  \\
+$\alpha+6$           & A                    & \texttt{d}        &\texttt{; Add d} \\
+$\alpha+7$           & H                    & \texttt{t2}     &\texttt{; Store result in t2} \\
+$\alpha+8$           & B                    & \texttt{t1}        &\texttt{; Load t1} \\
+$\alpha+9$           & A                    & \texttt{t2}        &\texttt{; Multiply t2} \\
+$\alpha+10$          & P                    & 0000             &\texttt{; Print result} \\
+$\alpha+11$          & E                    & 0000             &\texttt{; Exit from the interpreter}\\
+$\alpha+n+1$         & \multicolumn{2}{l}{\dots}               &\texttt{; Resume fixed-point} \\                 
+\end{tabular}
+
+To execute the exact same set of operations, the interpreter version only takes\emph{12} (pseudo) instructions plus 10 words to store 5 floating-point numbers, 22 total, and is much simpler to understand. Fitting your program into much less storage is a serious consideration on a machine with only 4K words, especially since you'll be giving up memory to your libraries or your interpreter. (Interestingly, it should be noted that for Interpreter 2, the floating-point library functions are \emph{smaller} than the corresponding fixed-point fractional ones.)
+\subsubsection*{Coding example for Interpreter 2}
+This is a far better example of using all of the facilities of Interpreter 2 than the very simple comparison program above.
+
+The Interpreter 2 Horner's Method example shows how a program would have been coded on an LGP-21 coding sheet, and then fed to one of the program loaders in \ref{sec:program-loaders} to make it resident in memory.
+
+The program as designed is set up to allow the user to run the program, enter a set of exactly 5 coefficients (we're not up to handling dynamic loops here), and have them multiplied out:
+$$f(x) = a_4x^4 + a_3x^3 + a_2x^2 + a_1x + a_0$$
+\subsubsection*{Reading an LGP-21 coding sheet}
+We've elected to keep the coding sheet for this particular example instead of writing out assembler code because it's useful to see how an LGP-21 program was coded by hand.
+Note that the locations start at 00 and go up; these line numbers act as ``virtual'' memory addresses, and can be referred to by other instructions by number, very much like a BASIC program. Instead of a \texttt{GOTO 200}, you have a \texttt{U 0015} to branch to the instruction on line 15.
+
+The instructions with a leading \texttt{x} are \emph{non-relocated}; their addresses are not modified when the program is loaded. For example, lines 0 and 1 set up Interpreter 2 by saving the address of the instruction 2 on from line 0 into the interpreter itself, at the fixed address 1400. Additionally, the interpreter's special \texttt{I} and \texttt{P} instructions, to read and write data, have to have an address field of exactly 0000 to work properly, so those instructions are also marked as non-relocatable.
+
+These two items together are key to understanding how the program works. A more modern\footnote{Or at least as modern as you're going to get for a computer built in 1963} assembler would have had labels for the line-number branches that the coding sheet uses, but would still emit assembled code that looks more like the coding sheet than anything else.
+\subsubsection*{How the Horner's Method coding sheet and data input sheet would have been used}
+To actually execute this on the LGP-21, an operator would have gone through the following sequence:
+\begin{enumerate}
+	\item Power on the LGP-21 and ensure the Loader Utility Program is resident in memory. Load it if not.
+	\item Sit down at the Flexowriter and type out the coding sheet to produce a physical paper tape punched with the instruction bits and carriage-return stop codes (').
+	\item Take the finished source tape, walk over to the LGP-21 console, and feed it into the paper tape reader.
+	\item Set the console switches to execute the resident loader, and sets the input device to the paper tape reader, then tells the loader to load the tape.
+	\item The loader starts the tape and reads the initial tape headers (;0004200 and /0004200), targets Track 04 Sector 00, and begins shifting the relative instruction addresses to match their new home on the drum.
+	\item Once the program tape finishes loading, the operator removes it and inserts a Data Tape containing the actual floating-point numbers for $x$ and the polynomial coefficients
+	\item The operator clears the manual controls and presses \textsf{START} on the physical control panel.
+	\item The computer starts executing the program, which starts Interpreter 2, pauses at Line 02 (xI 0000), readss in the data values from the data tape, and immediately begins crunching the numbers through the self-modifying loop.
+	\item The interpreter finishes the math, commands the Flexowriter to type out the final evaluation result on paper (\texttt{xP 0000}), drops out of interpretive mode, and triggers a hard system stop via Line 13 (\texttt{xZ 0000}).
+	\item If the operator wants to clear the current run and evaluate a completely fresh data tape using the same polynomial structure, they simply hit \textsf{START} again. The machine executes Line 14 (\textsf{U 0000}), which immediately vectors execution right back to the beginning of the program loop (relative line 0) to read the next input tape of $x$ and the coefficients. 
+\end{enumerate}
 \newpage
