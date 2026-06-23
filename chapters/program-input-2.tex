@@ -1,6 +1,10 @@
 \subsection{Program Loader 2}
-\subsubsection{PURPOSE}
-Program J1-10.1 is an interactive programiming monitor. Similar to J1-10.0, it accepts relocatable decimal programs, hexadecimal words, and alphanumeric words. It also reads non-relocatable hexadecimal programs, calculates checksums, and compares them with the checksums on the hexadecimal tape. Furthermore, this program can be used to load memory contents into the accumulator; commands can be executed directly without being stored; and it allows for manual branching (jumping).
+\subsubsection*{J1-10.1}
+\label{sec:interactive-monitor}
+\subsubsection*{PURPOSE}
+Program J1-10.1 is a general-purpose memory loader and monitor utility, hereafter referred to a GPMon. It accepts arbitrarily relocatable decimal programs, hexadecimal words, and alphanumeric words. It can also read non-relocatable hexadecimal programs, calculate checksums, and verify them against the checksums on the hexadecimal tape. 
+
+Additionally, this program can load memory contents directly into the accumulator, execute instructions directly without storing them in memory, and perform manual program jumps.
 
 \subsubsection*{Memory usage}
 \begin{center}
@@ -12,139 +16,142 @@ Program J1-10.1 is an interactive programiming monitor. Similar to J1-10.0, it a
 \end{tabular}
 \end{center}
 
-The inputted pieces of information are keywords that indicate to the program:
-a) the format of the words that follow, b) the words that are to be stored, c) the words that are to be executed immediately.
+\subsubsection*{COMMANDS}
+GPMon commands dictate how the utility processes incoming tape data; they are used to:
+\begin{enumerate}[a]
+\item set the format for subsequent data words,
+\item store specific words into memory, or
+\item execute instructions immediately in the accumulator.
+\end{enumerate}
 
-These input keywords, and the formats of the words that follow them, are discussed on the following pages. (Please note that for each stop code (') specified in the description, START COMP [Start Computer] must be pressed if the input is being entered via the typewriter keyboard.)
+These input commands, and the formats of the words that follow them, are discussed on the following pages. (Please note that if you are entering GPMon commands from the keyboard, you must type the command followed by a stop code (\texttt{'}) to mark the end of the input, and then press \textsf{START} to execute it.)
+\begin{itemize}
+	
+\item \texttt{;000TTSS'}: Start Fill 
+The Start Fill command sets the starting address \texttt{TTSS} for a series of words to be stored. This value is kept in the ``fill counter'' —- a word within the GPMon program -- and designates which cell will receive the next word. The counter is incremented every time a word other than a keyword is successfully read and stored.
 
-;000TTSS' Fill Keyword (Start Fill)
-The fill keyword indicates the starting address TTSS for a series of information to be stored. This value is kept in the ``fill counter'' —- a memory cell within the subroutine—and indicates into which cell the next word is to be stored. The counter is incremented every time a word (not a keyword) is read and stored.
+The words to be read in may be instructions, hexadecimal words, alphanumeric words. Words are stored into consecutive locations until input ends or another fill keyword appears. The \texttt{TTSS} address must be in decimal track/sector notation, followed by a stop code. Any physical address in memory can be used. For example, the keyword ;0001600' causes fill tp start at address 1600.
 
-The words to be read in can be in instruction form, as hexadecimal words, or as alphanumeric words. The words are placed into consecutive memory cells until inputting is finished or until another fill keyword appears. The start-fill address must be in decimal track/sector notation, followed by a stop code. Any real address can be used. For example, the keyword ;0001600' causes the subsequent information to be stored in consecutive cells, beginning in 1600.
-
-ØTTSS' Instruction
-The subroutine recognizes an instruction by zeros in bit positions 0 to 3, or in the case of negative instructions, by a ``1'' in the sign position and zeros in bit positions 1 to 3. The instruction consists of the alphabetical command symbol Ø, followed by the operand address TTSS.
+\item \texttt{[\textit{prefix}]$\emptyset$TTSS'} Instruction Input
+The parsing subroutine identifies a word as an instruction by inspecting its leading bits. A valid instruction must contain zeros in bit positions 1 through 3; bit 0 acts as the sign bit with a \texttt{0} for standard instructions or a \texttt{1} for negative instructions. When this bit pattern is recognized, the word is interpreted as an instruction consisting of an alphabetical command mnemonic (here represented by $\emptyset$) followed by a four-digit decimal operand address ($TTSS$)\footnote{Refer to the \textit{LGP-21 Reference Manual}\cite{lgp21referencemanual} for the defined instruction mnemonics.}.
 
 If the accumulator is cleared prior to input, leading zeros (those preceding the instruction) may be omitted. The entire instruction is converted into its binary equivalent and stored in the cell specified by the fill counter.
 
-[translator notes: Technical Context and LGP-21 Word Structure
-This passage gives an excellent look into the internal architecture and machine word layout of the LGP-21:
+An optional prefix may be added to indicate that instructions are negative, non-relocatable, or both.
+\begin{tabular}{ll}
+	(no prefix) & Positive, relocatable instruction\\
+	\texttt{800} & Negative, relocatable instruction\\
+	\texttt{X} & Positive, non-relocatable instruction\\
+	\texttt{80X} & Negative, non-relocatable instruction\\
+\end{tabular}
+\noindent
+Non-relocatable instructions will be stored exactly as given and their address field will not be adjusted by the address modifier.
 
-Bit Positions 0–3: In a standard 32-bit word on the LGP-21, the highest-order bits are used to determine the type of word being parsed. By checking for zeros here, the monitor dynamically distinguishes a raw machine instruction from a data word or a keyword macro without needing explicit prefixes.
+\item \textt{/000TTSS'} Set Address Modifier
+This command sets GPMon's internal address modifier to the decimal \texttt{TTSS} value specified.
 
-Sign Bit ("1" in the sign position): Negative instructions (often used for specific accumulator logic or inverted arithmetic operations) utilize the standard sign bit position while keeping the rest of the operational identifier bits clean so the parser can still route the address correctly.]
+The modifier value is added to the operand address of all subsequent instruction words, unless the instruction is preceded by an \texttt{X}.
 
-/000TTSS' Modifier
-The address portion (TTSS) of this keyword is stored within the subroutine in the cell designated for the modifier.
+The modifier remains in effect until it is changed by another Set Address Modifier command. The modified may be set to any real address in decimal track/sector notation, followed by a stop code.
 
-The modifier (i.e., the contents of this cell) is added to the operand address of all sequentially read instruction words, with the exception of instructions preceded by an ``X''.
+Example: the keyword \texttt{/0001100'} sets the address modifier value to 1100. This value is added to the address field of all subsequent instructions that are not preceded by an ``X'':
 
-The modifier remains effective until it is replaced by another modifier keyword. Any real address in decimal track/sector notation can be used and must be followed by a stop code.
+\begin{tabular}{rl}
+Instruction Read   Instruction Stored
+\texttt{B2611'} &   \texttt{B3711}\\
+\texttt{XB2611'} &  \texttt{B2611}\\
+\texttt{800Z0400'} & \texttt{800Z1500}\\
+\texttt{80XZ0400'} & \texttt{800Z0400}\\
+\end{tabular}
 
-For example, the keyword /0001100' stores the value 1100 in the modifier cell. 1100 is then added to the address of all subsequent instructions that are not preceded by an ``X'':
+\item \texttt{.000TTSS'} Stop and Jump
 
-Instructions Read   Instructions Stored
-B2611'              B3711
-XB2611'             B2611
-800Z0400'           800Z1500
-80XZ0400'           800Z0400
+When this command is entered, the computer stops execution and sets the program counter to {TTSS}. If \texttt{PS-32} is \textsf{OFF}, the computer halts. Pressing \textsf{START} resumes execution at \texttt{TTSS}. If \textsf{PS-32} is \textsf{ON}, the computer jumps to location \texttt{TTSS} and continues execution immediately.
 
+Example: the keyword \texttt{.0002000'} with \textsf{PS-32 OFF} causes the computer to halt; when the \textsf{START} button is pressed, a jump to 2000 occurs and execution continues from there.
 
-.000TTSS' Stop and Jump
+\item \texttt{+[\textit{prefix}]$\emptyset$TTSS'} Direct Execute
+This keyword enables the programmer to have the computer execute an instruction directly. The instruction $\emptyset$\texttt{TTSS} contained within the keyword (where $\emptyset$ represents a valid opcode symbol and \texttt{TTSS} is any real address in decimal track/sector notation) is executed following the entry of a hexadecimal word and/or a stopcode.
+The second hexadecimal word is loaded into the accumulator.
 
-This keyword is executed in two steps. First, the computer halts. Then, after pressing the START button once, a jump to TTSS occurs. Any real address in decimal track/sector notation can be used. Every keyword must be followed by a stop code. If PS-32 is pressed (turned ON) before the keyword is entered, the halt is suppressed, and execution continues after the jump.
+The address portion of the command entered is \emph{not} modified by the address modifier; nor is any hexadecimal word entered as a secondary word. All keywords and additional hexadecimal words must be followed by a stopcode. Leading zeros in the hexadecimal word may be omitted.
 
-For example, the keyword .0002000' causes the computer to halt; after a start signal, a jump to 2000 occurs and execution continues from there.
+The Direct Execute command allows you to immediately execute a command without writing it to memory.
 
-+000TTSS' Direct Command (Direktbefehl)
-This keyword enables the programmer to have the computer execute an instruction directly. The instruction ØTTSS contained within the keyword (where Ø represents a command symbol and TTSS is any real address in decimal track/sector notation) is executed following the entry of a hexadecimal word and/or a stop code. That is, it executes either following the entry of the hexadecimal word to which the keyword refers, or simply following the entry of a stop code if no hexadecimal word is required.
+For example, is we wished to execute an \texttt{H} command to store the hexadecimal word \texttt{73W08} into location 1637, the command sequence \texttt{+00H1637'73W08'} causes the value \texttt{00073W08} to be stored in cell 1637. As a second example, the command \texttt{+00U1735''} (note the two stopcodes to indicate ``no second word'') causes a jump to 1735.
 
-The address portion of the command keyword is not modified; likewise, any hexadecimal word entered afterward is not modified. Every keyword and every hexadecimal word must be followed by a stop code. Leading zeros in the hexadecimal word may be omitted.
+The keyword for the direct command does not alter the fill counter; any subsequent fill continues from the last fill location.
 
-[translator notes: This command highlights just how powerful J1-10.1 is as an interactive machine monitor. The +000TTSS' keyword essentially acts as a dynamic ``execute single instruction'' vector:
+\item \texttt{,00000NN'} Store Hexadecimal Words
+This command causes the following \texttt{NN} words to be stored as hexadecimal words in consecutive memory cells according to the current state of the fill counter. NN must be less than 64. The words to be stored must be in hexadecimal format and are not modified.
 
-Immediate Execution Without Drum Overhead: You can force the CPU to execute a command right out of the input buffer without having to write it to a track on the drum first.
+For example, \texttt{;0002200',0000003',3W7'140Q''}\footnote{This example string features three consecutive inputs after setting the fill address to 2200: 3W7', 140Q', and a final empty input before the last stop code. Because leading zeros can be dropped and a solo stop code represents zero, the monitor correctly shifts and pads them into full 32-bit words, parsing \texttt{''} correctly as zero, and clearing location 2202 to all zeroes.} causes the memory to look like this after entry:
 
-Hexadecimal Word Injection: If the instruction requires an operand value in the accumulator to work with (such as an add, load, or store instruction), you can type a raw hex data word right after the keyword. The monitor streams that data into the accumulator first, and then immediately fires the command.
+\begin{tabular}{rl}
+2200 & \texttt{000003W7}\\
+2201 & \texttt{0000140Q}\\
+2202 & \texttt{00000000}\\
+\end{tabular}
+\noindent
+A hexadecimal word may contain a maximum of eight characters. Any combination of the characters $0,1,\dots,9$ and \texttt{F,G,J,K,Q,W} may be used; \texttt{00000000} is the smallest value and \texttt{WWWWWWWW} is the largest value the computer can accept. If a word is zero, only a stop code is required. Leading zeros may be omitted; every word must be followed by a stop code.
 
-Bypassing Modification: Because this is intended for manual console debugging and testing, the routine safely bypasses the standard relocation modifier register. This ensures that what you type is exactly what gets executed, with no unexpected address translation.]
+\item \texttt{VNNCHHHH'} Checksummed Hexadecimal Fill
 
-For example, the direct command +00H1637' followed by the hexadecimal word 73W08' causes the value 00073W08 to be stored in cell 1637; the word +00U1735'' causes a jump to 1735.
+This keyword causes the following \texttt{NN} hexadecimal words to be stored in consecutive locations, beginning with \text{HHHH} (a Start Fill command is not required to begin filling memory). The \texttt{C} is a clear instruction [sic]\footnote{it is not at all obvious \emph{what} we are clearing; may need to run this in the simulator, snapshot memory, and compare before/after dumps to see whether this actually clears a memory location, or if it is a hijacked \texttt{C} instruction}. This keyword uses hexadecimal notation and is normally generated by a hexadecimal output program, where it is found at the beginning of a block of 64 (or fewer) hexadecimal words.
 
-Note
-The keyword for the direct command does not alter the fill counter.
+During input, a checksum is computed from the keyword and the following \text{NN} hexadecimal words. Once all \text{NN} words are stored, the program checks the \textsf{PST} switch. if it is \textsf{OFF}, the computed checksum is compared with the tape checksum word following the final word. If they are equal, reading continues; if they are unequal, an error stop occurs. See under ``Error Stops.'' If \textsf{PST} is \textsf{ON}, the checksum comparison is skipped.
 
-[translator notes: This is a phenomenal look at the classic LGP-21 / LGP-30 machine language syntax, specifically regarding its opcodes and the unique hexadecimal character set:
+For example, the keyword \texttt{V1WC2W00'} causes the next $1W_{16} = 31_{10}$ hexadecimal words to be stored, beginning in location $2W00_{16} = 4700_{10}$.
 
-H for Hold and Store: In the first example, H is the command symbol for ``Hold and Store'' (storing the contents of the accumulator into a memory location without clearing the accumulator). You poke the hex data word 73W08' into the typewriter, it loads into the accumulator, and the direct instruction H1637 immediately dumps it into memory address 1637.
+\item \texttt{A00000NN'} Alphanumeric Word Fill
 
-U for Unconditional Transfer: In the second example, U is the command symbol for an ``Unconditional Transfer'' (a standard jump instruction). Notice the trailing double stop code ('') in the manual text: +00U1735''. The first tick mark closes out the keyword word entry, and the second tick mark serves as the trailing stop code executing the immediate action since no secondary hexadecimal data word was required.
+This keyword permits the entry of alphanumeric information in a 6-bit format\footnote{See table 3 in the \textit{LGP-21 Reference Manual}\cite{lgp21referencemanual}}. Information read in this manner can be punched back out directly by print commands without any conversion, or handled by an alphanumeric print program.
 
-The Letter W as a Hex Digit: The hexadecimal word 73W08 contains the letter W. For readers unfamiliar with the LGP architecture, it used a non-standard, typewriter-friendly hex character set where the letters f, g, j, k, q, w represented the decimal values 10 through 15 (A through F). The character W explicitly represents the value 15 (or F in modern hex notation).]
+Every word, with the exception of the last word of a block, must contain exactly 5 characters (the last word may contain fewer) and must be followed by a stop code. The quantity \texttt{NN} of words to be stored must be less than 64. The \textt{NN} words are stored in consecutive cells (at $q=29$), starting at the cell indicated by the current state of the fill counter.
 
-,00000NN' Hexadecimal Words
-This keyword causes the following NN words to be stored as hexadecimal words in consecutive memory cells according to the current state of the fill counter. NN must be less than 64. The words to be stored must be in hexadecimal format and are not modified.
+For example, the entry \texttt{A0000005' DEPRE'SS ST'ART T'O CON'TINUE'} causes the string ``DEPRESS START TO CONTINUE'' to be stored across five consecutive cells.
 
-For example, ;0002200',0000003',3W7'140Q'' causes the memory to look like this after entry:
+\item \textt{}-000TTSS'} Examine
+The Examine keyword loads words from memory into the accumulator. If the computer's console is equipped with an oscilloscope display, the programmer can view the contents of the accumulator without executing any instructions. Words are loaded sequentially, starting at \texttt{TTSS}. To examine the next word, press the \textsf{START} key. 
 
-2200 000003W7
-2201 0000140Q
-2202 00000000
-
-The Format of Hexadecimal Words:
-A hexadecimal word may contain a maximum of eight characters. Any combination of the characters 0,1,...,9 and F,G,J,K,Q,W may be used; zero is the smallest value and WWWWWWWW is the largest value the computer can accept. If a word is zero, only a stop code is required. Leading zeros may be omitted; every word must be followed by a stop code.
-
-[translator notes: The example string features three consecutive inputs after setting the fill address to 2200: 3W7', 140Q', and a final empty input before a stop code '. Because leading zeros can be dropped and a solo stop code represents zero, the monitor correctly shifts and pads them into full 32-bit words, leaving cell 2202 cleared out as all zeros.]
-
-VNNCHHHH' Hexadecimal FillThis keyword causes the following NN hexadecimal words to be stored in consecutive cells, beginning with HHHH (a fill keyword is not required). The C is a clear command. The keyword is in hexadecimal notation and is normally provided by a hexadecimal output program, where it stands at the beginning of a block of 64 or fewer hexadecimal words.During input, a checksum is computed from the keyword and all hexadecimal words. Once all NN words are stored and if PST is off, this checksum is compared with the tape checksum at the end of the corresponding block. If they are equal, reading continues; if they are unequal, an error stop occurs. See under ``Error Stops.'' If PST is switched on, the checksum comparison is skipped.For example, the keyword V1WC2W00' causes the next $1W_{16} = 31_{10}$ hexadecimal words to be stored, beginning in cell $2W00_{16} = 4700_{10}$.
-
-[translator notes: The ``C'' Clear Command: The manual notes that \texttt{C} acts as a clear command within the macro. In the context of automated tape loading, this likely instructed the internal parser to clear the checksum accumulator or reset specific input buffers before dumping the next payload block into memory.
-
-Automated Block Loading: This V keyword represents the automated counterpart to the manual keywords you looked at earlier. Instead of an operator typing line-by-line, an output program (like a paper tape punch utility) would prepend blocks with this header. The inclusion of an automatic checksum validation loop (which could be bypassed via the physical PST switch on the console) proves this was the primary mechanism for streaming large software binaries reliably.]
-
-A00000NN' Alphanumeric WordsThis keyword permits the entry of alphanumeric information in a 6-bit format. Information read in this manner can be punched back out directly by print commands without any conversion, or handled by an alphanumeric print program.Every word, with the exception of the last word of a block, must contain exactly 5 characters (the last word may contain fewer) and must be followed by a stop code. The quantity NN of words to be stored must be less than 64. The NN words are stored in consecutive cells (at $q=29$), starting at the cell indicated by the current state of the fill counter.For example, the entry A0000005' DEPRE'SS ST'ART T'O CON'TINUE' causes the string ``DEPRESS START TO CONTINUE'' to be stored across five consecutive cells.
-
-[notes: 6-Bit Character Packing: This section reveals exactly how text string data is packed into the LGP-21's 32-bit architecture. Because characters are encoded in a 6-bit format, a single 32-bit machine word can hold a maximum of 5 characters ($6 \times 5 = 30\text{ bits}$), leaving 2 bits leftover.The Fixed Scaling Factor ($q=29$): The mention of q=29 refers to the binary point placement (or scaling factor) within the 32-bit register. In LGP programming, specifying the $q$ fraction bit position ensures that the packed 6-bit character stream aligns perfectly with the internal shift registers used by alphanumeric input/output subroutines.The Disappearing Spaces in the Example: If you count the characters in the example string DEPRE'SS ST'ART T'O CON'TINUE', you can see exactly how the 5-character word limit maps out when trailing stop codes act as delimiters:Word 1: DEPRE (5 chars)Word 2: SS ST (5 chars, including the space)Word 3: ART T (5 chars, including the space)Word 4: O CON (5 chars, including the space)Word 5: TINUE (5 chars)Notice that the original German manual translated the English word ``DEPRESS'' into an exact 5-character parsing structure for the example, highlighting that even spaces count toward the strict 5-character allocation per memory cell.]
-
--000TTSS' Inquiry Keyword (Frageschlüsselwort)
-The inquiry keyword brings words from memory into the accumulator. If the computer is equipped with an oscilloscope, the programmer can view the words without any instructions being executed. Only the word located in TTSS is brought in at any one time. Each time START is pressed, the next word in ascending sequence appears. The following operation must be performed to return to normal operation\footnote{\textbf{Escaping the Hardware Loop}: Because this monitor instruction takes over the machine's primary execution cycle to step through memory addresses sequentially with each physical button press, it puts the hardware into a state that cannot be broken by software input alone. The explicit 4-step sequence forces a hard manual reset of the input buffer via the console switches to restore standard program control.}:
+To exit\footnote{Because this monitor instruction takes over the machine's primary execution cycle, stepping through and examining the contents of memory instead of executing instructions, it is necessary to force a manual reset of the input buffer via the console switches to restore standard program control.} the Examine command:
 \begin{enumerate}
-	\item Set the selector switch to \textsf{Manual Input}.
-	\item Press \textsf{Enter and Clear}.
-	\item Set the selector switch to \textsf{Normal}.
+	The following operation must be performed to return to normal operation:
+\begin{enumerate}
+	\item Set the \textsf{MODE} switch to \textsf{MANUAL INPUT}.
+	\item Press \textsf{FILL CLEAR}.
+	\item Set the selector switch to \textsf{NORMAL}.
 	\item Press \textsf{START}.
 \end{enumerate}
 \noindent
-For example, the keyword \texttt{-0002003'} brings the contents of location $2003$ into the accumulator. After pressing \textsf{START}, the contents of $2004$ appear, and so on. This process can be continued until the above operation interrupts the sequence.
+For example, the keyword \texttt{-0002003'} loads the contents of location $2003$ into the accumulator. After pressing \textsf{START}, the contents of $2004$ appear, and so on. This process can be continued until the above sequence of operations interrupts the command.
 
-S000TTss' Input Device Selection
-This keyword causes the selection of an alternative input device (other than the default Flexowriter). The program reverts to Flexowriter input at the start (with a branch to $0000$) and following error stops. The selection codes and their corresponding units are listed in the \textit{LGP-21 Programming Manual}\cite{lgp21programmingmanual}. 
+\item \texttt{S000TTss'} Input Device Select
+
+This command causes the an alternate input device to be selected (other than the default console Flexowriter). The program reverts to console input when GPMon starts (via a branch to $0000$) and following error stops. The selection codes and their corresponding units are listed on p. 30 in the \textit{LGP-21 Reference Manual}\cite{lgp21referencemanual}}. 
 
 The selection codes must be specified in decimal track/sector notation \texttt{TTSS}, followed by a stop code (the sector portion value is irrelevant). For example, if another input device could be selected by the identification number \texttt{32}, the selection keyword \texttt{S0003200'} causes this device to be selected for this routine's input.
 
-Tapes to be read by the program should be capable of being typed out on the typewriter; that is, a carriage return should occur after every four to eight words\footnote{Data tapes should contain a carriage return (CR) after every four to eight words simply because the mechanical realities of working with a hardware Flexowriter as console. If a continuous stream of data was read off a tape without embedded carriage returns, the physical typing element would reach the end of its travel at the right margin and continute to push against the margin as more characters are printed. This both imposes mechanical strain and overprints the input as an unreadable blur of characters at the edge of the log sheet.}.
+Tapes to be read by the program should be capable of being typed out on the typewriter; that is, a carriage return should occur after every four to eight words\footnote{Data tapes should contain a carriage return (CR) after every four to eight words simply because of the mechanical realities of working with a hardware Flexowriter as console. If a continuous stream of data was read off a tape without embedded carriage returns, the physical typing element would reach the end of its travel at the right margin and continute to push against the margin as more characters are printed. This both imposes mechanical strain and overprints the input as an unreadable mess of characters at the edge of the log sheet.}.
 
-If incorrect information is read, the program selects the typewriter\footnote{The fact that \texttt{J1-10.1} automatically reverts control back to the primary console ("standard typewriter") upon entry at $0000$ or after an error stop is a fail-safe. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up or isolate the operator; it immediately brings the main console printer back online so the engineer can see the error state and intervene.}, prints \texttt{err}, and halts. See ``Error Stops''.\ref{subsec:PIRerrors}
+If incorrect information is read, the program selects the console typewriter\footnote{Automatically reverting control back to the primary console upon start/restart at $0000$ or after an error stop is a fail-safe. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up; it immediately brings the main console back online so the operator can see the error state and intervene.}, prints \texttt{err}, and halts. See ``Error Stops''.\ref{subsec:PIRerrors}
 
 \subsubsection*{PROGRAM EXECUTION}
 The following steps are necessary to load the program from tape:
 \begin{enumerate}
   \item Press the \textsf{MANUAL INPUT} lever on the Flexowriter.
-  \item Set the selector switch on the system console to \textsf{MANUAL INPUT}.
-  \item Press \textsf{FILL AND CLEAR} on the console.
+  \item Set the selector switch on the system console to \textsf{MANUAL INPUT}\footnote{This dual mechanical lockout prevented the computer from attempting to read from the console until the operator has explicitly prepared both the peripheral device and the central processing unit to accept manual keypresses.}.
+  \item Press \textsf{FILL AND CLEAR}\footnote{Pressing \textsf{FILL AND CLEAR} clears the machine's primary instruction and input registers, ensuring that when the mode switch is set to \textsf{NORMAL} and \textsf{START} is pressed, the processor begins execution from the starting address of the \texttt{J1-10.1} routine without processing residual data or garbage instructions.} on the console.
   \item Set the selector switch to \textsf{NORMAL}.
   \item Press the \textsf{START} button.
 \end{enumerate}
-
-[notes: Why both \textsf{MANUAL INPUT} switches? This dual mechanical lockout prevented the computer from attempting to read from the console until the operator had explicitly prepared both the peripheral device and the central processing unit to accept manual keypresses.
-
-Why the \textsf{FILL AND CLEAR}? Pressing \textsf{FILL AND CLEAR} clears the machine's primary instruction and input registers, ensuring that when the mode switch is set to \textsf{NORMAL} and \textsf{START} is pressed, the processor begins execution from the starting address of the \texttt{J1-10.1} routine without processing residual data or garbage instructions.]
+\end{itemize}
 
 \subsubsection*{PROGRAM OPERATION}
-
-1. The program tape contains the program in two versions: a) arbitrarily relocatable hexadecimal with its own bootstrap, and b) decimal in coding sheet format.
+The program tape contains the program in two versions: a) arbitrarily relocatable hexadecimal with its own bootstrap, and b) decimal in coding sheet format.
 
 The input procedure is as follows:
+\begin{enumerate}
 
 a) Insert the tape into the typewriter reader. Ensure that all levers on the typewriter are released.
 

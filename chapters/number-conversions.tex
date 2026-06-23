@@ -1,3 +1,56 @@
-\section{Number Conversions}
-\subsection{Decimal/Hexidecimal Conversion}
-\newpage
+\section{Format Conversion}
+
+\subsection{DECIMAL-HEXADECIMAL TAPE CONVERSION}
+\subsubsection*{H4-10.0}
+
+\subsubsection*{PURPOSE}
+Program H4-10.0 converts arbitrarily relocatable, decimal-coded program tapes that are permissible for Program Input 1 (J1-10.0) into arbitrarily relocatable hexadecimal tapes, usable by \ref{sec:PIRloader}. A conversion log is created with a listing of all instructions to be converted and whether or not they are relocatable, and a memory map of where the program is currently loaded.
+
+Any corrections required in the program can be made by means of Program Input 1 \ref{sec:PIRloader} before output. The resulting arbitrarily relocatable hexadecimal tape can be verified via checksum after output.
+
+\subsection{MEMORY REQUIREMENTS}
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\noindent
+\textbf{Program Space:} 11 tracks and 35 sectors (739 words) \\
+\textbf{Temporary Storage:} None
+\noindent
+The program is loaded into memory immediately following Program Input 1.
+
+\subsection{INPUT}
+H4-10.0 dynamically patches Program Input 1 upon execution, hooking its input routines to intercept the incoming program stream and construct the tracking tables. Once the target program has been completely read, H4-10.0 restores Program Input 1's original code to return it to normal operation. It must be resident before the program to be converted is loaded.
+
+The decimal program to be converted should be stored at least 15 tracks above the starting address of Program Input 1, and loaded so that it could be executed, with the correct fill keyword (;) and modifier (/). All Program Input 1 input keywords work normally.
+
+\noindent Program Input 1 as modified by H4-10.0 creates a bitmap table to track relocatable versus absolute instructions.
+
+A second allocation bitmap tracks which memory regions contain valid data, ensuring only actually-populated sectors are eventually punched to tape. PIR's direct absolute memory write command (\texttt{+}) bypasses this tracking tracking mechanism and clobbers live memory cell contents directly; it does |emph{not} update the instruction-patching or allocation bitmaps. Once the new program is loaded, execution can be intercepted via console switch \textsf{PS-4} to hand control back to Program Input 1 for further memory patching prior to output.
+
+When the operator resumes program execution at $L_0+0601$ to punch the output, the computer selects the Flexowriter for input and requests the selection keyword for the output unit. The Flexowriter's punch is selected by default; press \textsf{START} to continue with this device, or enter a zero and press \textsf{START} to select the high-speed punch.
+
+After the output unit is selected, the computer selects the Flexowriter again for input to read the output modifier. This is a number in decimal track/sector notation which will be subtracted from the modifiable addresses. This modifier must be four digits or smaller.
+
+As an example, we'll assume that the program to be converted is loaded at 4000. If it is to be punched with relocatable address adjusted to be relative to 1000, one would enter an output modifier of 3000.\footnote{To relocate code to a higher memory address, the operator would input the tens-complement of the desired upward shift, forcing the subtraction routine to wrap around the address space allocation boundaries. This requires a lot of care.}
+
+\subsection{EXECUTING THE PROGRAM}
+The program has the following five entry points:
+
+\begin{center}
+\begin{tabular}{ll}
+$L_0+0600$ & for reading the program to be converted \\
+$L_0+0601$ & for punching the converted program \\
+$L_0+0602$ & for restoring Program Input 1 if the tape fails verification \\
+$L_0+0603$ & for verifying the output \\
+$L_0+0604$ & for restoring Program Input 1 after successful verification \\
+\end{tabular}
+\end{center}
+$L_0$ is the starting address of Program Input 1 (\emph{not} this program!).
+
+\subsection{OUTPUT}
+Pressing \textsf{START} after entering the output modifier punches the converted program in arbitrarily relocatable hexadecimal form. Tables printed on the console indicate which portions of memory were punched and which instructions were marked as modifiable.
+
+The converted words are punched in groups of 64 or fewer. Each group is preceded by a PIR keyword for hexadecimal fill (M), and each group is followed by a checksum. (Details of the format can be found at \ref{sec:hexadecimal-fill}). After punching is complete, Program Input 1 is restarted.
+
+After output, both the content and checksums of the output tape can be verified. To do this, place the just-punched tape into the reader and jump to $L_0+0603$, where $L_0$ is the starting address of Program Input 1. The computer selects the typewriter for input of a modifier, which must be the same as the one used when the program was punched. The computer selects the typewriter again to allow the input unit to be selected (if necessary). Press \textsf{START} to read and verify the tape.
+
+The program is \emph{not} reloaded into memory during verification; the contents of memory are used to verify that the tape matches. If a fill block on the tape fails validation, the console types out a character: \texttt{"w"} indicates a memory word does not match; \texttt{"e"} indicates that a checksum is incorrect. These error indications apply to the specific hexadecimal fill block currently being verified; the tape reader will immediately halt, allowing the operator to inspect the block and locate the error.
