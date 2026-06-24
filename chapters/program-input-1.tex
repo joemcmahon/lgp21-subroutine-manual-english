@@ -1,13 +1,16 @@
 
 \section{Program input}
 \label{sec:program-loaders}
-The programs in this section are designed to make it easier to load programs into the LGP-21 than tediously typing them on the Flexowriter and depositing them word-by-word into memory.
+The programs in this section are designed to make it easier to load programs into the LGP-21 than tediously typing them on the Flexowriter and depositing them word-by-word into memory. They can read blocks of data from tape, store it, and checksum the data read to ensure that it has been read correctly. They also perform the functions of a crude dynamic loader, making it possible to code relative to location 0000 and then load the code at an arbitrary address, relocating all relative addresses in the process. For 1963, this is a fairly sophisticated little pair of utilities.
+
+\texttt{J1-10.0}, commonly known as \texttt{PIR}, can be modified by \texttt{H4-10.0}\ref{sec:tape-conversion} to automatically relocate tapes and repunch them as checksummed hexadecimal.
+
 \subsection{Program Loader 1}
 \subsubsection*{J1-10.0}
 \label{sec:PIRloader}
 \subsubsection*{PURPOSE}
 
-\emph{Program Input 1}, J1-10.0, [Translator's note: this program is known more colloquially as ``PIR''.] is a memory program. It facilitates the reading of hexadecimal tapes—whether arbitrarily relocated or not—and calculates a checksum during the reading process. It can also read and check arbitrarily relocated decimal programs.
+\emph{Program Input 1}, J1-10.0 is a memory loader program. It facilitates the reading of hexadecimal tapes—whether arbitrarily relocated or not—and calculates a checksum during the reading process. It can also read and check arbitrarily relocated decimal programs.
 
 Program J1-10.0 performs the following functions:
 \begin{enumerate}
