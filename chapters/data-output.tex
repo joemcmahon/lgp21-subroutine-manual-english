@@ -1,10 +1,9 @@
 \section{Data Output}
-\subsection{Data Output 1}
-\subsubsection*{J3-10.0}
+\subsection*{DATA OUTPUT 1 --- J3-10.0}
 \label{sec:data-output-1}
 
 \subsubsection*{PURPOSE}
-Program J3-10.0 converts binary numbers stored in memory into decimal format, including an algebraic sign and decimal point. The scale factor of the binary number can range between \texttt{@0} and \texttt{@30}. The maximum number of decimal places printed is mathematically bounded by:
+Program J3-10.0 converts binary numbers stored in memory into decimal format, including an algebraic sign and decimal point. The scale factor of the binary number can range between $@0$ and $@30$. The maximum number of decimal places printed is mathematically bounded by:
 \[
 \frac{30 - \text{scale factor}}{3}
 \]
@@ -12,7 +11,7 @@ A maximum of 10 digits can be output. Leading zeros are automatically suppressed
 
 The data output routine operates as a subroutine and is invoked via a calling sequence in the main program. Prior to jumping to the subroutine, the binary number to be printed must reside in the accumulator. The required scale factor of the binary number must be stored in the memory cell immediately following the jump instruction. Upon return to the main program, the decimal equivalent of the binary number has already been printed. The main program can be structured to repeatedly invoke Data Output 1 to print an entire list of decimal values sequentially.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -31,7 +30,7 @@ The input variables required for Data Output 1 are:
 
 When jumping to the subroutine, $N$ must reside in the accumulator, and $Q$ must be stored in the cell immediately following the branch instruction.
 
-$N$ may be any arbitrary binary number. $Q$ must be a positive integer and can never be greater than 30. $Q$ can be supplied either as the sector address portion of a \texttt{Z} instruction or as a raw hexadecimal constant at bit position 29.
+$N$ may be any arbitrary binary number. $Q$ must be a positive integer and can never be greater than 30. $Q$ can be supplied either as the sector address portion of a \texttt{Z} instruction or as a raw hexadecimal constant at $@29$.
 
 The number of fractional digits ($F$) printed after the decimal point is determined directly by the value of the scale factor $q$ according to the formula:
 \[
@@ -62,34 +61,35 @@ F = \left\lfloor \frac{30 - q}{3} \right\rfloor
 \textit{*Note: For $q = 30$, either 9 or 10 digits are written depending on the actual magnitude of the number.}
 
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha$               & \texttt{R}      & \texttt{L+4}     & Store the address of $Q$ into the subroutine. \\
-    $\alpha+1$             & \texttt{U}      & \texttt{L}       & Jump to subroutine entry point. \\
-    $\alpha+2$             & \texttt{Z}      & \texttt{00qq}    & Scale factor $Q$ written as a decimal sector address at @29. \\
-    $\alpha+3$             & \dots           &                  & Return point to main program. \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$               & \texttt{R}      & \texttt{L+4}     & Store the address of $Q$ into the subroutine. \\
+$\alpha+1$             & \texttt{U}      & \texttt{L}       & Jump to subroutine entry point. \\
+$\alpha+2$             & \texttt{Z}      & \texttt{00qq}    & Scale factor $Q$ written as a decimal sector address at $@29$. \\
+$\alpha+3$             & \dots           &                  & Return point to main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 In the calling sequence shown above, the instruction at memory location $\alpha$ copies the absolute tracking address ($\alpha+2$) of the \texttt{Z} instruction containing parameter $Q$ directly into the operand address field of the modified instruction located inside subroutine cell \texttt{L+4} (where \texttt{L} represents the base execution address of the subroutine). 
 
-The instruction at $\alpha+1$ triggers a branch to entry location \texttt{L}. Memory cell $\alpha+2$ holds the structural value of $Q$ encoded at @29. Finally, cell $\alpha+3$ contains the first instruction of the main program sequence to resume execution after the output parsing completes.
+The instruction at $\alpha+1$ triggers a branch to entry location \texttt{L}. Memory cell $\alpha+2$ holds the structural value of $Q$ encoded at $@29$. Finally, cell $\alpha+3$ contains the first instruction of the main program sequence to resume execution after the output parsing completes.
 
 \paragraph{Important Setup Note:}
 The binary number $N$ must be loaded directly into the accumulator immediately prior to executing this calling sequence.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 Each time a branch executes from the main program to Data Output 1, the raw binary integer $N$ held inside the accumulator is parsed, converted according to scale parameter $Q$, and printed as a formatted decimal string. 
 
 To guarantee the highest possible printing precision, the programmer should choose the absolute smallest practical scale factor value $Q$. When properly configured, the transformation error remains bounded within $\pm 1$ unit of the least significant decimal digit.
 
 The computer automatically selects the console typewriter hardware for the output operation. A maximum of 10 characters are printed per number, and all leading zeros are completely suppressed. Every completed value printed is automatically followed by a typewriter \texttt{tab} instruction.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Time:} Output processing runs at approximately 30 formatted numbers per minute via the Flexowriter peripheral system.
     \item \textbf{Mathematical Accuracy:} The final precision of the printed text remains fundamentally bounded by the initial bit resolution defined by the scale factor $Q$.
@@ -137,17 +137,16 @@ If a peripheral output device other than the standard console typewriter is requ
 
 By default, fractional values are not mathematically rounded during base conversion. However, rounding can be implemented by inserting a specific add instruction (\texttt{A}) at location \texttt{L + 128}. The algebraic effect of this added rounding value depends entirely on the target scale factor at which the number is to be printed. 
 
-Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at memory cell \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to \texttt{@28} or \texttt{@29}, and are calculated exactly when the scale factor is precisely \texttt{@30}.
+Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at memory cell \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to $@28$ or $@29$, and are calculated exactly when the scale factor is precisely $@30$.
 By default, fractional values are not mathematically rounded during base conversion. However, rounding can be implemented by inserting a specific add instruction (\texttt{A}) at location \texttt{L + 128}. The algebraic effect of this added rounding value depends entirely on the target scale factor at which the number is to be printed. 
 
-Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at memory cell \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to \texttt{@28} or \texttt{@29}, and are calculated exactly when the scale factor is precisely \texttt{@30}.
+Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at memory cell \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to $@28$ or $@29$, and are calculated exactly when the scale factor is precisely $@30$.
 \newpage
-\subsection{Data Output 2}
-\subsubsection*{J3-10.1}
+\subsection*{DATA OUTPUT 2 --- J3-10.1}
 \label{sec:data-output-2}
 
 \subsubsection*{PURPOSE}
-Program J3-10.1 prints the contents of consecutive memory cells in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to @30. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
+Program J3-10.1 prints the contents of consecutive memory cells in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to $@30$. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
 
 The decimal point is only printed if fractional places are explicitly specified. Words sharing the same formatting parameters can be grouped together. Consecutive numbers form a block, and identical word formats form a group within that block. Any number of blocks, and any number of groups within those blocks, are permissible. 
 
@@ -160,7 +159,7 @@ Data Output 2 operates as a subroutine invoked by a calling sequence in the main
 \end{enumerate}
 Upon return to the main program, the specified values have been printed.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -175,7 +174,7 @@ Upon return to the main program, the specified values have been printed.
 The input variables for Data Output 2 consist of two types of control words: Block Parameters ($N$) and Group Parameters ($N_1$). These parameters must be provided by the calling sequence in the following strict order:
 
 \begin{itemize}
-    \item \textbf{Block Parameter ($N$):} This control word must be negative (sign bit = \texttt{1}). It contains the total number of consecutive words to be output scaled to @15, and the memory address of the first data word scaled to @29.
+    \item \textbf{Block Parameter ($N$):} This control word must be negative (sign bit = \texttt{1}). It contains the total number of consecutive words to be output scaled to $@15$, and the memory address of the first data word scaled to $@29$.
     \item \textbf{Group Parameter ($N_1$):} This control word must be positive. It encodes the following formatting specifications:
     \begin{itemize}
         \item \textbf{$(N_1)$:} The number of consecutive words requiring identical $P$ and $D$ formatting. $N_1$ is located in the operation field of the instruction word.
@@ -184,7 +183,7 @@ The input variables for Data Output 2 consist of two types of control words: Blo
     \end{itemize}
 \end{itemize}
 
-The numbers to be printed must be stored at @30 and must be strictly less than $\pm 1 \times 10^7$. The structural boundaries for $N$, $N_1$, $W_1$, and $D_1$ are defined as:
+The numbers to be printed must be stored at $@30$ and must be strictly less than $\pm 1 \times 10^7$. The structural boundaries for $N$, $N_1$, $W_1$, and $D_1$ are defined as:
 \[
 0 \le D_1 \le 8
 \]
@@ -204,43 +203,45 @@ For integer-only numbers (no decimal places), no space needs to be budgeted for 
 Two calling sequences are provided. Calling Sequence 1 automatically selects the console typewriter as the output unit. Calling Sequence 2 is used exclusively when an alternative output peripheral is required or when changing the active output device channel.
 
 \paragraph{Calling Sequence 1 (Standard Typewriter Output Block)}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha$               & \texttt{R}      & \texttt{L+22}    & Store address of first control word into subroutine. \\
-    $\alpha+1$             & \texttt{U}      & \texttt{L}       & Jump to subroutine entry point. \\
-    $\alpha+2$             & \texttt{80X}    & \texttt{ttss}    & \textbf{Block Parameter $N$:} Negative flag, count at @15, start address at @29. \\
-    $\alpha+3$             & \texttt{[N1]}   & \texttt{W1 D1}   & \textbf{Group 1 Format:} $N_1$ in Opcode, Field Width $W_1$, Decimals $D_1$. \\
-    $\alpha+4$             & \texttt{[N2]}   & \texttt{W2 D2}   & \textbf{Group 2 Format:} $N_2$ in Opcode, Field Width $W_2$, Decimals $D_2$. \\
-    $\dots$           & \dots           & \dots            & \dots \\
-    $\alpha+n$             & \texttt{[Ni]}   & \texttt{Wi Di}   & \textbf{Group $i$ Format specifications.} \\
-    $\alpha+n+1$           & \dots           &                  & Begin next block block parameter, or resume main program. \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$               & \texttt{R}      & \texttt{L+22}    & Store address of first control word into subroutine. \\
+$\alpha+1$             & \texttt{U}      & \texttt{L}       & Jump to subroutine entry point. \\
+$\alpha+2$             & \texttt{80X}    & \texttt{ttss}    & \textbf{Block Parameter $N$:} Negative flag, count at $@15$, start address at $@29$. \\
+$\alpha+3$             & \texttt{[N1]}   & \texttt{W1 D1}   & \textbf{Group 1 Format:} $N_1$ in Opcode, Field Width $W_1$, Decimals $D_1$. \\
+$\alpha+4$             & \texttt{[N2]}   & \texttt{W2 D2}   & \textbf{Group 2 Format:} $N_2$ in Opcode, Field Width $W_2$, Decimals $D_2$. \\
+$\dots$           & \dots           & \dots            & \dots \\
+$\alpha+n$             & \texttt{[Ni]}   & \texttt{Wi Di}   & \textbf{Group $i$ Format specifications.} \\
+$\alpha+n+1$           & \dots           &                  & Begin next block block parameter, or resume main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 Where \texttt{L} is the base starting address of the subroutine. Memory cell $x+n+1$ contains either the negative block parameter for the subsequent data block or the next executable instruction of the main program.
 
 \paragraph{Calling Sequence 2 (Device Selection Initialization)}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha-1$             & \texttt{B}      & \texttt{[Code]}  & Load device selection control word into accumulator. \\
-    $\alpha$               & \texttt{R}      & \texttt{L+421}   & Set return address. \\
-    $\alpha+1$             & \texttt{U}      & \texttt{L+532}   & Jump to device selection entry point. \\
-    $\alpha+2$             & \dots           &                  & Return point to main program (no data printed yet). \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$             & \texttt{B}      & \texttt{[Code]}  & Load device selection control word into accumulator. \\
+$\alpha$               & \texttt{R}      & \texttt{L+421}   & Set return address. \\
+$\alpha+1$             & \texttt{U}      & \texttt{L+532}   & Jump to device selection entry point. \\
+$\alpha+2$             & \dots           &                  & Return point to main program (no data printed yet). \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 The instruction at $x-1$ loads the specific device selection control word into the accumulator (any instruction achieving this result can be used). This sequence merely primes the subroutine configuration; it executes no data printing operations directly.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 The program prints the decimal equivalent of each word according to the group formatting specifications. Leading zeros are suppressed. The sign is appended to the end of the printed number: a space for positive numbers and a minus sign for negative numbers. The decimal point is written only if fractional places ($D_1 > 0$) are requested. All planned spaces between numbers are trailing spaces. No tabulator or carriage return commands are issued automatically.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Time:} In a standard benchmark test utilizing the console typewriter, printing 100 data words with a field width of $W_1 = 9$ required 155 seconds. This total includes overhead for exits, carriage returns, and address modifications performed after every 10 words.
 \end{enumerate}
@@ -289,12 +290,11 @@ The comments column illustrates the value for $N$ and the derivation of the form
 
 In cell \texttt{2250}, this formatting constant is only \texttt{1} because no decimal point is required for integer-only output.
 \newpage
-\subsection{Data Output 3}
-\subsubsection*{J3-10.2}
+\subsection*{DATA OUTPUT 3 --- J3-10.2}
 \label{sec:data-output-3}
 
 \subsubsection*{PURPOSE}
-Program J3-10.2 prints the contents of consecutive memory cells in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to @30. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
+Program J3-10.2 prints the contents of consecutive memory cells in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to $@30$. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
 
 Values that are to be printed using identical formatting parameters can be combined into groups. Any number of blocks of consecutive cells, and any number of groups of identical word formats within those blocks, are permissible.
 
@@ -307,7 +307,7 @@ The program functions as a subroutine invoked by a calling sequence in the main 
 \end{enumerate}
 Upon return to the main program, the specified values have been printed.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -322,7 +322,7 @@ Upon return to the main program, the specified values have been printed.
 The input variables consist of two types of control words: Block Parameters ($N_t$) and Group Parameters ($N_i$). These control words must be provided by the calling sequence in the following strict order:
 
 \begin{itemize}
-    \item \textbf{Block Parameter ($N_t$):} This control word must be negative (sign bit = \texttt{1}). It contains the total number of consecutive words to be output scaled to @15, and the memory address of the first data word scaled to @29.
+    \item \textbf{Block Parameter ($N_t$):} This control word must be negative (sign bit = \texttt{1}). It contains the total number of consecutive words to be output scaled to $@15$, and the memory address of the first data word scaled to $@29$.
     \item \textbf{Group Parameter ($N_i$):} This control word must be positive. It encodes the following formatting specifications:
     \begin{itemize}
         \item \textbf{$(N_i)$:} The number of consecutive words requiring identical $P$ and $D$ formatting. $N_i$ is located in the operation field of the instruction word.
@@ -331,7 +331,7 @@ The input variables consist of two types of control words: Block Parameters ($N_
     \end{itemize}
 \end{itemize}
 
-The numbers to be printed must be stored at @30 and must be strictly less than $\pm 1 \times 10^7$. The structural boundaries for $N_t$, $N_i$, $W_i$, and $D_i$ are defined as:
+The numbers to be printed must be stored at $@30$ and must be strictly less than $\pm 1 \times 10^7$. The structural boundaries for $N_t$, $N_i$, $W_i$, and $D_i$ are defined as:
 \[
 0 \le D_i \le 7
 \]
@@ -345,43 +345,44 @@ The numbers to be printed must be stored at @30 and must be strictly less than $
 \sum N_i = N_t \quad \text{(for each individual block)}
 \]
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha$               & \texttt{R}      & \texttt{L+22}    & Set the address of the first control word into the subroutine. \\
-    $\alpha+1$             & \texttt{U}      & \texttt{L}       & Entry into the subroutine (\texttt{L+7} is equivalent as an entry). \\
-    $\alpha+2$             & \texttt{80X$(N_t)$}    & \texttt{ttss}    & $N$ at @15 and starting address of the data at @29. \\
-    $\alpha+3$             & \texttt{[$N_1$]}   & \texttt{$W_1 D_1$}   & Format specifications \\
-    $\alpha+4$             & \texttt{[$N_2$]}   & \texttt{$W_2 D_2$}   & Format specifications \\
-    $\dots$           & \dots           & \dots            & \\
-    $\alpha+n$             & \texttt{$N_i$}     & \texttt{$W_i D_i$}   & \\
-    $\alpha+n+1$           & \dots           &                  & Beginning of the next block or return to the main program \\
-                      &                 &                  & (return instruction must be positive). \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$               & \texttt{R}      & \texttt{L+22}    & Set the address of the first control word into the subroutine. \\
+$\alpha+1$             & \texttt{U}      & \texttt{L}       & Entry into the subroutine (\texttt{L+7} is equivalent as an entry). \\
+$\alpha+2$             & \texttt{80X$(N_t)$}    & \texttt{ttss}    & $N$ at $@15$ and starting address of the data at $@29$. \\
+$\alpha+3$             & \texttt{[$N_1$]}   & \texttt{$W_1 D_1$}   & Format specifications \\
+$\alpha+4$             & \texttt{[$N_2$]}   & \texttt{$W_2 D_2$}   & Format specifications \\
+$\dots$           & \dots           & \dots            & \\
+$\alpha+n$             & \texttt{$N_i$}     & \texttt{$W_i D_i$}   & \\
+$\alpha+n+1$           & \dots           &                  & Beginning of the next block or return to the main program (return instruction must be positive). \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 \texttt{L} is the starting address of the subroutine. Cell $\alpha+n+1$ contains either the $N$ control word for the next block or the next instruction of the main program.
 
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha-1$             & \texttt{B}      & \texttt{[ ]}     & Bring selection code \\
-    $\alpha$               & \texttt{R}      & \texttt{L+512}   & Set return address \\
-    $\alpha+1$             & \texttt{U}      & \texttt{L+220}   & Entry into the subroutine \\
-    $\alpha+2$             & \dots           &                  & Main program \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$             & \texttt{B}      & \texttt{[ ]}     & Bring selection code \\
+$\alpha$               & \texttt{R}      & \texttt{L+512}   & Set return address \\
+$\alpha+1$             & \texttt{U}      & \texttt{L+220}   & Entry into the subroutine \\
+$\alpha+2$             & \dots           &                  & Main program \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 The instruction in $\alpha-1$ brings the selection code for the output unit into the accumulator (any instruction that does this is permissible). \texttt{L} is the starting address of the subroutine. This calling sequence only prepares the subroutine; no output results from it.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 The program prints the decimal equivalent of each word according to the group formatting specifications. Leading zeros are suppressed. The sign is appended to the end of the printed number: a space for positive numbers and a minus sign for negative numbers. The decimal point is written only if fractional places ($D_1 > 0$) are requested. All planned spaces between numbers are trailing spaces. No tabulator or carriage return commands are issued automatically.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Time:} In a standard benchmark test utilizing the console typewriter, printing 100 data words with a field width of $W_1 = 9$ required 155 seconds. This total includes overhead for exits, carriage returns, and address modifications performed after every 10 words.
 \end{enumerate}
@@ -433,8 +434,7 @@ In cell \texttt{2250}, this formatting constant is only \texttt{1} because no de
 \subsubsection*{TECHNICAL REMARK}
 This program works identically and satisfactorily with both the Mod 18 and Mod 9 print mechanism variants of the console typewriter.
 \newpage
-\subsection{Data Output 4}
-\subsubsection*{J3-10.3}
+\subsection*{DATA OUTPUT 4 --- J3-10.3}
 \label{sec:data-output-4}
 
 \subsubsection*{PURPOSE}
@@ -446,7 +446,7 @@ The program operates as a subroutine invoked by a calling sequence in the main p
     \item The number of digits $D$ to be printed after the decimal point ($q$ is determined by $C$).
 \end{enumerate}
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -460,20 +460,20 @@ The program operates as a subroutine invoked by a calling sequence in the main p
 The input consists of the data word to be printed and the control keyword for $C$ and $D$.
 
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $x-1$             & \texttt{B}      & \texttt{[ ]}     & (Any instruction sequence that supplies data). \\
-                      &                 &                  & Loads data word into the accumulator. \\
-    $x$               & \texttt{R}      & \texttt{Lo+12}   & Set return link pointer. \\
-    $x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into the subroutine. \\
-    $x+2$             & \texttt{Z}      & \texttt{0D0C}    & $D$ encoded at @23 and $C$ encoded at @29. \\
-    $x+3$             & \dots           &                  & Main program. \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$x-1$             & \texttt{B}      & \texttt{[ ]}     & (Any instruction sequence that supplies data). Loads data word into the accumulator. \\
+$x$               & \texttt{R}      & \texttt{Lo+12}   & Set return link pointer. \\
+$x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into the subroutine. \\
+$x+2$             & \texttt{Z}      & \texttt{0D0C}    & $D$ encoded at $@23$ and $C$ encoded at $@29$. \\
+$x+3$             & \dots           &                  & Main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \subsubsection*{KEYWORD SPECIFICATIONS}
 $D$ may be any integer between 0 and 9, provided that $C + D \le 9$.
@@ -494,10 +494,10 @@ $C$ may be any integer between 0 and 9, provided that $C + D \le 9$. The scale f
 \end{tabular}
 \end{center}
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 The value in the accumulator is printed with $C$ digits before the decimal point (leading zeros are suppressed) and $D$ digits after the decimal point (properly rounded up), followed by a minus sign or a space, and a tabulator jump.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Time:} Variable, depending on $C$ and $D$. Output speed is approx. 6 characters/second.
     \item \textbf{Accuracy:} If nine digits are printed, an error of 1 unit may be present in the ninth decimal place.
@@ -532,7 +532,7 @@ A number with the formatting layout template \texttt{XXXXX.XX+} is to be printed
     \toprule
     \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Technical Notes} \\
     \midrule
-    1345              & \texttt{B}      & \texttt{[ ]}     & Target data word scaled to @17. \\
+    1345              & \texttt{B}      & \texttt{[ ]}     & Target data word scaled to $@17$. \\
     1346              & \texttt{R}      & \texttt{2312}    & Link pointer mapped to \texttt{Lo + 12}. \\
     1347              & \texttt{U}      & \texttt{2300}    & Jump to entry point \texttt{Lo}. \\
     1348              & \texttt{XZ}     & \texttt{0205}    & Keyword control word ($D=2$, $C=5$). \\
@@ -542,8 +542,7 @@ A number with the formatting layout template \texttt{XXXXX.XX+} is to be printed
 \end{center}
 This example assumes that Data Output 4 is located at base address \texttt{2300}. The calling sequence begins at memory location \texttt{1345}.
 \newpage
-\subsection{Data Output 5}
-\subsubsection*{J3-10.4}
+\subsection*{DATA OUTPUT 5 --- J3-10.4}
 \label{sec:data-output-5}
 
 \subsubsection*{PURPOSE}
@@ -551,7 +550,7 @@ Program J3-10.4 outputs a nine-digit decimal number plus an algebraic sign and a
 
 The program functions as a subroutine invoked by a calling sequence in the main program. The calling sequence must supply a keyword in cell $x+2$ that specifies the number of digits in the integer portion of the value.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -565,22 +564,23 @@ The program functions as a subroutine invoked by a calling sequence in the main 
 The input consists of the number to be printed and the identification digit $C$, which specifies the number of digits in the integer portion.
 
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $x-1$             & \texttt{B}      & \texttt{L(N)}    & Load data word into the accumulator. \\
-    $x$               & \texttt{R}      & \texttt{Lo+12}   & Set address of the keyword into the subroutine. \\
-    $x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into the subroutine. \\
-    $x+2$             & \texttt{Z}      & \texttt{000C}    & Identification code $C$, which corresponds to $q$. \\
-    $x+3$             & \dots           &                  & Main program. \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$x-1$             & \texttt{B}      & \texttt{L(N)}    & Load data word into the accumulator. \\
+$x$               & \texttt{R}      & \texttt{Lo+12}   & Set address of the keyword into the subroutine. \\
+$x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into the subroutine. \\
+$x+2$             & \texttt{Z}      & \texttt{000C}    & Identification code $C$, which corresponds to $q$. \\
+$x+3$             & \dots           &                  & Main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 Memory cell $x-1$ does not strictly require a load (\texttt{B}) instruction. Any instruction that leaves the argument inside the accumulator is permissible. $C$ is an identification digit bounded between 0 and 9.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 The output consists of: nine decimal digits, an algebraic sign (or a space if positive), and the decimal point. Leading zeros are replaced by spaces.
 
 \subsubsection*{KEYWORD SPECIFICATIONS}
@@ -606,7 +606,7 @@ The output consists of: nine decimal digits, an algebraic sign (or a space if po
 \paragraph{Note:}
 Every binary number is scaled and converted as a fraction. The identification digit is used by the subroutine as a column placement counter. Every completed number print is followed by a tabulator command. Execution then returns to location $x+3$ of the main program.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Time:} 3.0 seconds per number.
     \item \textbf{Accuracy:} The maximum error is bounded within 1 unit at the ninth decimal digit position.
@@ -647,14 +647,13 @@ Every binary number is scaled and converted as a fraction. The identification di
 
 \pagebreak
 
-\subsection{Data Output 6}
-\subsubsection*{J3-10.5}
+\subsection*{DATA OUTPUT 6 --- J3-10.5}
 \label{sec:data-output-6}
 
 \subsubsection*{PURPOSE}
 Program J3-10.5 prints one or more groups of numbers in decimal notation, each of which can contain one or more individual values. The numbers within a group must be stored in consecutive cells scaled to the same scale factor $q$. Leading zeros are replaced by spaces; a space or a minus sign follows immediately behind the last decimal place.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -665,27 +664,28 @@ Program J3-10.5 prints one or more groups of numbers in decimal notation, each o
 \end{center}
 
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $x$               & \texttt{R}      & \texttt{Lo+3}    & Set return link pointer. \\
-    $x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into subroutine. \\
-    $x+2$             & \texttt{Z}      & \texttt{Loc1}    & Destination address of the first data word in Group 1. \\
-    $x+3$             & \texttt{Z}      & \texttt{N1 q1}   & Total words $N_1$ and scale factor $q_1$ for Group 1. \\
-    $x+4$             & \texttt{Z}      & \texttt{Loc2}    & Destination address of the first data word in Group 2. \\
-    $x+5$             & \texttt{Z}      & \texttt{N2 q2}   & Total words $N_2$ and scale factor $q_2$ for Group 2. \\
-    $\dots$           & \dots           & \dots            & \dots \\
-    $x+2i$            & \texttt{Z}      & \texttt{Loci}    & Destination address of the first data word in Group $i$. \\
-    $x+2i+1$          & \texttt{Z}      & \texttt{Ni qi}   & Total words $N_i$ and scale factor $q_i$ for Group $i$. \\
-    $x+2i+2$          & \dots           &                  & Exit marker (This instruction field must NOT be a \texttt{Z} opcode). \\
-    \bottomrule
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$x$               & \texttt{R}      & \texttt{Lo+3}    & Set return link pointer. \\
+$x+1$             & \texttt{U}      & \texttt{Lo}      & Entry into subroutine. \\
+$x+2$             & \texttt{Z}      & \texttt{Loc1}    & Destination address of the first data word in Group 1. \\
+$x+3$             & \texttt{Z}      & \texttt{N1 q1}   & Total words $N_1$ and scale factor $q_1$ for Group 1. \\
+$x+4$             & \texttt{Z}      & \texttt{Loc2}    & Destination address of the first data word in Group 2. \\
+$x+5$             & \texttt{Z}      & \texttt{N2 q2}   & Total words $N_2$ and scale factor $q_2$ for Group 2. \\
+$\dots$           & \dots           & \dots            & \dots \\
+$x+2i$            & \texttt{Z}      & \texttt{Loci}    & Destination address of the first data word in Group $i$. \\
+$x+2i+1$          & \texttt{Z}      & \texttt{Ni qi}   & Total words $N_i$ and scale factor $q_i$ for Group $i$. \\
+$x+2i+2$          & \dots           &                  & Exit marker (This instruction field must NOT be a \texttt{Z} opcode). \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 Where \texttt{Loc}$_i$ represents the starting memory address of the first data value in the $i$-th group; $N$ represents the absolute quantity of data values in the $i$-th group; $q$ is the binary scale factor of all data points within the $i$-th group. The values $N$ and $q$ each occupy 2 decimal digits, corresponding directly to the track and sector layout fields respectively.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 Each output value consists of 8 to 10 decimal digits, a decimal point, a space or minus sign, and a tabulator command. Two distinct \texttt{Z} instructions are required to cleanly define each data group block. After printing the final data group, execution exits to the instruction immediately following the calling sequence array; this exit instruction must not use a \texttt{Z} opcode.
 
 \subsubsection*{OUTPUT FORMAT LAYOUTS}
