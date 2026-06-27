@@ -1,34 +1,34 @@
 \section{Notes on the Translation}
 \subsection{Number representation}
 \subsubsection*{Introduction to fractional fixed-point architecture}
-The LGP-21's number representation is very different from 21st century computing platforms. It is not at all unique; many early computers used it, including the IBM 701\cite{ibm701manual}, the ILLAC I\cite{illiac1954}, the Elliot 405\cite{elliott405}, the RPC-4000\cite{rpc4000manual}, and the LGP-21's predecessor, the LGP-30\cite{lgp30programmingmanual}. This architecture is known as the IAC architecture, and was first proposed by John von Neumann for EDSAC\cite{vonneumann1945first}.
+The LGP-21's fractional fixed-point number representation is very different from more modern computing platforms, though it is not unique; many early computers used it, including the IBM 701\cite{ibm701manual}, the ILLAC I\cite{illiac1954}, the Elliot 405\cite{elliott405}, the RPC-4000\cite{rpc4000manual}, and the LGP-21's predecessor, the LGP-30\cite{lgp30programmingmanual}. This is known as the IAC architecture, and was first proposed by John von Neumann for EDSAC\cite{vonneumann1945first}.
 
-A fixed-point fractional representation treats all numbers as fractions lying between $-1$ and $+1$. As von Neumann pointed out\cite{burks1946preliminary}, the multiplication of 2 $n$-bit integers results in a value that may require $2n$ bits to represent it, which could easily overflow a register, but the multiplication of \emph{fractions} always results in a number no larger, and usually smaller, than both multiplicands (e.g., $0.5 \times 0.5 = 0.25$). The answer still requires $2n$ bits to represent, but the extra bits end up in the \emph{least} significant digits, preventing overflow from occurring.
+Fixed-point fractional representation treats all numbers as fractions lying strictly between $-1$ and $+1$. As von Neumann pointed out\cite{burks1946preliminary}, the multiplication of 2 $n$-bit integers results in a value that may require $2n$ bits to represent it, which could easily overflow a register, but the multiplication of two \emph{fractions} less than 1 always results in a number no larger than, and usually smaller than, both multiplicands (e.g., $0.5 \times 0.5 = 0.25$). The answer still requires $2n$ bits to represent, but the extra bits end up in the \emph{least} significant digits, preventing overflow from occurring, and making a good compromise between accurate representation and complexity.
 
-The design uses a combined register pair to contain the $2n$ bits; on the LGP-21, the accumulator receives the most significant half, and a hidden register not available to the programmer gets the least significant half. To reduce complexity, the LGP-21 simply throws this second half away. Since these are the least significant digits, the (unscaled) error introduced is $2^{-31}$ or less.
+This design uses a combined register pair to contain the $2n$ bits; on the LGP-21, the accumulator receives the most significant half, and a hidden multiplication register not available to the programmer gets the least significant half. The LGP-21 simply throws the multiplier register part away. These are the least significant digits, so the (unscaled) error introduced is $2^{-31}$ or less.
 
-This advantage in multiplication is offset by a problem this creates with division: fractional multiplication \emph{shrinks} numbers, but fractional division (potentially) \emph{expands} them.
+This advantage in multiplication is offset by a problem it creates with division: fractional multiplication \emph{shrinks} numbers\footnote{The numerators of numbers representable in fractional fixed-point are strictly smaller than their denominators, so the product of the numerators must always be smaller than the product of the denominators, resulting in a value that is smaller}, but fractional division (potentially) \emph{expands} them.
 
-In a fractional fixed-point architecture, dividing two numbers requires that the absolute magnitude of the divisor has to be \emph{strictly greater than} the absolute magnitude of the dividend.$$\left| \text{Divisor} \right| > \left| \text{Dividend} \right|$$Getting this wrong means that the theoretical quotient is $\ge 1.0$, and such a value cannot physically fit in the accumulator. The architecture maintains the \emph{hardware} binary point just after the sign bit, so a value $\ge 1.0$ results in an overflow.
+In a fractional fixed-point architecture, dividing two numbers requires that the absolute magnitude of the divisor has to be \emph{strictly greater than} the absolute magnitude of the dividend.$$\left| \text{Divisor} \right| > \left| \text{Dividend} \right|$$Getting this wrong means that the theoretical quotient is $\ge 1.0$, and such a value overflows because the architecture maintains the \emph{hardware} binary point just after the sign bit\footnote{The LGP-21 also does not have the concept of an exception; the best it can do is set the overflow indicator. This makes division particularly sensitive to scaling factors.}.
 
 Von Neumann wrote that ``\emph{[t]he programmer must see to it} [emphasis mine - ED] that the left-shift [scale factor] is sufficiently large to ensure this inequality.''\cite{burks1946preliminary} The cognitive load of remembering where the \emph{implied} binary point is (via the scaling factor) vs. the \emph{physical} binary point (implemented by the hardware) is placed solely on the programmer.
 
-Modern embedded systems use similar notation (referred to as \emph{Q-notation} or \emph{fixed-point scaling}) to define this manual placement of the implicit binary point within a computer word, and in fact, the original version of this document specifically refers to the scaling factor as $q$.
+Modern embedded systems actually still use similar notation (referred to as \emph{Q-notation} or \emph{fixed-point scaling}) to define this manual placement of the implicit binary point within a computer word, and in fact, the original German version of this document refers to the scaling factor as $q$ at various points.
 
 \subsubsection*{LGP-21 Fractional Fixed-point Implementation}
 \label{sec:fractional-fixed-point}
 The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+1$, with the physical binary point fixed immediately to the right of the (leftmost) sign bit. To work with integers or mixed numbers, the programmer must mentally shift this binary point to the right by $n$ bits.
 
-This manual is inconsistent as to how this is notated (most likely because of many cooks in the kitchen). The scaling factor is $q$, but there are multiple notations for it. Some contributors use $q$ = $n$. Others prefer a shorthand $@n$ notation.
-
-However it is notated, the scaling factor represent's the \emph{programmer's} division of the 31 bits of the LGP-21's word into a \emph{logical} integer portion and fractional portion. The hardware binary point remains fixed, but the programmer's may shift. 
+This original version of this manual is inconsistent as to how this is notated (most likely because of multiple authors). As noted, the scaling factor is referred to as $q$, but there are multiple alternate notations for it. Some contributors use $q$ = $n$. Others prefer a shorthand $@n$ notation. Still others simply refer to ``a $q$ of 9'' (e.g.).
 
 For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$ to be represented) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
 
 I have retained the melange of different notations for now, but I plan to standardize the usage as $q=n$ for scale factors.
 
-\subsubsection*{Arithmetic Operations and Scale Factors}
-Addition and subtraction require that the $q$ factors of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction with the hardware binary point just to the right of the sign bit. If you add two numbers with different $q$ factors without shifting them so their $q$ factors match, the machine will simply perform the operation requested on the two numbers.
+Regardless of how it is notated, the scaling factor represent's the \emph{programmer's} division of the 31 bits of the LGP-21's word into a \emph{logical} integer portion and fractional portion. The hardware binary point remains fixed, but the programmer's binary point can shift. In general, the subroutines that had specific $q$ requirements state them, and note when the $q$ of a result will not match that of original value. 
+
+\subsubsection*{Scale Factors During Arithmetic Operations}
+Addition and subtraction require that the $q$ factors of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a fixed-point fraction with the hardware binary point just to the right of the sign bit. If you add two numbers with different $q$ factors without shifting them so their $q$ factors match, the machine will simply perform the operation requested on the two numbers, yielding an invalid result.
 
     For example, if you attempt to add $1.0$ scaled at $q=1$ to $1.0$ scaled at $q=4$ without normalizing them first:
     \begin{center}
@@ -38,7 +38,7 @@ Addition and subtraction require that the $q$ factors of both operands be identi
         \text{Result} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
     \end{tabular}
     \end{center}
-The meaning of this number is ambiguous (and categorically invalid). Depending on which scale factor you \emph{think} the result is using, your answer is now either $1.125$ (if you assume the result is $q=1$ or $9.0$ (if you assume $q=4$. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
+Obviously, the answer is not $2.0$, as it should be. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
 
 Scale factor changes occur during multiplication and division as well: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
 
