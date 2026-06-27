@@ -139,45 +139,25 @@ Matrix Inversion 1 (Section~\ref{subsec:matrix_inversion_1}) uses a couple of te
 \label{subsec:matrix_vector_multiplication_1}
 
 \subsubsection*{PURPOSE}
-This program uses the Floating-Point Interpretive System 1 (Section~\ref{H1-11.0}). \texttt{D1-12.0} multiplies a matrix by a column vector and stores the resulting product vector in a designated set of memory locations. 
+\texttt{D1-12.0} multiplies a matrix by a column vector using the Floating-Point Interpretive System 1 (Section~\ref{H1-11.0}), storing the product vector at a specified address. The matrix has $i$ rows and $j$ columns (each less than 64; the matrix doesn't have to be square); the column vector has $j$ elements. All data is in floating-point format, and the total of matrix, vector, and product elements must fit in available memory.
 
-The input consists of a matrix with $i$ rows and $j$ columns, and a column vector containing $j$ elements. All data must be supplied in floating-point format. The matrix does not need to be square. The dimensions $i$ and $j$ must each be less than 64. The total number of elements across the matrix, vector, and product vector must not exceed the available memory space.
-
-\noindent
-``Matrix-Vector Multiplication 1'' operates as a subroutine invoked via a calling sequence in the main program. H1-11.0 must be memory-resident, but should be shut down via an explicit exit from the Interpretive System before the subroutine is called. 
-
-The calling sequence must supply: 
-\begin{enumerate}
-	\item the starting address of the Interpretive System,
-	\item the dimensions and starting address of the matrix,
-	\item the starting address of the column vector, and
-	\item the starting address for the destination product vector. Upon return to the main program, the calculated product vector resides in the specified locations.
-\end{enumerate}
+Matrix-Vector Multiplication 1 is called as a subroutine. The Interpretive System must already be loaded; exit it (with an \texttt{E} instruction) before the call. The calling sequence supplies the interpreter's starting address, the matrix's dimensions and starting address, and the starting addresses of the input vector and the output product vector. On return, the product vector occupies the specified locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Storage:} 1 track, 32 sectors (96 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are:
+The inputs are:
 \begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item The elements of a matrix with $i$ rows and $j$ columns, stored sequentially in row-major order (i.e., the first element of the second row immediately follows the last element of the first row).
-    \item The elements of a column vector stored in consecutive locations. The number of elements in the vector must equal the number of columns ($j$) in the matrix.
+    \item an $i \times j$ matrix in row-major order ($i$ and $j$ < 64, not necessarily equal),
+    \item a column vector of $j$ elements in consecutive locations.
 \end{enumerate}
 \noindent
-The data must be formatted in a style compatible with Floating-Point Interpretive System 1. The dimensions $i$ and $j$ must each be strictly less than 64, though they do not need to be equal. The cumulative number of elements from the matrix, input vector, and output vector must not exceed available memory capacity.
+Both must be in Floating-Point Interpretive System 1 format. The matrix, input vector, and output vector together must fit in available memory.
 
 \subsubsection*{CALLING SEQUENCE}
-The following information must be supplied by the calling sequence in the exact order specified below:
-\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $F$: The starting address of the Interpretive System in decimal track/sector notation.
-    \item $M$: The starting address of the matrix in decimal track/sector notation.
-    \item The dimensions of the matrix, with row count $i$ formatted as a decimal track address and column count $j$ formatted as a decimal sector address.
-    \item $V$: The starting address of the column vector in decimal track/sector notation.
-    \item $P$: The starting address for the destination product vector in decimal track/sector notation.
-\end{enumerate}
-\noindent
-A sample calling sequence is illustrated below, where \texttt{L} denotes the starting address of this subroutine.
+The calling sequence supplies, in order: the Interpretive System's starting address $F$, the matrix's starting address $M$, the matrix's dimensions (row count $i$ as the track part, column count $j$ as the sector part of a single address), the column vector's starting address $V$, and the destination address $P$ for the product vector. All addresses are in decimal track/sector notation. A sample calling sequence (with \texttt{L} the subroutine's base address) is shown below.
 
 \medskip
 \begin{table}[h!]
@@ -201,13 +181,10 @@ $\alpha + 7$      & ---              & ---              & Return to main program
 
 \medskip
 \noindent
-The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the immediately preceding instruction was an Interpretive System pseudo-instruction. The instruction at location $\alpha$ copies the address of the Interpretive System's key word parameter ($\alpha + 2$) into the subroutine setup loop.
-
-\noindent
-The instruction at location $\alpha + 1$ executes an unconditional branch to \texttt{L}, the base address of the subroutine. Locations $\alpha + 2$ through $\alpha + 6$ function as inline data parameters defining the operational addresses and dimensions. Location $\alpha + 7$ contains the first instruction of the main program to be executed after exiting the subroutine.
+The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction. The rest is the standard inlined-parameter call described in Section~\ref{subsec:standard-call2}; locations $\alpha+2$ through $\alpha+6$ are the parameter list, and $\alpha+7$ is where execution resumes after the call.
 
 \subsubsection*{OUTPUT}
-The individual elements of the calculated product vector are saved sequentially in consecutive locations, beginning at address $P$.
+The product vector is written to consecutive locations starting at $P$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -227,7 +204,7 @@ The individual elements of the calculated product vector are saved sequentially 
 \end{enumerate}
 
 \subsubsection*{NOTES}
-The subroutine relies heavily on the Interpretive System for processing all floating-point vector math. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is handed back to the main program in native hardware execution mode.
+The subroutine exits the Interpretive System on its own before returning, so control comes back to the main program in native (fixed-point) mode.
 
 \subsubsection*{TRANSLATOR'S NOTE}
 This is the first function to use the extended calling sequence that looks like this, documented at Section~\ref{subsec:standard-call2}.
@@ -241,7 +218,7 @@ Speculating slightly, because I have not seen/dumped the code in question, this 
 	\item The subroutine then stores the return address into a \texttt{U} instruction that it will use for the return to the main program.
 \end{itemize}
 \noindent
-This lets the \texttt{B} instruction at $L_0$ do double duty; it serves to save the ``return address'' (actually the parameter list address for the call) and to set up the calculation of the real return address by loading it into the accumulator.
+This lets the \texttt{B} instruction at $L_0$ do double duty: it both stashes the parameter-list address (which the subroutine treats as a stand-in for the return address) and loads that address into the accumulator so the subroutine can compute the real return point.
 \newpage
 
 \subsection*{MATRIX MULTIPLICATION 1 --- D1-13.0}
