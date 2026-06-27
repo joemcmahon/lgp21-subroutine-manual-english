@@ -1,3 +1,43 @@
 \section{Linear Searching}
 \subsection{Search Program 1}
+\subsubsection*{K3-10.0}
+
+\subsubsection*{PURPOSE}
+The program K3-10.0 searches a specified memory region for a specific argument, which can be either a decimal address or a hexadecimal constant.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item \textbf{Storage cells used:} 1 track, 37 sectors
+    \item \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsubsection*{OPERATION}
+Press \textsf{MAN INPUT} on the Flexowriter tape reader and jump to $L_0$.
+
+\subsubsection*{INPUT}
+The program prints the following letters and requests answers to them via the keyboard of the typewriter:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cl}
+\toprule
+\textbf{Letters} & \textbf{Input} \\
+\midrule
+\texttt{i} & Starting address of the region to be searched. \\
+\texttt{f} & Ending address of the region to be searched. \\
+\texttt{a} & Argument. If \textsf{PST} is textsf{OFF}, enter a decimal address. \\
+           & If \textsf{PST} is \textsf{ON}, enter a hexadecimal constant. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{OUTPUT}
+\textbf{\textsf{PST OFF}:} \\
+If the address part of a cell in the region to be searched is identical to the entered address, a carriage return is executed, and the address of the cell is printed in decimal, followed by a space character and the instruction contained within it. Negative instructions are preceded by a minus sign.
+
+\noindent \textbf{\textsf{PST ON}:} \\
+A carriage return is executed and the address of the cell is printed.
+
+\subsubsection*{PROGRAM STOPS}
+When the search is completed, the computer stops at $L_0 + 27$. Pressing \textsf{Start} restarts the program.
 \newpage
