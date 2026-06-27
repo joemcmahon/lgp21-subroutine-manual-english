@@ -57,7 +57,7 @@ Both parameters $N$ and $M$ are packed into a single parameter word. If $N$ is g
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -67,7 +67,7 @@ $\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to
 $\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
 $\alpha + 3$      & ---              & ---              & Return to main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -96,13 +96,13 @@ The result of Matrix Inversion 1 is the inverted $N \times N$ matrix $B$, stored
     Overflow does not disrupt the entry phase and is not reset upon subroutine exit.
     
     \item \textbf{Error Stops:} \\
-    \begin{tabular}{lp{9cm}}
+    \begin{tabularx}{\textwidth}{lX}
         \toprule
         \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
         \midrule
         \texttt{L+759}           & The matrix is singular. Mathematical inversion is impossible. Execution stops; do not attempt to bypass or resume. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{enumerate}
 
 \subsubsection*{REMARK}
@@ -184,7 +184,7 @@ A sample calling sequence is illustrated below, where \texttt{L} denotes the sta
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -198,7 +198,7 @@ $\alpha + 5$      & \texttt{Z}      & \texttt{V}       & Starting address of the
 $\alpha + 6$      & \texttt{Z}      & \texttt{P}       & Starting address of the destination product vector. \\
 $\alpha + 7$      & ---              & ---              & Return to main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -296,7 +296,7 @@ A template for the calling sequence is illustrated below, where \texttt{$L_0$} d
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -311,7 +311,7 @@ $\alpha + 6$      & \texttt{Z}      & \texttt{mmpp}    & Dimensions of matrix $B
 $\alpha + 7$      & \texttt{Z}      & \texttt{C}       & Starting address of destination product matrix $C$. \\
 $\alpha + 8$      & ---              & ---              & Return to main program (execution resumes here). \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -338,13 +338,13 @@ The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured 
     Overflow is ignored during the entry configuration phase and is not reset upon subroutine exit.
     
     \item \textbf{Error Stops:} \\
-    \begin{tabular}{lp{9cm}}
+    \begin{tabularx}{\textwidth}{lX}
         \toprule
         \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
         \midrule
         \texttt{L+241}           & Inner matrix dimensions mismatch: the number of columns in matrix $A$ ($m$) does not equal the number of rows in matrix $B$ ($m$). Mathematical multiplication is undefined. Do not attempt to resume execution; the input data dimensions must be corrected. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{enumerate}
 
 \subsubsection*{NOTES}
@@ -394,7 +394,7 @@ A template for the calling sequence is illustrated below, where \texttt{$L_0$} d
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -408,7 +408,7 @@ $\alpha + 5$      & \texttt{A}/\texttt{S} & \texttt{B}  & Operation (\texttt{A} 
 $\alpha + 6$      & \texttt{Z}      & \texttt{C}       & Starting address of destination area for the resulting matrix. \\
 $\alpha + 7$      & ---              & ---              & Return to main program (execution resumes here). \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -482,7 +482,7 @@ The source address $M$ and destination address $T$ may be identical (in-place tr
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -493,7 +493,7 @@ $\alpha + 2$      & \dots           & \dots            & Packed parameter word: 
 $\alpha + 3$      & \texttt{Z}      & \texttt{T}       & Starting address for the transposed matrix. \\
 $\alpha + 4$      & ---              & ---              & Return to main program (execution resumes here). \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -576,7 +576,7 @@ A template for entering the interpretive loop is illustrated below, where \textt
 \medskip
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -587,7 +587,7 @@ $\vdots$          & $\vdots$        & $\vdots$         & Sequence of complex ope
 $\alpha + n$      & \texttt{XE}     & \texttt{0000}    & Exit from the Interpretive System. \\
 $\alpha + n + 1$  & \dots           & \dots            & First native hardware instruction (execution resumes here). \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \medskip
@@ -597,24 +597,26 @@ The \texttt{R} instruction at location $\alpha$ automatically captures the addre
 \subsubsection*{OPERATING DETAILS}
 
 \paragraph{1. Execution Time}
-The following table outlines the maximum execution durations required for each individual complex operation, measured in drum rotations and milliseconds.
+The following table outlines the maximum execution durations required for each individual complex operation, measured in drum rotations and milliseconds.\footnote{Notice how left-shifting (the \texttt{P} instruction) is significantly slower than right-shifting (\texttt{R}). On a magnetic disk memory system like the LGP-21, bit-shifting requires track-recirculation delays and masking. Left shifts require repeated additions or multiplication loops to slide data up toward the sign bit, adding extra revolutions, whereas right shifts could take advantage of standard hardware truncation.}
 
 \medskip
 \noindent
+\small
 \begin{tabular}{crr|crr}
 \toprule
-\textbf{Instruction} & \textbf{Drum Rotations} & \textbf{Time (ms)} & \textbf{Instruction} & \textbf{Drum Rotations} & \textbf{Time (ms)} \\
+\textbf{Instruction} & \textbf{Rotations} & \textbf{Time (ms)} & \textbf{Instruction} & \textbf{Rotations} & \textbf{Time (ms)} \\
 \midrule
-\texttt{B}           & 11                      & 561                & \texttt{P}           & 17                      & 1167\footnote{Notice how left-shifting is significantly slower than right-shifting. On a magnetic disk memory system like the LGP-21, bit-shifting requires track-recirculation delays and masking. Left shifts require repeated additions or multiplication loops to slide data up toward the sign bit, adding extra revolutions, whereas right shifts could take advantage of standard hardware truncation.}               \\
-\texttt{A}           & 14                      & 714                & \texttt{U}           & 8                       & 408                \\
-\texttt{S}           & 14                      & 714                & \texttt{XE} (Exit)   & 6                       & 306                \\
-\texttt{M}           & 22                      & 1122               & \texttt{E} (Set Addr)& 9                       & 459                \\
-\texttt{D}           & 41                      & 2091               & \texttt{I}           & 6                       & 306                \\
-\texttt{H}           & 14                      & 714                & \texttt{Y}           & 8                       & 408                \\
-\texttt{C}           & 14                      & 714                & \texttt{Z} ($=0$)    & 11                      & 561                \\
-\texttt{R} (Shift R) & 14                      & 714                & \texttt{Z} ($\ne0$)  & 13                      & 663                \\
+\texttt{B}           & 11 & 561  & \texttt{P}            & 17 & 1167 \\
+\texttt{A}           & 14 & 714  & \texttt{U}            & 8  & 408  \\
+\texttt{S}           & 14 & 714  & \texttt{XE} (Exit)    & 6  & 306  \\
+\texttt{M}           & 22 & 1122 & \texttt{E} (Set Addr) & 9  & 459  \\
+\texttt{D}           & 41 & 2091 & \texttt{I}            & 6  & 306  \\
+\texttt{H}           & 14 & 714  & \texttt{Y}            & 8  & 408  \\
+\texttt{C}           & 14 & 714  & \texttt{Z} ($=0$)     & 11 & 561  \\
+\texttt{R} (Shift R) & 14 & 714  & \texttt{Z} ($\ne0$)   & 13 & 663  \\
 \bottomrule
 \end{tabular}
+\normalsize
 
 \paragraph{2. Program Input:}
 The subroutine tape is distributed in two formats:
@@ -626,17 +628,17 @@ The subroutine tape is distributed in two formats:
 \paragraph{3. Required Input/Output Units:} None.
 
 \paragraph{4. Error Stops:}
-\medskip
-\noindent
-\begin{tabular}{lp{6.5cm}l}
+\begin{center}
+\begin{tabular}{l p{6.5cm} l}
     \toprule
     \textbf{Location} & \textbf{Meaning} & \textbf{Remedy} \\
     \midrule
-    \texttt{L+122}    & Negative Instruction encountered (Illegal format). & Fatal error. Do not force resume. \\
-    \texttt{L+135}    & Invalid \texttt{N-} Type instruction variation.    & Fatal error. Do not force resume. \\
-    \texttt{L+154}    & Invalid \texttt{T-} Type instruction variation.    & Fatal error. Do not force resume. \\
+    \texttt{L+122}    & Negative Instruction encountered (Illegal format). & Fatal error. \\
+    \texttt{L+135}    & Invalid \texttt{N-} Type instruction variation.    & Fatal error. \\
+    \texttt{L+154}    & Invalid \texttt{T-} Type instruction variation.    & Fatal error. \\
     \bottomrule
 \end{tabular}
+\end{center}
 
 \paragraph{5. Overflow:}
 Overflow status is ignored during interpretive entry execution loops and is not explicitly reset upon subroutine exit.

@@ -17,44 +17,36 @@ When this address has been entered, or when \textsf{PST} has been turned \textsf
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cl}
+\begin{tabularx}{\textwidth}{cX}
 \toprule
 \textbf{Command} & \textbf{Function} \\
 \midrule
-\texttt{T} & Turns on simulated \textsf{PST}. This ``switch'' has the same function \\
-           & while tracing the tested program as the real PST would \\
-           & during normal operation of the traced program. \\
+\texttt{T} & Turns on simulated \textsf{PST}. This ``switch'' has the same function while tracing the tested program as the real PST would during normal operation of the traced program. \\
 \midrule
-\texttt{C} & Print the contents of the simulated counter register in decimal track/sector \\
-           & notation after the execution of each instruction of the traced program. \\
+\texttt{C} & Print the contents of the simulated counter register in decimal track/sector notation after the execution of each instruction of the traced program. \\
 \midrule
-\texttt{R} & Print the contents of the instruction register in instruction format after \\
-           & execution of each instruction of the traced program. The instruction \\
-           & is preceded by a space character or a minus sign. \\
+\texttt{R} & Print the contents of the instruction register in instruction format after execution of each instruction of the traced program. The instruction is preceded by a space character or a minus sign. \\
 \midrule
-\texttt{A} & Print the contents of the accumulator in hexadecimal notation after the \\
-           & execution of each instruction of the traced program. \\
+\texttt{A} & Print the contents of the accumulator in hexadecimal notation after the execution of each instruction of the traced program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \noindent \textbf{Note:} Any combination of the above command characters can be entered and the corresponding commands remain in effect until the next input. Entering a new command disables all functions first and then re-enables the ones entered. These characters may be entered in any order.
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cl}
+\begin{tabularx}{\textwidth}{cX}
 \toprule
 \textbf{Command} & \textbf{Function} \\
 \midrule
-\texttt{X} & Restart the program and enter a new address. \\
-           & for tracing. \\
+\texttt{X} & Restart the program and enter a new address for tracing. \\
 \midrule
 \texttt{O} & Continue tracing from the point where execution was stopped, without printout. \\
 \midrule
-(none)     & Pressing \textsf{START} without entering \texttt{T}, \texttt{C}, \texttt{R}, or \texttt{A} causes tracing to continue \\
-           & from the point where execution was stopped; the previous key words remain effective. \\
+(none)     & Pressing \textsf{START} without entering \texttt{T}, \texttt{C}, \texttt{R}, or \texttt{A} causes tracing to continue from the point where execution was stopped; the previous key words remain effective. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \noindent \textbf{Note:} The accumulator is never re-initialized by ``Trace 1''. The program under test must take care of this housekeeping itself.
@@ -84,14 +76,14 @@ Note that tracing without output can cause confusion if the traced program execu
     \item \textbf{Program sense switches:}
     \begin{table}[h!]
     \centering
-    \begin{tabular}{ccl}
+    \begin{tabularx}{\textwidth}{ccX}
     \toprule
     \textbf{Switch} & \textbf{Position} & \textbf{Function K1-10.0} \\
     \midrule
     PST             & OFF               & No effect. \\
                     & ON                & Jump to an input instruction of the program to enter new commands. \\
     \bottomrule
-    \end{tabular}
+    \end{tabularx}
     \end{table}
     \item \textbf{Error stops:} \\
     The subroutine executes all \texttt{Z} instructions of the program under test as stops. The only stop instructions in the trace program itself are before the initial output formatting command and before the entry of a new trace address.

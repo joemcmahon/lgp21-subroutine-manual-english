@@ -29,7 +29,7 @@ The calling sequence must supply the following parameters in this exact sequence
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -39,7 +39,7 @@ $\alpha+2$         & \texttt{I} & $S$                     & Starting address of 
 $\alpha+3$         & \texttt{N} & \texttt{XXXX}           & Number of loop iterations ($X$). \\
 $\alpha+4$         &            & \textit{etc.}           & Return point in the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) into the tracking logic of the subroutine. The instruction at $\alpha+1$ effects an immediate jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the address $S$, and cell $\alpha+3$ contains the loop execution limit value $X$. Control returns from the subroutine at location $\alpha+4$.
@@ -101,6 +101,7 @@ Assume ``Loop Counter 1'' is loaded on track 40 (starting at location 4000).
 \subsubsection*{PROGRAM CODING SHEET}
 \begin{table}[h!]
 \centering
+\small
 \begin{tabular}{|c|c|l|c|l|p{6cm}|}
 \hline
 \textbf{Input Key} & \textbf{Loc.} & \textbf{Opcode} & \textbf{S} & \textbf{Address /}  & \textbf{Comments} \\
@@ -125,6 +126,7 @@ Assume ``Loop Counter 1'' is loaded on track 40 (starting at location 4000).
                    & 2013 & \texttt{Z} &   & 0000 & Halt machine execution upon loop completion. \\
 \hline
 \end{tabular}
+\normalsize
 \end{table}
 \subsubsection*{COMPUTER-CONTROLLED PRINT LOOP}
 

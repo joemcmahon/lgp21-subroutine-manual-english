@@ -27,7 +27,7 @@ Different calling sequences are provided for sine and cosine. Only one value (ei
 \paragraph{Sine}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -35,7 +35,7 @@ $\alpha-1$      & \texttt{B}            & $\theta$       & Load $\theta$ at $@9$
 $\alpha$      & \texttt{R}            & \texttt{L+49}    & Store return address at end of subroutine.\\
 $\alpha+1$      & \texttt{U}            & \texttt{L}       & Call the sine routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 
@@ -44,7 +44,7 @@ This is a standard function call, with the argument passed in the accumulator an
 \paragraph{Cosine}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -52,7 +52,7 @@ $\alpha-1$      & \texttt{B}            & $\theta$       & Load $\theta$ at $@9$
 $\alpha$      & \texttt{R}            & \texttt{L+49}    & Store return address at end of subroutine.\\
 $\alpha+1$      & \texttt{U}            & \texttt{L+4}       & Call the cosine routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The calling sequence for cosine is exactly the same as for sine, except the subroutine is entered at the origin address of the \texttt{B1-10.0} subroutine plus 4 words.
@@ -100,7 +100,7 @@ The input variable for \texttt{B1-10.1} is an angle $\theta$, whose function val
 \paragraph{Sine}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -108,7 +108,7 @@ $\alpha-1$      & \texttt{B}            & $\theta$       & Load $\theta$ at $@3$
 $\alpha$      & \texttt{R}            & \texttt{L+16}    & Store return address at end of subroutine.\\
 $\alpha+1$      & \texttt{U}            & \texttt{L}       & Call the sine routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 This is a standard LGP-21 function call; the argument is loaded into the accumulator before the call, and the result is returned in the accumulator.
@@ -116,7 +116,7 @@ This is a standard LGP-21 function call; the argument is loaded into the accumul
 \paragraph{Cosine}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -124,7 +124,7 @@ $\alpha-1$      & \texttt{B}            & $\theta$       & Load $\theta$ at $@3$
 $\alpha$      & \texttt{R}            & \texttt{L+16}    & Store return address at end of subroutine.\\
 $\alpha+1$      & \texttt{U}            & \texttt{L+45}       & Call the cosine routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The calling sequence is exactly the same as for the sine, except that we jump to the cosine entry point to the subroutine, 45 words past the start of the subroutine.
@@ -174,7 +174,7 @@ The input variable for \texttt{B1-11.0} is the value $N$ at $@9$ whose arctangen
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -182,7 +182,7 @@ $\alpha-1$      & \texttt{B}            & $N$       & Load $N$ at $@9$ into the 
 $\alpha$      & \texttt{R}            & \texttt{L+51}    & Store return address at end of subroutine.\\
 $\alpha+1$      & \texttt{U}            & \texttt{L}       & Call the arctangent routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 This is a standard function call. Load the argument into the accumulator before the call; the value is returned in the accumulator.
@@ -265,7 +265,7 @@ The input variables for the program are the values $x$ and $y$, which must have 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -275,7 +275,7 @@ $\alpha+1$   & \texttt{B} & \texttt{X} & Load $X$ at $@q$ into the accumulator. 
 $\alpha$   & \texttt{R} & \texttt{L+10} & Set return address. \\
 $\alpha+1$      & \texttt{U}          & \texttt{L}       & Call the arctangent routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Store $y$ in the designated parameter storage, \texttt{L+34} (any operation that puts it there is fine). Load $x$ into the accumulator (again, any operation accomplishing this is fine). Remember that $x$ and $y$ must be scaled to the same $q$ value.
@@ -324,7 +324,7 @@ The value $N$ at $@1$, with $-1 \le N \le 1$, must be in the accumulator when th
 \paragraph{Arcsin}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -332,7 +332,7 @@ $\alpha-1$      & \texttt{B} & $N$                  & Load $N$ at $@1$ into the 
 $\alpha$   & \texttt{R} & \texttt{L+21} & Set return address. \\
 $\alpha+1$      & \texttt{U}          & \texttt{L}       & Call the $\arcsin$ routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Load $N$ into the accumulator, set the return address at \texttt{L+21}, and jump to \texttt{L} to compute the $\arcsin$. Mainline execution continues after the jump.
@@ -340,7 +340,7 @@ Load $N$ into the accumulator, set the return address at \texttt{L+21}, and jump
 \paragraph{Arccos}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -348,7 +348,7 @@ $\alpha-1$      & \texttt{B} & $N$                  & Load $N$ at $@1$ into the 
 $\alpha$   & \texttt{R} & \texttt{L+21}         & Set return address. \\
 $\alpha+1$      & \texttt{U}  & \texttt{L+211}    & Call the $\arccos$ routine.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Load $N$ into the accumulator, set the return address at \texttt{L+21}, and jump to \texttt{L+211} to compute the $\arccos$. Mainline execution continues after the jump.
@@ -358,15 +358,18 @@ Output is returned in the accumulator $@9$ in radians; the value of the function
 
 \subsubsection*{REMARKS}
 Since calculating the arcsine or arccosine requires calculating a square root, a program for this has been included in this subroutine. It can be used independently with the following calling sequence:
-\begin{center}
-\begin{tabular}{llll}
-$\alpha-1$ &   \texttt{B} & \texttt{value} & \text{; load \texttt{value} with an \emph{even} $q$} \\
-    & & & \text{; into the accumulator} \\
-    & & & \text{; (see translator notes)} \\
-$\alpha$ &   \texttt{R} & \texttt{L+150} & \text{; set return address} \\
-$\alpha+1$ &   \texttt{U} & \texttt{L+100} & \text{; call the square root routine} \\
-\end{tabular}
-\end{center}
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{cccX}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$ & \texttt{B} & \texttt{value}  & Load \texttt{value} into the accumulator at an \emph{even} $q$ (see translator notes). \\
+$\alpha$   & \texttt{R} & \texttt{L+150}  & Set return address. \\
+$\alpha+1$ & \texttt{U} & \texttt{L+100}  & Call the square root routine. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 The square root is returned in the accumulator. Note that the $q$ value of the result is \emph{half} of the argument's $q$ value.
 

@@ -24,7 +24,7 @@ The cells immediately following the jump instruction of the calling sequence mus
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -35,7 +35,7 @@ $\alpha+2$         & \texttt{XZ} & \texttt{NNNN}          & Size of the table (m
 $\alpha+3$         & \texttt{XZ} & \texttt{T}             & Starting address of the table. \\
 $\alpha+4$         &            & \textit{etc.}           & Return point in the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at $\alpha-1$ brings $C$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains \texttt{NNNN} modulo 64; for example, \texttt{XZ 0132} represents 96 table words (1 track and 32 sectors). The instruction at $\alpha+3$ contains the table address $T$. Control returns from the subroutine at $\alpha+4$.
@@ -60,7 +60,7 @@ Upon returning to the main program, the address of the word that matches the com
     \item \textbf{Program stops:}
     \begin{table}[h!]
     \centering
-    \begin{tabular}{l p{5cm} p{5cm}}
+    \begin{tabular}{l p{4.5cm} p{4.5cm}}
     \toprule
     \textbf{Memory Cell} & \textbf{Meaning} & \textbf{Remedy} \\
     \midrule

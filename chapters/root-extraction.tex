@@ -25,7 +25,7 @@ $N$ must reside in the accumulator with an even $q$ factor when branching to the
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -33,7 +33,7 @@ $\alpha-1$ & \texttt{B} & \texttt{L} & Bring $N$ into the accumulator at an even
 $\alpha$ & \texttt{R} & \texttt{L+50} & Store the return address in the subroutine. \\
 $\alpha+1$ & \texttt{U} & \texttt{L} & Unconditional branch to the subroutine entry. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 This function uses a standard LGP-21 function call. The only notable factor is that $N$ must have an even $q$.\footnote{See \label{subsub:halfQ} for why.}
@@ -64,13 +64,13 @@ Upon the return branch to the main program, the square root of the argument $N$ 
     Overflow is ignored and is not reset upon return.
 
     \item \textbf{Error Stops:} \\
-    \begin{tabular}{lp{9cm}}
+    \begin{tabularx}{\textwidth}{lX}
         \toprule
         \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
         \midrule
         \texttt{L+24}            & $N$ is negative. After pressing the \textsf{START} button, the accumulator is cleared, and control returns directly to the main program. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{enumerate}
 \newpage
 \subsection*{$n$-TH ROOT --- B4-11.0}
@@ -98,7 +98,7 @@ Upon branching to the subroutine, $A$ must reside in the accumulator scaled to a
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -107,7 +107,7 @@ $\alpha$ & \texttt{R} & \texttt{L+16} & Store the parameter address in the subro
 $\alpha + 1$ & \texttt{U} & \texttt{L} & Unconditional branch to the subroutine entry. \\
 $\alpha + 2$ & \texttt{Z} & \texttt{08nn} & Parameter $n$ encoded as a decimal sector address. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at location $\alpha - 1$ brings the value $A$ into the accumulator at a $q$ factor that is divisible by $n$. (Any instruction sequence that achieves this result is permissible.)
@@ -133,12 +133,12 @@ Upon the return branch to the main program, the $n$-th root of the argument resi
     Overflow is ignored upon entry and is not reset upon exit.
     
     \item \textbf{Error stops:} \\
-    \begin{tabular}{lp{9cm}}
+    \begin{tabularx}{\textwidth}{lX}
         \toprule
         \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
         \midrule
         \texttt{L+61}            & The requested root is an imaginary value (i.e., an even-degree root of a negative number). Pressing the \textsf{START} button clears the accumulator and returns execution directly to the main program. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{enumerate}
 \newpage

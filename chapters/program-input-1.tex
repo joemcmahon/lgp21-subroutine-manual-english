@@ -286,11 +286,17 @@ The subroutine will read the tape (without storing it) and compare it word-for-w
 
 The instructions to be modified are:
 
-\begin{tabular}{llll}
- & Memory Location  &  Old Contents &   New Contents \\
- & L + 24     &        H J      &       U 0025 \\
- & L + 31     &        Y 0024   &       U 0032
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc}
+\toprule
+\textbf{Memory Location} & \textbf{Old Contents} & \textbf{New Contents} \\
+\midrule
+\texttt{L+24} & \texttt{H [\ \ ]} & \texttt{U 0025} \\
+\texttt{L+31} & \texttt{Y 0024} & \texttt{U 0032} \\
+\bottomrule
 \end{tabular}
+\end{table}
 
 % =========================================================================
 % SECTION: QUICK REFERENCE & NOTATION LEGEND
@@ -336,7 +342,7 @@ The instructions to be modified are:
 % =========================================================================
 \subsubsection*{DETAILED OPERATION SUMMARY}
 \vspace{-1.2em} % <--- Add this line here to yank the table up tight against the header
-\begin{longtable}{l p{11.5cm}}
+\begin{longtable}{l p{9.5cm}}
 \toprule
 \textbf{Keyword} & \textbf{Operation \& Detailed Description} \\
 \midrule

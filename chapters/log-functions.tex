@@ -24,7 +24,7 @@ Each of the exponential functions has a separate entry point into the subroutine
 \paragraph{$2^x$}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -32,13 +32,13 @@ $\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L} & Call the $2^x$ routine. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \paragraph{$e^x$}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -46,13 +46,13 @@ $\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+2} & Call the $e^x$ routine. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \paragraph{$10^x$}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -60,7 +60,7 @@ $\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+3} & Call the $10^x$ routine. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 Each of the entry points is a standard LGP-21 subroutine call; mainline execution resumes directly following the unconditional jump to the subroutine.
 
@@ -132,7 +132,7 @@ The \texttt{Z} instruction containing $K$ is the final entry in the calling sequ
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -142,7 +142,7 @@ $\alpha+1$ & \texttt{U} & \texttt{L} & Call the log routine. The following param
 $\alpha+2$ & \texttt{Z} & \texttt{00}$Q$ & The $q$ value of $N$. \\
 $\alpha+3$ & \texttt{Z} & \texttt{00}$K$ & Desired base $K$. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 As usual, any instruction sequence leaving $N$ in the accumulator prior to the call is fine as long as it leaves $N$ there with a positive $q$. The instruction at location $\alpha$ stores the address ($\alpha+2$) of the \texttt{Z} instruction containing $Q$ into the subroutine's internal tracking mechanism, giving the subroutine the address of $Q$ and $K$.\footnote{Translator's note: the subroutine figures out the return address by taking the address supplied by the \texttt{R} instruction and adding 2 to skip over the two parameter words. It then updates a \texttt{U} instruction in \emph{itself} to jump back to the proper return address}.
 
@@ -174,13 +174,13 @@ Upon the return branch to the main program, the calculated logarithm to the desi
     Overflow is neither checked upon entry to the subroutine nor reset upon exit.
 
     \item \textbf{Error Stops:} \\
-  \begin{tabular}{lp{9cm}} % Adjust the 9cm width to fit your page margins
+  \begin{tabularx}{\textwidth}{lX} % Adjust the 9cm width to fit your page margins
     \toprule
     \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
     \midrule
     \texttt{main program+8}  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1\texttt{@30})$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
 \end{enumerate}
 
 \subsubsection*{Translator's Notes}

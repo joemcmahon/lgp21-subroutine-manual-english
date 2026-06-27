@@ -25,7 +25,7 @@ The data block must occupy consecutive cells and may be copied in any direction;
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -36,7 +36,7 @@ $\alpha+3$   & \texttt{Z} & $M_2$                   & Destination starting addre
 $\alpha+4$   & \texttt{Z} & $N$                     & Number of words to be copied. \\
 $\alpha+5$   &            & \textit{etc.}           & Return point in the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at $\alpha$ stores the address of the parameter block ($\alpha+2$) into the subroutine tracking logic. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the starting address of the original data block; cell $\alpha+3$ contains the starting address of the new target area; and cell $\alpha+4$ contains the total count of words making up the block.
@@ -61,7 +61,7 @@ Suppose a memory block of 200 words (decimal), beginning at cell 0700, is to be 
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -72,7 +72,7 @@ Suppose a memory block of 200 words (decimal), beginning at cell 0700, is to be 
 0504 & \texttt{Z} & 0308 & $N$ (200 words represented as 3 tracks, 8 sectors $(3 \times 64 = 192)+ 8)$. \\
 0505 &            & \textit{etc.} & Execution resumes here with the data copied. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 \subsection*{TAPE DUPLICATOR 1 --- L4-11.0}
 

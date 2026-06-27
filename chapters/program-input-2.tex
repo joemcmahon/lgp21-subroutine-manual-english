@@ -216,7 +216,7 @@ If an input unit other than the typewriter's paper tape reader is to be selected
 
 \subsubsection*{MEANING OF THE PROGRAM SWITCH KEYS}
 \begin{center}
-\begin{tabular}{lll}
+\begin{tabularx}{\textwidth}{llX}
 \toprule
 \textbf{Switch} & \textbf{State} & \textbf{Result} \\
 \midrule
@@ -225,12 +225,12 @@ If an input unit other than the typewriter's paper tape reader is to be selected
 \textsf{PST}    & \textsf{OFF}   & Checksums are compared when reading hexadecimal tapes. \\
                 & \textsf{ON}    & Checksums are \emph{not} compared when reading hexadecimal tapes.\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \subsubsection*{ERROR STOPS} 
 \begin{center}
-\begin{tabular}{ll}
+\begin{tabularx}{\textwidth}{lX}
 \toprule
 \textbf{Message} & \textbf{Meaning and Resolution} \\
 \midrule
@@ -247,7 +247,7 @@ If an input unit other than the typewriter's paper tape reader is to be selected
                  & \quad d) Release \textsf{Manual Input} (on the typewriter).\\
                  & \quad e) Press \textsf{START} (on the computer). (Note: The last word read contains the error).\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \textbf{Note:} Following an error stop, the subroutine automatically selects the typewriter for input.
@@ -262,7 +262,7 @@ A program can be broken down into logically independent sections, some of which 
 On the other hand, if it is unnecessary to do so, the modification of an entire instruction group can be avoided by simply setting the address modifier to zero. There are no ``reserved'' blocks of memory; the programmer may use the LGP-21's memory as they see fit.
 
 \subsubsection*{SUMMARY}
-\begin{longtable}{l p{11.5cm}}
+\begin{longtable}{l p{9.5cm}}
 \toprule
 \textbf{Keyword} & \textbf{Meaning \& Detailed Description} \\
 \midrule

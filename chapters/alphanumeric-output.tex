@@ -64,19 +64,20 @@ The last word of the block is designated by the special termination symbol \text
 \subsubsection*{EXAMPLE}
 The following example illustrates how to compile a data group for ``Alphanumeric Output 1'':
 \begin{center}
-\begin{tabular}{cccll}
+\small
+\begin{tabularx}{\textwidth}{ccccX}
     \toprule
     \textbf{Loader Word} & \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
     \midrule
-                      & $x$               & \texttt{R}      & \texttt{L}       & Set data pointer. \\
-                      & $x+1$             & \texttt{U}      & \texttt{L}       & Branch to subroutine. \\
-    \texttt{.0000004} & $x+2$             & \texttt{20}     & \texttt{42 09 72}& Alphanumeric raw hex data tokens. \\
-                      & $x+3$             & \texttt{32}     & \texttt{32 22 32}& Alphanumeric raw hex data tokens. \\
-                      & $x+4$             & \texttt{5J}     & \texttt{06 42 72}& Alphanumeric raw hex data tokens. \\
-                      & $x+5$             & \texttt{12}     & \texttt{7F 7Q 00}& Alphanumeric raw hex data tokens with end marker. \\
-                      & $x+6$             & \dots           &                  & Main program resumes. \\
+                      & $x$   & \texttt{R}  & \texttt{L}        & Set data pointer. \\
+                      & $x+1$ & \texttt{U}  & \texttt{L}        & Branch to subroutine. \\
+    \texttt{.0000004} & $x+2$ & \texttt{20} & \texttt{42 09 72} & Alphanumeric raw hex data tokens. \\
+                      & $x+3$ & \texttt{32} & \texttt{32 22 32} & Alphanumeric raw hex data tokens. \\
+                      & $x+4$ & \texttt{5J} & \texttt{06 42 72} & Alphanumeric raw hex data tokens. \\
+                      & $x+5$ & \texttt{12} & \texttt{7F 7Q 00} & Alphanumeric raw hex data tokens with end marker. \\
+                      & $x+6$ & \dots       &                   & Main program resumes. \\
     \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 This example issues an automatic carriage return command, prints the text \texttt{"PLANNING PAYS"}, and cleanly branches execution back to location $x+6$ of the main program logic sequence. The token \texttt{7Q} inside the final memory word marks the structural end code statement; the remaining trailing zero characters are solely included to fill out the word boundary layout.
@@ -85,38 +86,40 @@ This example issues an automatic carriage return command, prints the text \textt
 There are two distinct calling sequences available for invoking ``Alphanumeric Output 1''. Calling Sequence 1 is utilized exclusively when routing output to the standard console typewriter. Calling Sequence 2 is used when an alternative hardware output peripheral unit is required.
 
 \paragraph{Calling Sequence 1 (Standard Typewriter Output)}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $x$               & \texttt{R}      & \texttt{L}       & Transfer starting address of data block into subroutine cell \texttt{L}. \\
-    $x+1$             & \texttt{U}      & \texttt{L}       & Jump to subroutine standard execution entry point. \\
-    $x+2$             & \dots           &                  & (First control keyword string token word). \\
-    $\dots$           & \dots           &                  & Alphanumeric string control words. \\
-    $x+n$             & \dots           &                  & (Final control keyword string token word containing \texttt{7Q}). \\
-    $x+n+1$           & \dots           &                  & Main program execution resumes. \\
-    \bottomrule
-\end{tabular}
-\end{center}
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{cccX}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$x$     & \texttt{R} & \texttt{L} & Transfer starting address of data block into subroutine cell \texttt{L}. \\
+$x+1$   & \texttt{U} & \texttt{L} & Jump to subroutine standard execution entry point. \\
+$x+2$   & \dots      &             & First control keyword string token word. \\
+$\dots$ & \dots      &             & Alphanumeric string control words. \\
+$x+n$   & \dots      &             & Final control keyword string token word, containing \texttt{7Q}. \\
+$x+n+1$ & \dots      &             & Main program execution resumes. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 The instruction at location $x$ stores the entry pointer of the data block into the subroutine body. The command at $x+1$ triggers the execution branch. Cells $x+2$ through $x+n$ contain the $n$ string keyword words. Location $x+n+1$ holds the next instruction of the main program to be executed immediately following subroutine exit.
 
 \paragraph{Calling Sequence 2 (Custom Peripheral Routing)}
-\begin{center}
-\begin{tabular}{ccll}
-    \toprule
-    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $x-1$             & \texttt{B}      & \texttt{[Code]}  & Load custom device selection control word into accumulator. \\
-    $x$               & \texttt{R}      & \texttt{L}       & Store starting address of keywords into subroutine body. \\
-    $x+1$             & \texttt{U}      & \texttt{L+50}    & Jump to alternative device-selection entry point. \\
-    $x+2$             & \dots           &                  & (First control keyword string token word). \\
-    $\dots$           & \dots           &                  & Alphanumeric string control words. \\
-    $x+n$             & \dots           &                  & (Final control keyword string token word containing \texttt{7Q}). \\
-    $x+n+1$           & \dots           &                  & Main program execution resumes. \\
-    \bottomrule
-\end{tabular}
-\end{center}
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{cccX}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$x-1$   & \texttt{B} & \texttt{[Code]} & Load custom device selection control word into accumulator. \\
+$x$     & \texttt{R} & \texttt{L}      & Store starting address of keywords into subroutine body. \\
+$x+1$   & \texttt{U} & \texttt{L+50}   & Jump to alternative device-selection entry point. \\
+$x+2$   & \dots      &                  & First control keyword string token word. \\
+$\dots$ & \dots      &                  & Alphanumeric string control words. \\
+$x+n$   & \dots      &                  & Final control keyword string token word, containing \texttt{7Q}. \\
+$x+n+1$ & \dots      &                  & Main program execution resumes. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 This configuration differs from the standard entry pattern by exactly two operational instructions. The command at $x-1$ stages the peripheral selection mask inside the accumulator register. This selection code can be encapsulated within the track address operand field of a standard non-operative instruction word (e.g., \texttt{xZ tt00}, where \texttt{tt} represents the physical target peripheral selector code). The command at $x+1$ branches into the alternative subroutine device configuration entry sequence at offset address \texttt{L+50}.
 
 \subsubsection*{OUTPUT}
@@ -159,10 +162,10 @@ During input storage, the data must be preceded by the constant keyword of \text
 \small
 \begin{tabular}{lllll}
     \toprule
-    \textbf{Program Input Keyword} & \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+    \textbf{Command} & \textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
     \midrule
-    & $\alpha$ & \texttt{R} & \texttt{L} & Store return address \\
-    & $+1$     & \texttt{U} & \texttt{L} & Entry to subroutine \\
+    & $\alpha$ & \texttt{R} & \texttt{L}  & Store return address \\
+    & $+1$     & \texttt{U} & \texttt{L}  & Entry to subroutine \\
     & $+2$     & \texttt{Z} & \texttt{AA} & Pointer to data block \\
     & $+3$     & u.s.w.     &             & Return to main program \\
     [1ex]
@@ -178,7 +181,7 @@ This example causes the printout of \texttt{PLANNING PAYS} and returns execution
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -187,7 +190,7 @@ $+1$ & \texttt{U} & \texttt{L} & Entry into the subroutine. \\
 $+2$ & \texttt{Z} & \texttt{A} & Starting address of the data block ($A$). \\
 $+3$ & & \textit{etc.} & Return to the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at $\alpha$ stores the address ($+2$) of the instruction containing the data block's starting address into the subroutine. The instruction at $+1$ executes a jump to the starting address ($L$) of the subroutine. Cell $+2$ contains the \texttt{Z} instruction with $A$, the starting address of the data block. Cell $\alpha+3$ contains the instruction of the main program that will be executed first after exiting the subroutine. 

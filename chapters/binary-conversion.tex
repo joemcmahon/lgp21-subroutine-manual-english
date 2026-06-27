@@ -16,7 +16,7 @@ The input variable -- a positive 8-digit decimal number scaled at $q = 31$ -- mu
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -25,7 +25,7 @@ $\alpha$     & \texttt{R} & $L_0 + 42$              & Store the return address i
 $+1$         & \texttt{U} & $L_0$                   & Jump to the subroutine starting address. \\
 $+2$         &            & \textit{etc.}           & Return point in the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at $\alpha-1$ brings the argument scaled at $q=31$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Control returns to location $\alpha+2$ of the main program.
@@ -35,7 +35,7 @@ Suppose the 8-digit decimal value to be converted is $00024576$, stored in memor
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccc p{6cm}}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -44,7 +44,7 @@ Suppose the 8-digit decimal value to be converted is $00024576$, stored in memor
 1202 & \texttt{U} & 0800 & Jump to the subroutine entry point. \\
 1203 &            & \textit{etc.} & Execution resumes here with the binary result held in the accumulator @ 30. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The instruction at 1200 loads the data word containing the decimal integer representation. The instruction at 1201 sets the return path to cell 1203 inside the subroutine's exit tracking line (at $0800 + 42$). Cell 1202 triggers the jump to the routine. Upon return to cell 1203, the accumulator contains the true binary value equivalent to \texttt{0x6000} (decimal $24576$) correctly shifted to $q=30$.
