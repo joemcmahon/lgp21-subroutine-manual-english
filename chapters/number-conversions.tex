@@ -1,24 +1,20 @@
 \section{Format Conversion}
 
 \label{sec:tape-conversion}
-\subsection{DECIMAL-HEXADECIMAL TAPE CONVERSION}
-\subsubsection*{H4-10.0}
+\subsection*{DECIMAL-HEXADECIMAL TAPE CONVERSION --- H4-10.0}
 
 \subsubsection*{PURPOSE}
 Program H4-10.0 converts arbitrarily relocatable, decimal-coded program tapes that are permissible for Program Input 1 (J1-10.0) into arbitrarily relocatable hexadecimal tapes, usable by \ref{sec:PIRloader}. A conversion log is created with a listing of all instructions to be converted and whether or not they are relocatable, and a memory map of where the program is currently loaded.
 
 Any corrections required in the program can be made by means of Program Input 1 \ref{sec:PIRloader} before output. The resulting arbitrarily relocatable hexadecimal tape can be verified via checksum after output.
 
-\subsection{MEMORY REQUIREMENTS}
-
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Space:} 11 tracks and 35 sectors (739 words) \\
 \textbf{Temporary Storage:} None
-\noindent
+
 The program is loaded into memory immediately following Program Input 1.
 
-\subsection{INPUT}
+\subsubsection*{INPUT}
 H4-10.0 dynamically patches Program Input 1 upon execution, hooking its input routines to intercept the incoming program stream and construct the tracking tables. Once the target program has been completely read, H4-10.0 restores Program Input 1's original code to return it to normal operation. It must be resident before the program to be converted is loaded.
 
 The decimal program to be converted should be stored at least 15 tracks above the starting address of Program Input 1, and loaded so that it could be executed, with the correct fill keyword (;) and modifier (/). All Program Input 1 input keywords work normally.
@@ -33,7 +29,7 @@ After the output unit is selected, the computer selects the Flexowriter again fo
 
 As an example, we'll assume that the program to be converted is loaded at 4000. If it is to be punched with relocatable address adjusted to be relative to 1000, one would enter an output modifier of 3000.\footnote{To relocate code to a higher memory address, the operator would input the tens-complement of the desired upward shift, forcing the subtraction routine to wrap around the address space allocation boundaries. This requires a lot of care.}
 
-\subsection{EXECUTING THE PROGRAM}
+\subsubsection*{OPERATION}
 The program has the following five entry points:
 
 \begin{center}
@@ -47,7 +43,7 @@ $L_0+0604$ & for restoring Program Input 1 after successful verification \\
 \end{center}
 $L_0$ is the starting address of Program Input 1 (\emph{not} this program!).
 
-\subsection{OUTPUT}
+\subsubsection*{OUTPUT}
 Pressing \textsf{START} after entering the output modifier punches the converted program in arbitrarily relocatable hexadecimal form. Tables printed on the console indicate which portions of memory were punched and which instructions were marked as modifiable.
 
 The converted words are punched in groups of 64 or fewer. Each group is preceded by a PIR keyword for hexadecimal fill (M), and each group is followed by a checksum. (Details of the format can be found at \ref{sec:hexadecimal-fill}). After punching is complete, Program Input 1 is restarted.
