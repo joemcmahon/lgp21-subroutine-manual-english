@@ -21,7 +21,7 @@
 \end{tabular}
 
 \subsubsection*{TRANSLATOR NOTE}
-The \ref{H1-11.0} floating-point interpreter provides a software floating-point implementation for the LGP-21, and is used extensively in the matrix routines.
+Floating-Point Interpreter 1 (\texttt{H1-11.0}, Section~\ref{H1-11.0}) provides a software floating-point implementation for the LGP-21, and is used extensively in the matrix routines.
 
 \newpage
 
@@ -144,7 +144,7 @@ Matrix Inversion 1 (Section~\ref{subsec:matrix_inversion_1}) uses a couple of te
 \label{subsec:matrix_vector_multiplication_1}
 
 \subsubsection*{PURPOSE}
-This program uses the Floating-Point Interpretive System 1 (\ref{H1-11.0}). \texttt{D1-12.0} multiplies a matrix by a column vector and stores the resulting product vector in a designated set of memory locations. 
+This program uses the Floating-Point Interpretive System 1 (Section~\ref{H1-11.0}). \texttt{D1-12.0} multiplies a matrix by a column vector and stores the resulting product vector in a designated set of memory locations. 
 
 The input consists of a matrix with $i$ rows and $j$ columns, and a column vector containing $j$ elements. All data must be supplied in floating-point format. The matrix does not need to be square. The dimensions $i$ and $j$ must each be less than 64. The total number of elements across the matrix, vector, and product vector must not exceed the available memory space.
 
@@ -283,7 +283,7 @@ The input variables are:
 \noindent
 All matrices must be stored in a row-major configuration, meaning the first element of the second row immediately follows the terminal element of the first row.
 
-The data must conform to the floating-point layout required by \ref{H1-11.0}. Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ locations to accommodate the inputs and the trailing results workspace.
+The data must conform to the floating-point layout required by Floating-Point Interpreter 1 (Section~\ref{H1-11.0}). Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ locations to accommodate the inputs and the trailing results workspace.
 
 \subsubsection*{CALLING SEQUENCE}
 The calling sequence must provide the following information in the exact sequential order specified below:
