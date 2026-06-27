@@ -1,4 +1,118 @@
 \section{Backup Utilities}
-\subsection{Backup 1}
+\subsection{MEMORY COPY 1}
+\subsubsection*{L4-10.0}
+
+\subsubsection*{PURPOSE}
+L4-10.0 copies the contents of a designated memory region to another designated memory region. The copied data words are not altered in any way. The block of words can be moved arbitrarily anywhere within memory.
+
+The program is invoked by a calling sequence that must supply: 1. the starting address of the data block, 2. the new destination starting address, and 3. the number of words to be copied. Upon returning to the main program, the data block has been copied.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Storage cells used:} 56 sectors
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsection*{INPUT}
+The input variables are specified in the following exact sequence:
+\begin{enumerate}
+    \item $M_1$, the starting address of the data block to be copied, in decimal track/sector notation.
+    \item $M_2$, the starting address of the destination region where the words are to be copied, in decimal track/sector notation.
+    \item $N$, the number of words to be copied, in decimal track/sector notation.
+\end{enumerate}
+
+These control parameters must reside in the three cells immediately following the jump instruction of the calling sequence.
+
+The data block must occupy consecutive cells and may be copied in any direction; i.e., $M_2$ may be greater than or less than $M_1$. Overlapping regions are handled safely.
+
+\subsection*{CALLING SEQUENCE}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$     & \texttt{R} & $L_0$                   & Store the parameter block address in the subroutine. \\
+$\alpha+1$   & \texttt{U} & $L_0$                   & Jump to the subroutine. \\
+$\alpha+2$   & \texttt{Z} & $M_1$                   & Source starting address of the data block. \\
+$\alpha+3$   & \texttt{Z} & $M_2$                   & Destination starting address for the data block. \\
+$\alpha+4$   & \texttt{Z} & $N$                     & Number of words to be copied. \\
+$\alpha+5$   &            & \textit{etc.}           & Return point in the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The instruction at $\alpha$ stores the address of the parameter block ($\alpha+2$) into the subroutine tracking logic. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the starting address of the original data block; cell $\alpha+3$ contains the starting address of the new target area; and cell $\alpha+4$ contains the total count of words making up the block.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Execution time:} \\
+    Approximately 18 seconds per track.
+    \item \textbf{Program entry:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    No input or output units are required.
+    \item \textbf{Overflow:} \\
+    Ignored upon entry and not reset upon exit.
+\end{enumerate}
+\pagebreak
+\subsection*{EXAMPLE}
+Suppose a memory block of 200 words (decimal), beginning at cell 0700, is to be copied to a target area starting at cell 4200, and that  ``Memory Copy 1'' is loaded starting at cell 0300. The calling sequence in the main program begins at cell 0500:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+0500 & \texttt{R} & 0300 & Set parameter block entry link inside the subroutine. \\
+0501 & \texttt{U} & 0300 & Jump to the subroutine. \\
+0502 & \texttt{Z} & 0700 & $M_1$ (Source starting address). \\
+0503 & \texttt{Z} & 4200 & $M_2$ (Destination starting address). \\
+0504 & \texttt{Z} & 0308 & $N$ (200 words represented as 3 tracks, 8 sectors $(3 \times 64 = 192)+ 8)$. \\
+0505 &            & \textit{etc.} & Execution resumes here with the data copied. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\pagebreak
 \subsection{Tape Duplicator 1}
+\subsubsection*{L4-11.0}
+
+\subsubsection*{PURPOSE}
+L4-11.0 duplicates any tape encoded for the LGP-21. The original tape is read via the high-speed reader and punched out via the high-speed punch. The resulting tape is a faithful duplicate of the original tape, with the sole exception that all delete codes [rubouts] are omitted\footnote{This provides a handy way to take a messy tape with a lot of corrections and duplicate it as a clean copy.}.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Memory used:} 1 track
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsection*{INPUT}
+``Tape Duplicator 1'' processes any tape that has been encoded for the LGP-21. The tape must be read via the high-speed reader and punched via the high-speed punch.
+
+\subsection*{CALLING SEQUENCE}
+Program execution is initiated by jumping to $L_0 + 1$, where $L_0$ is the starting address of the program. A jump instruction to $L_0 + 1$ is explicitly provided at the end of the program tape itself.
+
+\subsection*{OUTPUT}
+Upon jumping to the starting address, the program begins reading the tape to be duplicated and punching it out via the high-speed punch. The output tape is an exact copy of the read tape, except that delete/rub-out codes are omitted. Reading and punching continue until the entire tape has been duplicated.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Program entry:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    The high-speed reader is required for input, and the high-speed punch is required for output. Both units are automatically selected by \texttt{Tape Duplicator 1}.
+    \item \textbf{Program control switches [Break Point Switches]:} \\
+    None.
+    \item \textbf{Error stops:} \\
+    None.
+\end{enumerate}
 \newpage

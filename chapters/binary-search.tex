@@ -1,3 +1,85 @@
 \section{Binary Searching}
 \subsection{Table Search 1 (Binary Search)}
+\subsubsection*{L7-10.0}
+
+\subsubsection*{PURPOSE}
+L7-10.0 searches a table of values for the address of the entry that matches a given comparison word [search key]. The table must be stored in ascending order and contain at least two numbers. All data must be in fixed-point format. The program uses the binary search method.
+
+This means the comparison word is first compared with the word in the middle of the table. If they are equal, the search terminates. If the comparison word is larger, it is compared with the word located midway between the middle and the end of the table. If the comparison word was smaller than the middle one, it is compared with the word located midway between the beginning and the middle of the table. The search continues in this manner until a match is found.
+
+The subroutine is invoked via a calling sequence from the main program. Upon jumping to the subroutine, the comparison word must reside in the accumulator, and the calling sequence must supply the starting address of the table and the number of words it contains. Upon returning to the main program, the memory address where the match was found is held in the accumulator.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Memory used:} 3 tracks
+    \item[] \textbf{Temporary storage:} sectors 01, 27, and 44 of track 63
+\end{itemize}
+
+\subsection*{INPUT}
+The input variable is a comparison word, $C$. This comparison word can be any arbitrary word in memory and must reside in the accumulator when the jump to the subroutine occurs. All data must be in fixed-point format. The table must consist of at least two words. The words must be stored in consecutive cells and in ascending numerical order.
+
+The cells immediately following the jump instruction of the calling sequence must contain:
+\begin{enumerate}
+    \item \texttt{NNNN}, the number of words in the table in decimal track/sector notation (i.e., modulo 64).
+    \item \texttt{T}, the starting address of the table in decimal track/sector notation.
+\end{enumerate}
+
+\subsection*{CALLING SEQUENCE}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring $C$ into the accumulator. \\
+$\alpha$     & \texttt{R} & $L_0 + 31$              & Store the address of \texttt{NNNN} into the subroutine. \\
+$\alpha+1$         & \texttt{U} & $L_0$                   & Entry to the subroutine. \\
+$\alpha+2$         & \texttt{XZ} & \texttt{NNNN}          & Size of the table (modulo 64). \\
+$\alpha+3$         & \texttt{XZ} & \texttt{T}             & Starting address of the table. \\
+$\alpha+4$         &            & \textit{etc.}           & Return point in the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The instruction at $\alpha-1$ brings $C$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains \texttt{NNNN} modulo 64; for example, \texttt{XZ 0132} represents 96 table words (1 track and 32 sectors). The instruction at $\alpha+3$ contains the table address $T$. Control returns from the subroutine at $\alpha+4$.
+
+\subsection*{OUTPUT}
+Upon returning to the main program, the address of the word that matches the comparison word stands in the accumulator scaled at $q=29$.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Execution time:} \\
+    The operating time depends on the length of the table and the position of the searched word.
+    \item \textbf{Program entry:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    No input or output units are required.
+    \item \textbf{Overflow:} \\
+    Ignored upon entry and not reset upon exit.
+    \item \textbf{Program stops:}
+    \begin{table}[h!]
+    \centering
+    \begin{tabular}{l p{5cm} p{5cm}}
+    \toprule
+    \textbf{Memory Cell} & \textbf{Meaning} & \textbf{Remedy} \\
+    \midrule
+    $L_0 + 0130$ & No word in the table matches $C$, or $C$ lies outside the sequence bounds. & Do not continue. The input data must be corrected. \\
+    \midrule
+    $L_0 + 0218$ & Either $C$ was modified or the contents of cells $L_0 + 247$ to $L_0 + 259$ were altered when the subroutine was modified to proceed with the same $C$ and identical table values (see under ``Remarks''). & Do not continue. \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+\end{enumerate}
+
+\subsection*{REMARKS}
+If $C$ and the table are to be used repeatedly without any modifications, the following program modifications can be made after the first search to accelerate subsequent searches (where $L_0$ is the starting address of the subroutine):
+\begin{enumerate}
+    \item Change the content of $L_0 + 0033$ from \texttt{N 0019} to \texttt{U 0054}.
+    \item Change the content of $L_0 + 0056$ from \texttt{E 0214} to \texttt{U 0149}.
+\end{enumerate}
+The contents of cells $L_0 + 0007$ and $L_0 + 0247$ to $L_0 + 0259$ must be preserved for subsequent searches.
 \newpage

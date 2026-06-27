@@ -1,3 +1,174 @@
 \section{Programming Utilities}
-\subsection{Loop Driver Utility}
+\subsection{LOOP COUNTER 1}
+\subsubsection*{L8-10.0}
+
+\subsection*{PURPOSE}
+L8-10.0 simulates an index register for the LGP-21. It does this by incrementing the operand addresses of marked instructions, executing a designated sequence of instructions a predetermined number of times, and restoring the modified operand addresses back to their original values. The designated addresses are incremented by 1 before each pass through the loop, and all instructions within the designated loop are executed during every iteration.
+
+The routine is invoked via a subroutine call from the main program. The calling sequence must supply:
+\begin{enumerate}
+	\item The starting address of the instruction sequence, and
+	\item the total number of loop iterations. 
+\end{enumerate}
+\noindent Upon returning to the main program, the specified number of passes will have been completed, and all addresses in the instructions thatwere incremented are safely restored to their initial values.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Memory used:} 1 track
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsection*{INPUT}
+The block of instructions to be repeatedly executed must be located in the main program immediately \emph{preceding} the calling sequence. All instructions are permitted.
+
+The operand addresses of all \emph{negative} instructions within the block are incremented by 1 before each loop iteration; that is, any instruction prepended with an operational code modifier of \texttt{800}. For example, the modified instruction \texttt{800A2000} would be transformed to \texttt{800A2001} \emph{before} the first execution pass. The addresses of normal positive instructions remain unaltered.
+
+The calling sequence must supply the following parameters in this exact sequence upon entering the subroutine:
+\begin{enumerate}
+    \item $S$, the \emph{starting address} of the target instruction block, formatted as the operand inside an \texttt{I} instruction in decimal track/sector notation.
+    \item $X$, the \emph{total number} of loop iterations, formatted as the operand inside an \texttt{N} instruction in decimal track/sector notation (i.e., modulo 64).
+\end{enumerate}
+
+\subsection*{CALLING SEQUENCE}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$     & \texttt{R} & $L_0$                   & Store the starting address of the instruction block into the subroutine. \\
+$\alpha+1$         & \texttt{U} & $L_0$                   & Jump to the subroutine entry point. \\
+$\alpha+2$         & \texttt{I} & $S$                     & Starting address of the loop instruction block. \\
+$\alpha+3$         & \texttt{N} & \texttt{XXXX}           & Number of loop iterations ($X$). \\
+$\alpha+4$         &            & \textit{etc.}           & Return point in the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) into the tracking logic of the subroutine. The instruction at $\alpha+1$ effects an immediate jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the address $S$, and cell $\alpha+3$ contains the loop execution limit value $X$. Control returns from the subroutine at location $\alpha+4$.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Execution time:} \\
+    Variable per loop. The execution overhead depends strictly on the structural size of the block, the number of modified instructions, and the total number of iterations.
+    \item \textbf{Program entry:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Overflow:} \\
+    Not checked or processed by this routine.
+\end{enumerate}
+
+\subsection*{REMARKS}
+The operand address of \emph{every} single negative instruction embedded within the designated loop block will be incremented before each loop.
+
+If an early exit out of the loop block is triggered before the specified loop iteration count is exhausted, the contents of subroutine cell $L_0 + 2$ must be patched as follows:
+\begin{center}
+\begin{tabular}{ll}
+\textbf{Old Contents:} & $(\dots)$ \\
+\textbf{New Contents:} & \texttt{U ($L_0 + 3$)} \\
+\end{tabular}
+\end{center}
+
+It is entirely permissible to jump out of an active loop structure mid-execution (for example, executing a subroutine branch), provided that the target subroutine contains \emph{absolutely no modifiable (negative) instructions}\footnote{This is because the loop utility would patch those instructions as the loop runs, but would have no way to track that it modified instructions outside the designated loop block, and would not fix the address fields it updated in the subroutine.}.
+
+\subsection*{EXAMPLE}
+Compute ten values for $L$ according to the mathematical formula:
+$$L = \frac{(2x + y) \cdot z}{w}$$
+
+\noindent \textbf{Given Data Arrangements:}
+\begin{itemize}
+    \item Ten values for $x$ stored in cells 3100--3109 scaled at $q = 10$.
+    \item Ten values for $y$ stored in cells 3200--3209 scaled at $q = 20$.
+    \item Ten values for $z$ stored in cells 3300--3309 scaled at $q = 15$.
+    \item Ten values for $w$ stored in cells 3400--3409 scaled at $q = 10$.
+\end{itemize}
+
+\noindent \textbf{Target Destination Area:}
+\begin{itemize}
+    \item Ten calculated values of $L$ to be written to cells 3500--3509 scaled at $q = 23$.
+\end{itemize}
+
+\noindent \textbf{Available Scaling Constants:}
+\begin{itemize}
+    \item Value $2$ at $q = 15$ located in cell 3000.
+    \item Value $1$ at $q = 5$ located in cell 3001.
+    \item Value $1$ at $q = 3$ located in cell 3002.
+\end{itemize}
+Assume ``Loop Counter 1'' is loaded on track 40 (starting at location 4000).
+
+\newpage
+
+\subsection*{PROGRAM CODING SHEET}
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|l|c|l|p{6cm}|}
+\hline
+\textbf{Input Key} & \textbf{Loc.} & \textbf{Opcode} & \textbf{S} & \textbf{Address /}  & \textbf{Comments} \\
+\textbf{Word}      &               &                 & \textbf{T} & \textbf{Contents} & \\
+\hline
+\texttt{;0002000'} &      &            &   &      & Block count to Track 02, Sector 00. \\
+\texttt{/0000000'} &      &            &   &      & Origin execution mapping to 0000. \\
+\hline
+                   & 2000 & \texttt{B} &   & 3000 & Bring constant 2 @ 15. \\
+                   & 2001 & \texttt{M} & 8 & 3100 & Multiply by $x$ @ 10 (Negative instruction, shifts index). \\
+                   & 2002 & \texttt{D} &   & 3001 & Shift product to match scale of $y$ ($q=20$). \\
+                   & 2003 & \texttt{A} & 8 & 3200 & Add $y$ @ 20 (Negative instruction, shifts index). \\
+                   & 2004 & \texttt{D} &   & 3001 & Shift sum to match scale of $z$ ($q=15$). \\
+                   & 2005 & \texttt{M} & 8 & 3300 & Multiply by $z$ @ 15 (Negative instruction, shifts index). \\
+                   & 2006 & \texttt{D} & 8 & 3400 & Divide by $w$ @ 10 (Negative instruction, shifts index). \\
+                   & 2007 & \texttt{M} &   & 3002 & Shift calculated quotient to target scale ($q=23$). \\
+                   & 2008 & \texttt{H} & 8 & 3500 & Store result to $L$ @ 23 (Negative instruction, shifts index). \\
+                   & 2009 & \texttt{R} &   & 4000 & Initialize Loop Counter execution tracking. \\
+                   & 2010 & \texttt{U} &   & 4000 & Jump to Loop Counter 1 subroutine. \\
+                   & 2011 & \texttt{I} &   & 2000 & Pass first instruction address of the loop block ($S$). \\
+                   & 2012 & \texttt{N} &   & 0010 & Pass iteration count (10 decimal iterations). \\
+                   & 2013 & \texttt{Z} &   & 0000 & Halt machine execution upon loop completion. \\
+\hline
+\end{tabular}
+\end{table}
+\subsubsection*{COMPUTER-CONTROLLED PRINT LOOP}
+
+An output subroutine is frequently programmed as a computer-controlled print loop. Because it would normally be necessary to store and update the loop counter between individual print commands during a standard print cycle, printing could occur at most once per drum revolution. This architectural limitation restricts output velocity to approximately 20 characters per second. 
+
+While this programming approach poses no speed bottleneck when routing output to the standard Flexowriter typewriter, utilizing the high-speed paper tape punch requires a much faster print loop to avoid stalling the peripheral. The optimization method illustrated below permits punching at a rate of approximately 40 characters per second by packing exactly two print operations into a single drum revolution.
+
+\subsection*{EXAMPLE}
+Assume the total number of characters to be printed is stored as a count register scaled at $q = 30$. The following program continuously prints a single character (for example, a Carriage Return) for the exact duration specified by the counter.
+
+\subsection*{PROGRAM CODING SHEET}
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|l|c|l|p{6.5cm}|}
+\hline
+\textbf{Loc.} & \textbf{Opcode} & \textbf{S} & \textbf{Address /}  & \textbf{Comments} \\
+              &                 & \textbf{T} & \textbf{Contents}   &                   \\
+\hline
+0000 & \texttt{C}  &   & 0050 & Store formally. \\
+0001 & \texttt{S}  &   & \text{Count} & Subtract character count limit. \\
+0002 & \texttt{U}  &   & 0059 & Zero-test branch for the remaining count. \\
+0003 & \texttt{E}  &   & 0049 & First interleaved execution pass (\texttt{43ww wwWQ}). \\
+0004 & \texttt{XP} &   & 0200 & Output character via Print instruction. \\
+0005 & \texttt{A}  &   & 0055 & Add index offset (\texttt{GJOO 0002}). \\
+0006 & \texttt{T}  &   & 0056 & Transfer tracking to address 0056. \\
+0007 & \texttt{U}  &   & 0060 & Exit loop. \\
+\hline
+0049 & \multicolumn{3}{l|}{\texttt{43WW WWWQ}} & Operational control word. \\
+0050 & \multicolumn{3}{l|}{\textit{Formal storage slot}} & Reserved for internal assembly linkage. \\
+0051 & \multicolumn{3}{l|}{\texttt{GJOO 0002}} & Index step constant. \\
+0052 & \multicolumn{3}{l|}{\textit{Unused}} & Unallocated sector. \\
+0053 & \multicolumn{3}{l|}{\texttt{43wW WWWQ}} & Alternate phase operational control word. \\
+0054 & \multicolumn{3}{l|}{\textit{Unused}} & Unallocated sector. \\
+0055 & \multicolumn{3}{l|}{\texttt{GJOO 0002}} & Index step constant. \\
+\hline
+0056 & \texttt{E}  &   & 0049 & Second interleaved execution pass. \\
+0057 & \texttt{XP} &   & 0200 & Output character via Print instruction. \\
+0058 & \texttt{A}  &   & 0051 & Add index offset (\texttt{GJOO 0002}). \\
+0059 & \texttt{T}  &   & 0003 & Loop branch back to address 0003. \\
+0060 & \texttt{U}  &   & \text{Exit} & Exit program execution. \\
+\hline
+\end{tabular}
+\end{table}
 \newpage
