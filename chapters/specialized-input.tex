@@ -1,6 +1,5 @@
 \section{Specialized Input/Output}
-\subsection{Angle or Direction I/O}
-\subsection*{DIRECTION OR ANGLE INPUT AND OUTPUT 1 J9-11.0}
+\subsection*{DIRECTION OR ANGLE INPUT AND OUTPUT 1 --- J9-11.0}
 
 \subsubsection*{PURPOSE}
 The program J9-11.0 reads or prints a positive or negative angle, or a direction, consisting of the specification of the quadrant and a positive angle. All angles must be smaller than $512^\circ$, and direction angles must not be greater than $90^\circ$ [sic]\footnote{Architectural Note: The German text states `Richtungswinkel dürfen nicht größer als 600 sein'' (direction angles must not be greater than 600) in the Purpose section, but explicitly contradicts this later under Input, stating `Die Winkelangaben bei Richtungen dürfen nicht größer als $90^\circ$ sein'' (The angle specifications for directions must not be greater than $90^\circ$). In LGP-21 quadrant geometry, $90^\circ$ is the correct architectural limit. The `600' is a typographical error in the original manual, likely a misprint of $90^\circ$ or $60^\circ$ on a standard typewriter.}. The entered angle or peak circle [vertex circle] of the direction is binarized and placed into the accumulator.
@@ -10,10 +9,8 @@ The printing of an angle occurs in decimal notation in degrees and minutes, each
 The program operates as a subroutine that is called by a calling sequence of the main program. Before the jump into the subroutine, the calling sequence must store the return address. In the case of the output function, the angle or the direction must stand in the accumulator before the entry into the subroutine occurs. Upon return to the main program, the angle or the direction is read and placed into the accumulator if the input function was called, or the angle or the direction is printed if the output function was called.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\begin{itemize}
-\item[] \textbf{Storage cells used:} 2 tracks, 61 sectors
-\item[] \textbf{Temporary storage:} sectors 2, 5, 15, 17, 48, 51, 52, 56, and 60 of track 63
-\end{itemize}
+\textbf{Storage cells used:} 2 tracks, 61 sectors \\
+\textbf{Temporary storage:} sectors 2, 5, 15, 17, 48, 51, 52, 56, and 60 of track 63
 
 \subsubsection*{INPUT}
 The input for the program consists of one of the two following possibilities:
@@ -44,7 +41,7 @@ $+2$       &            & \textit{etc.} & Return to the main program. \\
 \end{table}
 
 \subsubsection*{2. Angle Output:}
-Intended for printing an angle. The angle must reside in the accumulator at $q=9$ before the jump into the subroutine occurs.
+Intended for printing an angle. The angle must reside in the accumulator at $q = 9$ before the jump into the subroutine occurs.
 \begin{table}[h!]
 \centering
 \begin{tabular}{cccl}
@@ -60,7 +57,7 @@ $+2$         &            & \textit{etc.} & Return to the main program. \\
 \end{table}
 
 \subsubsection*{3. Direction Output:}
-Intended for printing a direction. The peak circle of the direction must reside in the accumulator at $q=9$ when the jump into the subroutine occurs.
+Intended for printing a direction. The peak circle of the direction must reside in the accumulator at $q = 9$ when the jump into the subroutine occurs.
 \begin{table}[h!]
 \centering
 \begin{tabular}{cccl}
@@ -75,10 +72,10 @@ $+2$         &            & \textit{etc.} & Return to the main program. \\
 \end{tabular}
 \end{table}
 
-In the calling sequences 2 and 3, the instruction in $\alpha-1$ does not need to be a ``Bring'' instruction. Any instruction sequence that brings the quantity to be outputted at $q=9$ into the accumulator is permissible. In all calling sequences, the instruction in $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction in $\alpha+1$ effects a jump to the corresponding location of the subroutine. In $\alpha+2$ stands the instruction of the main program that is executed first after running through the subroutine.
+In the calling sequences 2 and 3, the instruction in $\alpha-1$ does not need to be a \texttt{B} instruction. Any instruction sequence that brings the quantity to be outputted at $q = 9$ into the accumulator is permissible. In all calling sequences, the instruction in $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction in $\alpha+1$ effects a jump to the corresponding location of the subroutine. In $\alpha+2$ stands the instruction of the main program that is executed first after running through the subroutine.
 
 \subsubsection*{OUTPUT}
-The program binarizes every entered angle or the peak circle of every direction specification and places them at $q=9$ into the accumulator.
+The program binarizes every entered angle or the peak circle of every direction specification and places them at $q = 9$ into the accumulator.
 
 Each angle printout occurs in decimal form in degrees, minutes, seconds, and tenths of a second, whereby the degrees and minutes are followed by a separation dash; e.g., an angle of $80^\circ 37' 01''$ would be printed out as \texttt{80-37-01.0}.
 
