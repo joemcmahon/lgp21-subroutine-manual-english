@@ -42,7 +42,7 @@ The meaning of this number is ambiguous (and categorically invalid). Depending o
 
 Scale factor changes occur during multiplication and division as well: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
 
-Multiplying $q=4$ value by a $q=5$ value yields a $q=9$ value. This can be left-shifted to restore it to a $q=4$ or $q=5$value; you should note that this many bits of precision have been lost in the operation. Not perfect, but acceptable.
+Multiplying $q=4$ value by a $q=5$ value yields a $q=9$ value. This can be left-shifted to restore it to a $q=4$ or $q=5$ value; you should note that this many bits of precision have been lost in the operation. Not perfect, but acceptable.
 
 However, division, as mentioned previously \emph{requires} that the divisor have a smaller $q$ than the dividend. If it is larger, the operation overflows, and the most significant figures are lost in the operation. Dividing a $q=9$ number by a $q=2$ one will yield a result that is a $q=7$ number. On the other hand, dividing a $q=1$ number by an $q=9$ one results in a scale factor of $-8$, an overflow, and a loss of the 8 most significant figures of the result. To return this (invalid) result to a $q=1$ value, it would need to be shifted right \emph{8} bits -- and those 8 bits are now zero and the actual value has been lost. If a $q=9$ value was desired, the overflow will have lost \emph{17} bits. 
  
@@ -120,17 +120,14 @@ This convention uses the \texttt{R} instruction to load the address of the \emph
 
 A third, even more astounding calling sequence passes a two-word floating-point\footnote{While the LGP-21 lacks floating-point \emph{hardware}, it relies entirely on a software-driven floating-point math \emph{interpreter}. See Section~\ref{H1-11.0}.} number to a subroutine as an argument.
 
-\begin{table}[h]
-\centering
-\setlength{\extrarowheight}{3pt}
-\begin{tabularx}{\textwidth}{|c|c|c|X|}
-\hline
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\ \hline
-$\alpha-1$        & \texttt{B}           & \texttt{N}       & Bring word 1 of floating-point number $N$. \\ \hline
-$\alpha$          & \texttt{R}           & \texttt{L+offset}& Store the return address ($\alpha+2$) inside the subroutine. \\ \hline
-$\alpha+1$        & \texttt{U}           & \texttt{L}       & Unconditional branch to the subroutine entry. \\ \hline
+\begin{center}
+\begin{tabularx}{\textwidth}{lllX}
+\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
+$\alpha-1$  & \texttt{B} & \texttt{N}        & Bring word 1 of floating-point number $N$. \\
+$\alpha$    & \texttt{R} & \texttt{L+offset} & Store the return address ($\alpha+2$) inside the subroutine. \\
+$\alpha+1$  & \texttt{U} & \texttt{L}        & Unconditional branch to the subroutine entry. \\
 \end{tabularx}
-\end{table}
+\end{center}
 
 Now wait a minute, I hear you say. A floating-point number is \emph{two} words long. That cannot possibly fit in the single-word hardware accumulator—what kind of trickery is this?
 
