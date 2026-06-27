@@ -16,7 +16,7 @@ The data output routine operates as a subroutine and is invoked via a calling se
 \begin{center}
 \begin{tabular}{ll}
     \toprule
-    Memory & 4 tracks \\
+    Memory & 4 tracks (256 words) \\
     Temporary storage    & None \\
     \bottomrule
 \end{tabular}
@@ -160,7 +160,7 @@ Upon return to the main program, the specified values have been printed.
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
     \toprule
-    Memory & 5 tracks, 48 sectors. \small(\textit{Note: The program must be loaded to start at sector 00 of an arbitrary track.}) \\
+    Memory & 5 tracks, 48 sectors (368 words). \small(\textit{Note: The program must be loaded to start at sector 00 of an arbitrary track.}) \\
     Temporary storage    & None \\
     \bottomrule
 \end{tabularx}
@@ -309,7 +309,7 @@ Upon return to the main program, the specified values have been printed.
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
     \toprule
-    Memory & 5 tracks, 13 sectors. \small(\textit{Note: Reduces to 5 tracks and 7 sectors if the alternate device-selection entry point is bypassed.}) \\
+    Memory & 5 tracks, 13 sectors (333 words). \small(\textit{Note: Reduces to 5 tracks and 7 sectors if the alternate device-selection entry point is bypassed.}) \\
     Temporary storage    & None \\
     \bottomrule
 \end{tabularx}
@@ -449,7 +449,7 @@ The program operates as a subroutine invoked by a calling sequence in the main p
 \begin{center}
 \begin{tabular}{ll}
     \toprule
-    Memory & 3 tracks \\
+    Memory & 3 tracks (192 words) \\
     Temporary storage    & None \\
     \bottomrule
 \end{tabular}
@@ -552,7 +552,7 @@ The program functions as a subroutine invoked by a calling sequence in the main 
 \begin{center}
 \begin{tabular}{ll}
     \toprule
-    Memory & 120 sectors \\
+    Memory & 120 sectors (120 words) \\
     Temporary storage    & None \\
     \bottomrule
 \end{tabular}
@@ -656,7 +656,7 @@ Program J3-10.5 prints one or more groups of numbers in decimal notation, each o
 \begin{center}
 \begin{tabular}{ll}
     \toprule
-    Memory & 224 cells (3 1/2 tracks) \\
+    Memory & 3 tracks, 32 sectors (224 words) \\
     Temporary storage    & Sectors 42 and 43 of Track 63 are utilized as scratchpads. \\
     \bottomrule
 \end{tabular}

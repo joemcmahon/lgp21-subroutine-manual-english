@@ -8,7 +8,7 @@ L4-10.0 copies the contents of a designated memory region to another designated 
 The program is invoked by a calling sequence that must supply: 1. the starting address of the data block, 2. the new destination starting address, and 3. the number of words to be copied. Upon returning to the main program, the data block has been copied.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\textbf{Memory:} 56 sectors \\
+\textbf{Memory:} 56 sectors (56 words) \\
 \textbf{Temporary storage:} none
 
 \subsubsection*{INPUT}
@@ -82,7 +82,7 @@ Suppose a memory block of 200 words (decimal), beginning at cell 0700, is to be 
 L4-11.0 duplicates any tape encoded for the LGP-21. The original tape is read via the high-speed reader and punched out via the high-speed punch. The resulting tape is a faithful duplicate of the original tape, with the sole exception that all delete codes [rubouts] are omitted\footnote{This provides a handy way to take a messy tape with a lot of corrections and duplicate it as a clean copy.}.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\textbf{Memory used:} 1 track \\
+\textbf{Memory used:} 1 track (64 words) \\
 \textbf{Temporary storage:} none
 
 \subsubsection*{INPUT}
