@@ -1,6 +1,5 @@
 \section{Alphanumeric Output}
-\subsection{Alphanumeric Output 1}
-\subsubsection*{J4-11.0}
+\subsection*{ALPHANUMERIC OUTPUT 1 --- J4-11.0}
 \label{sec:alphanumeric-output-1}
 
 \subsubsection*{PURPOSE}
@@ -8,7 +7,7 @@ Program J4-11.0 translates keywords and handles their output as alphabetic and/o
 
 J4-11.0 operates as a subroutine. It is called by a calling sequence in the main program. Before jumping to the subroutine, the starting address of the data block to be output must be stored within the subroutine. The memory locations following the jump instruction must contain the control keywords. Upon return to the main program, the output operation has already been executed.
 
-\subsubsection*{MEMORY USAGE}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -18,12 +17,11 @@ J4-11.0 operates as a subroutine. It is called by a calling sequence in the main
 \end{tabular}
 \end{center}
 
-\subsubsection*{INPUT REQUIREMENTS}
+\subsubsection*{INPUT}
 The starting address of the keyword list must be stored before jumping to the subroutine. The data block must consist of consecutive words located immediately following the jump instruction of the calling sequence. Each word consists of four keyword symbols (encoded as pairs of characters), which correspond to alphabetic characters as well as the control functions of the typewriter.\footnote{This subroutine essentially encodes the Flexowriter's 6-bit characters as 8-bit ones, so that each character takes up two hex digits. Instead of having to bit-slice characters in one's head and attempt to pack them 5 to a word, this subroutine lets you pack them 4 to a word on hex-digit boundaries and not lose your marbles.} 
 
 The last word of the block is designated by the special termination symbol \texttt{7Q}. Since every word must contain four keyword symbols (representing eight total hexadecimal digits per word), two to six trailing zeros are required to fill out the final word. The number of words in a block is limited only by available memory space. In the main program, every block of 63 or fewer keywords must be preceded by a hexadecimal loader control word, as required by Program Input 1.
 
-\pagebreak
 \subsubsection*{ALPHANUMERIC KEYWORD SYMBOL TABLE}\footnote{This table is transcribed accurately from the original typed documnentation; I have preserved the errors noted in the translator's note. If it turns out we can test this routine at a later date, we can verify if those values are Q's or not and correct this table.}
 \begin{center}
 \small
@@ -83,7 +81,7 @@ The following example illustrates how to compile a data group for ``Alphanumeric
 
 This example issues an automatic carriage return command, prints the text \texttt{"PLANNING PAYS"}, and cleanly branches execution back to location $x+6$ of the main program logic sequence. The token \texttt{7Q} inside the final memory word marks the structural end code statement; the remaining trailing zero characters are solely included to fill out the word boundary layout.
 
-\subsubsection*{CALLING SEQUENCES}
+\subsubsection*{CALLING SEQUENCE}
 There are two distinct calling sequences available for invoking ``Alphanumeric Output 1''. Calling Sequence 1 is utilized exclusively when routing output to the standard console typewriter. Calling Sequence 2 is used when an alternative hardware output peripheral unit is required.
 
 \paragraph{Calling Sequence 1 (Standard Typewriter Output)}
@@ -121,10 +119,10 @@ The instruction at location $x$ stores the entry pointer of the data block into 
 \end{center}
 This configuration differs from the standard entry pattern by exactly two operational instructions. The command at $x-1$ stages the peripheral selection mask inside the accumulator register. This selection code can be encapsulated within the track address operand field of a standard non-operative instruction word (e.g., \texttt{xZ tt00}, where \texttt{tt} represents the physical target peripheral selector code). The command at $x+1$ branches into the alternative subroutine device configuration entry sequence at offset address \texttt{L+50}.
 
-\subsubsection*{OUTPUT CHARACTERISTICS}
+\subsubsection*{OUTPUT}
 Upon execution return to the main program context, the alphanumeric string array text generation sequence has been completely processed and sent to the printer hardware buffer.
 
-\subsubsection*{OPERATING INSTRUCTIONS}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution Speed:} Throughput clocks at approximately 660 characters per minute.
     \item \textbf{Program Loading Instructions:} The routine tape distribution features the software in two alternate styles:
@@ -138,20 +136,18 @@ Upon execution return to the main program context, the alphanumeric string array
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection*{ALPHANUMERIC OUTPUT 2 (J4-11.1)}
+\subsection*{ALPHANUMERIC OUTPUT 2 --- J4-11.1}
 
-\subsubsection*{Purpose}
+\subsubsection*{PURPOSE}
 The program J4-11.1 outputs alphabetic and/or numeric information that has been stored without binarization (i.e., stored as raw character codes). The alphanumeric data must be stored as \textbf{five-character-long words in 6-bit format}. A data block for J4-11.1 must not exceed 63 cells. The data must be stored in consecutive memory cells.
 
 The program operates as a subroutine called by a calling sequence from the main program. The starting address of the data block must be supplied to the subroutine before entry. Upon return to the main program, the specified information has already been printed.
 
-\subsubsection*{Storage Requirements}
-\begin{itemize}
-    \item \textbf{Program Space:} 24 sectors
-    \item \textbf{Temporary Storage:} None
-\end{itemize}
+\subsubsection*{STORAGE REQUIREMENTS}
+\textbf{Program Space:} 24 sectors \\
+\textbf{Temporary Storage:} None
 
-\subsubsection*{Input}
+\subsubsection*{INPUT}
 Before jumping to the subroutine, the calling sequence must insert into the first cell of the subroutine the address of the \texttt{Z} instruction which contains the starting address of the alphanumeric data block to be printed. This makes it possible to store the data block at any arbitrary location in memory, instead of forcing it to immediately follow the calling sequence as is typical. This \texttt{Z} instruction must not be omitted.
 
 The data table consists of consecutive words of exactly 5 characters or typewriter functions each (the final word may contain fewer). The number of words in a single block must not exceed 63. The data must be stored in ascending order in consecutive cells. 
@@ -179,29 +175,29 @@ During input storage, the data must be preceded by the constant keyword of \text
 
 This example causes the printout of \texttt{PLANNING PAYS} and returns execution to $+3$ of the main program. The end-of-block marker is automatically stored by the program input keyword. The alphanumeric data can reside anywhere in memory.
 
-\subsubsection*{Calling Sequence (J4-11.1)}
-\begin{center}
-\small
-\begin{tabular}{llll}
-    \toprule
-    \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-    \midrule
-    $\alpha$ & \texttt{R} & \texttt{L}  & Insert the address of the \texttt{Z} instruction ($+2$) into \texttt{L}. \\
-    $+1$     & \texttt{U} & \texttt{L}  & Entry into the subroutine. \\
-    $+2$     & \texttt{Z} & \texttt{A}  & Starting address of the data block ($A$). \\
-    $+3$     & u.s.w.     &             & Return to the main program. \\
-    \bottomrule
+\subsubsection*{CALLING SEQUENCE}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$ & \texttt{R} & \texttt{L} & Insert the address of the \texttt{Z} instruction ($+2$) into \texttt{L}. \\
+$+1$ & \texttt{U} & \texttt{L} & Entry into the subroutine. \\
+$+2$ & \texttt{Z} & \texttt{A} & Starting address of the data block ($A$). \\
+$+3$ & & \textit{etc.} & Return to the main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 The instruction at $\alpha$ stores the address ($+2$) of the instruction containing the data block's starting address into the subroutine. The instruction at $+1$ executes a jump to the starting address ($L$) of the subroutine. Cell $+2$ contains the \texttt{Z} instruction with $A$, the starting address of the data block. Cell $\alpha+3$ contains the instruction of the main program that will be executed first after exiting the subroutine. 
 
 \textit{Please note: The \texttt{Z} instruction must always reside directly within the calling sequence, even if the data block immediately follows the calling sequence.}
 
-\subsubsection*{Output}
+\subsubsection*{OUTPUT}
 Upon return to the main program, the desired data block has already been output to the terminal.
 
-\subsubsection*{Operation}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Time Required:} Approximately 190 characters per minute.
     \item \textbf{Program Input:} The tape contains the program in two versions:
@@ -213,6 +209,6 @@ Upon return to the main program, the desired data block has already been output 
     \item \textbf{Overflow:} Neither tested nor altered by the program.
 \end{enumerate}
 
-\subsubsection*{Remarks}
+\subsubsection*{REMARKS}
 The program should ideally begin at \textbf{Sector 00} to ensure optimal drum execution timing.
 \newpage
