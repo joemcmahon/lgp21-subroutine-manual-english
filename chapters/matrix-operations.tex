@@ -226,48 +226,19 @@ This lets the \texttt{B} instruction at $L_0$ do double duty: it both stashes th
 \label{subsec:matrix_multiplication_1}
 
 \subsubsection*{PURPOSE}
-The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-13.0} calculates the product matrix $C$ resulting from the matrix equation:
-\begin{equation}
-    AB = C
-\end{equation}
-The product of an $n \times m$ matrix $A$ and an $m \times p$ matrix $B$ is an $n \times p$ matrix $C$. The input consists of the individual elements of both matrices $A$ and $B$, which must be supplied in floating-point format. The matrix dimensions must be strictly less than 64.\footnote{\textbf{Translator's note:} The limit of 64 is an architectural artifact of the LGP-21's memory, which is physically structured as 64 tracks of 64 sectors each. Capping dimensions at 64 allows index calculation loops to stay bound within simple track-selection logic without risking multi-track pointer overflow.} The cumulative number of elements across matrices $A$, $B$, and the output matrix $C$ must not exceed the available memory space.
+\texttt{D1-13.0} computes the matrix product $C = AB$ using the Floating-Point Interpretive System 1 (\texttt{H1-11.0}), where $A$ is $n \times m$, $B$ is $m \times p$, and $C$ is $n \times p$. All inputs are in floating-point format. The matrix dimensions must each be less than 64.\footnote{\textbf{Translator's note:} The limit of 64 is an architectural artifact of the LGP-21's memory, which is physically structured as 64 tracks of 64 sectors each. Capping dimensions at 64 allows index calculation loops to stay bound within simple track-selection logic without risking multi-track pointer overflow.} The total of all elements of $A$, $B$, and $C$ must fit in available memory.
 
-``Matrix Multiplication 1'' operates as a subroutine invoked via a calling sequence from the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
-\begin{enumerate}
-	\item the starting address of the Interpretive System,
-	\item the dimensions and starting address of matrix $A$,
-	\item the dimensions and starting address of matrix $B$, and
-	\item the starting memory address for the destination product matrix $C$.
-\end{enumerate} 
-\noindent
-Upon return to the main program, the calculated product matrix is in the target memory locations.
+Matrix Multiplication 1 is called as a subroutine. Exit the Interpretive System (with an \texttt{E} instruction) before the call. The calling sequence supplies the interpreter's starting address, the dimensions and starting addresses of $A$ and $B$, and the starting address of $C$. On return, the product matrix occupies the destination locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Storage:} 2 tracks, 50 sectors (178 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are:
-\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item The elements of matrix $A$ ($n \times m$), stored row-by-row in continuous sequential locations.
-    \item The elements of matrix $B$ ($m \times p$), stored row-by-row in continuous sequential locations. The number of rows in matrix $B$ must precisely equal the number of columns in matrix $A$.
-\end{enumerate}
-\noindent
-All matrices must be stored in a row-major configuration, meaning the first element of the second row immediately follows the terminal element of the first row.
-
-The data must conform to the floating-point layout required by Floating-Point Interpreter 1 (Section~\ref{H1-11.0}). Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ locations to accommodate the inputs and the trailing results workspace.
+The inputs are matrix $A$ ($n \times m$) and matrix $B$ ($m \times p$), both in row-major order, both in Floating-Point Interpretive System 1 format (Section~\ref{H1-11.0}). The two matrices plus the destination $C$ require $(n \times m) + (m \times p) + (n \times p)$ contiguous locations of memory in total.
 
 \subsubsection*{CALLING SEQUENCE}
-The calling sequence must provide the following information in the exact sequential order specified below:
-\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $F$: The starting address of the Interpretive System in decimal track/sector notation.
-    \item $A$: The starting address of matrix $A$ in decimal track/sector notation.
-    \item The size of matrix $A$, with row count $n$ formatted as a decimal track address and column count $m$ formatted as a decimal sector address.
-    \item $B$: The starting address of matrix $B$ in decimal track/sector notation.
-    \item The size of matrix $B$, with row count $m$ formatted as a decimal track address and column count $p$ formatted as a decimal sector address.
-    \item $C$: The starting address of the destination storage area for the product matrix in decimal track/sector notation.
-\end{enumerate}
-A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of this subroutine.
+The calling sequence supplies, in order: the Interpretive System's starting address $F$, the starting address of matrix $A$, the dimensions of $A$ (rows $n$ as the track part, columns $m$ as the sector part), the starting address of matrix $B$, the dimensions of $B$ (rows $m$ as the track part, columns $p$ as the sector part), and the starting address of the destination matrix $C$. All addresses are in decimal track/sector notation. A template calling sequence (with \texttt{$L_0$} the subroutine's base address) is shown below.
 
 \medskip
 \begin{table}[h!]
@@ -292,10 +263,10 @@ $\alpha + 8$      & ---              & ---              & Return to main program
 
 \medskip
 \noindent
-The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction.
 
 \subsubsection*{OUTPUT}
-The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured with $n$ rows and $p$ columns, stored row-by-row in continuous sequential locations starting at location $C$. Element $c_{21}$ immediately follows element $c_{1p}$, and so forth.
+$C$ is written in row-major order to consecutive locations starting at $C$, $n \times p$ elements total.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -324,7 +295,7 @@ The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured 
 \end{enumerate}
 
 \subsubsection*{NOTES}
-The subroutine utilizes the Interpretive System internally to calculate floating-point steps. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is returned in native hardware mode.
+The subroutine exits the Interpretive System on its own before returning, so control comes back to the main program in native (fixed-point) mode.
 \newpage
 
 \subsection*{MATRIX ADDITION AND SUBTRACTION 1 --- D1-14.0}
@@ -390,7 +361,7 @@ $\alpha + 7$      & ---              & ---              & Return to main program
 
 \medskip
 \noindent
-The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction.
 
 \subsubsection*{OUTPUT}
 The individual elements of the resulting matrix $C_{ij}$ are saved in floating-point format in consecutive locations, beginning at address $C$.
@@ -476,7 +447,7 @@ $\alpha + 4$      & ---              & ---              & Return to main program
 
 \medskip
 \noindent
-The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
+The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction.
 
 \subsubsection*{OUTPUT}
 The individual elements of the transposed matrix are saved starting at location $T$. If the original matrix was stored row-by-row, the columns will be laid out row-by-row in the transposed matrix. Conversely, if the original matrix was stored column-by-column, the rows will be laid out column-by-column in the destination block.
