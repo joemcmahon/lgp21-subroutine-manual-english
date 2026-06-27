@@ -117,7 +117,7 @@ The instruction at location $\alpha - 1$ brings the value $A$ into the accumulat
 The instruction at location $\alpha$ stores the address ($\alpha + 2$) containing the parameter instruction for $n$ within the subroutine, and execution resumes at $\alpha+3$.\footnote{The subroutine takes the parameter address supplied via the \texttt{R} instruction, recalculates the return address, and adjusts its own code to properly return.}
 
 \subsubsection*{OUTPUT}
-Upon the return branch to the main program, the $n$-th root of the argument resides in the accumulator scaled to a $q$ factor of $q_A / n$. For example, if $n = 3$ and $q_A = 12$, the result $\sqrt[3]{A}$ will have a $q$ of at $q=4$.
+Upon the return branch to the main program, the $n$-th root of the argument resides in the accumulator scaled to a $q$ factor of $q_A / n$. For example, if $n = 3$ and $q_A = 12$, the result $\sqrt[3]{A}$ will have $q=4$.
 
 \subsubsection*{OPERATING DETAILS}
 
