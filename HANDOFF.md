@@ -24,6 +24,14 @@ Still to do:
   chapter. Longer and denser than the others; it's a whole interpreter spec,
   not just a single subroutine. About 100 lines of prose plus instruction
   tables. Starts around line 470 of `chapters/matrix-operations.tex`.
+- **`chapters/floating-point.tex` -- the big one.** Same author voice as the
+  matrix chapter but turned up to 11 -- "simulated pseudo-accumulator,"
+  "architectural baseline footprint of the interpreter core loop," "operands
+  and addresses can be modified dynamically without exiting the interpretive
+  system environment," etc. ~1400 lines total. Going to be a multi-session
+  job. Expect lots of the same patterns: paragraphs that say the same thing
+  three ways, bullet lists that the table below restates, post-table prose
+  that reads each row of the table back.
 
 ## House style we settled on during the cleanup
 
