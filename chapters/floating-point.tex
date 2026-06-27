@@ -43,7 +43,7 @@ Instruction Summary List & --- & 16 \\
 \newpage
 
 \subsubsection*{INTERNAL NUMBER FORMAT}
-Every floating-point number is held within memory inside a single cell as a split mantissa and exponent. Every mantissa is maintained in binary notation at a scaling factor of $q = 0$ and consists of an algebraic sign bit followed by 24 bits of precision. The most significant bit has a fractional value of $2^{-1}$, meaning that all stored mantissas are strictly normalized.
+Every floating-point number is held within memory inside a single location as a split mantissa and exponent. Every mantissa is maintained in binary notation at a scaling factor of $q = 0$ and consists of an algebraic sign bit followed by 24 bits of precision. The most significant bit has a fractional value of $2^{-1}$, meaning that all stored mantissas are strictly normalized.
 
 The exponent is maintained at a scaling factor of $q = 30$ and consists of an algebraic sign bit and 5 bits of precision. The exponent represents the power-of-2 base by which the mantissa must be multiplied to obtain the actual represented numeric value. Expressed mathematically, the components represent the floating-point number as:
 
@@ -90,12 +90,12 @@ Where:
 \end{itemize}
 
 \medskip
-When values are loaded inside the simulated floating-point accumulator or the multiplication register, the numbers are structured so that they occupy \textbf{two discrete memory cells}, with the mantissa shifted one place to the right. Despite this physical expansion, the structural relationship between each mantissa and its respective exponent is rigorously maintained.
+When values are loaded inside the simulated floating-point accumulator or the multiplication register, the numbers are structured so that they occupy \textbf{two discrete locations}, with the mantissa shifted one place to the right. Despite this physical expansion, the structural relationship between each mantissa and its respective exponent is rigorously maintained.
 
 \subsubsection*{INTERNAL REGISTERS}
-Although every cell inside standard drum memory holds both a mantissa and its exponent packed together, two full words are required to hold a number during intermediate calculations and output processing: namely, one cell for the isolated mantissa and one cell for the exponent.
+Although every location inside standard drum memory holds both a mantissa and its exponent packed together, two full words are required to hold a number during intermediate calculations and output processing: namely, one location for the isolated mantissa and one location for the exponent.
 
-To facilitate data processing from memory, the interpretive system establishes a simulated floating-point accumulator, a multiplication register, an address register, and an instruction counter register. The accumulator and multiplication register each occupy two memory cells, while the address register and instruction counter occupy only one cell each. All data remains in floating-point format throughout processing. Operands and addresses can be modified dynamically without exiting the interpretive system environment.
+To facilitate data processing from memory, the interpretive system establishes a simulated floating-point accumulator, a multiplication register, an address register, and an instruction counter register. The accumulator and multiplication register each occupy two locations, while the address register and instruction counter occupy only one location each. All data remains in floating-point format throughout processing. Operands and addresses can be modified dynamically without exiting the interpretive system environment.
 
 The initial contents of all registers are zero when the program has just been freshly loaded and not yet executed. The contents of all registers (with the sole exception of the instruction counter) are preserved upon system switches and are modified exclusively by explicit interpretive instructions. Therefore, the user can exit and re-enter the interpretive system repeatedly without corrupting or altering the values held in the registers.
 
@@ -108,10 +108,10 @@ The floating-point accumulator holds intermediate calculation results. Although 
 The multiplication register ($M$-register) holds the multiplicand during the execution of the ``Multiply'' and ``Cumulative Multiplication'' instructions. The mantissa sits at $q = 0$ with its most significant bit shifted one position to the right; the exponent sits at $q = 30$. Both parts are provided with their respective algebraic signs. The contents of this register are modified exclusively by the ``Set'' and ``Swap'' instructions.
 
 \paragraph{3. The Address Register}
-The address register consists of a single cell holding a track/sector value scaled at $q = 29$. This register is utilized to dynamically modify the operand address portion of standard instruction words in memory via the ``Store Address'' command. Additionally, this register is used during ``Test for Zero'' branch operations. The contents of this register can be modified exclusively by the ``Set Address'' or ``Increment Address'' instructions.
+The address register consists of a single location holding a track/sector value scaled at $q = 29$. This register is utilized to dynamically modify the operand address portion of standard instruction words in memory via the ``Store Address'' command. Additionally, this register is used during ``Test for Zero'' branch operations. The contents of this register can be modified exclusively by the ``Set Address'' or ``Increment Address'' instructions.
 
 \paragraph{4. The Instruction Counter Register}
-The instruction counter register tracks the memory address of the floating-point instruction currently being executed and flags the address of the next instruction to be processed. When executing a ``Return'' instruction, the operand address portion of the target cell is overwritten with the current contents of the instruction counter plus 2. The register is initially seeded by the main program's calling sequence and increments by 1 with each instruction executed. This sequential operation is broken only by explicit jump instructions, which overwrite the register with a new target address.
+The instruction counter register tracks the memory address of the floating-point instruction currently being executed and flags the address of the next instruction to be processed. When executing a ``Return'' instruction, the operand address portion of the target location is overwritten with the current contents of the instruction counter plus 2. The register is initially seeded by the main program's calling sequence and increments by 1 with each instruction executed. This sequential operation is broken only by explicit jump instructions, which overwrite the register with a new target address.
 
 \subsubsection*{FLOATING-POINT INSTRUCTIONS}
 This interpretive system operates using 33 pseudo-instructions. Each instruction consists of an operation code field and an operand address field. Certain operand addresses carry a divergent structural meaning compared to native fixed-point machine commands (e.g., null/zero addresses).
@@ -121,33 +121,33 @@ The floating-point instructions are detailed below. The placeholder notation \te
 \begin{enumerate}
 	\item Arithmetic Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{B ttss} (Bring):] Copies the contents of cell \texttt{ttss} into the floating-point accumulator. The source memory remains unchanged.
-    \item[\texttt{A ttss} (Add):] Adds the contents of cell \texttt{ttss} to the current value of the accumulator. The sum replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{S ttss} (Subtract):] Subtracts the contents of cell \texttt{ttss} from the current value of the accumulator. The difference replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{D ttss} (Divide):] Divides the current value of the accumulator by the contents of cell \texttt{ttss}. The resulting quotient replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{P ttss} (Set M-Register):] Copies the contents of cell \texttt{ttss} into the multiplication ($M$) register. Memory remains unchanged.
-    \item[\texttt{M ttss} (Multiply):] Multiplies the contents of the $M$-register by the contents of cell \texttt{ttss}. The product replaces the contents of the accumulator. The source memory and the $M$-register remain unchanged.
-    \item[\texttt{N ttss} (Cumulative Multiplication):] Multiplies the contents of the $M$-register by the contents of cell \texttt{ttss}, and automatically adds the product directly to the current accumulator value. The final sum resides in the accumulator. Memory and the $M$-register remain unchanged.
+    \item[\texttt{B ttss} (Bring):] Copies the contents of location \texttt{ttss} into the floating-point accumulator. The source memory remains unchanged.
+    \item[\texttt{A ttss} (Add):] Adds the contents of location \texttt{ttss} to the current value of the accumulator. The sum replaces the contents of the accumulator. Memory remains unchanged.
+    \item[\texttt{S ttss} (Subtract):] Subtracts the contents of location \texttt{ttss} from the current value of the accumulator. The difference replaces the contents of the accumulator. Memory remains unchanged.
+    \item[\texttt{D ttss} (Divide):] Divides the current value of the accumulator by the contents of location \texttt{ttss}. The resulting quotient replaces the contents of the accumulator. Memory remains unchanged.
+    \item[\texttt{P ttss} (Set M-Register):] Copies the contents of location \texttt{ttss} into the multiplication ($M$) register. Memory remains unchanged.
+    \item[\texttt{M ttss} (Multiply):] Multiplies the contents of the $M$-register by the contents of location \texttt{ttss}. The product replaces the contents of the accumulator. The source memory and the $M$-register remain unchanged.
+    \item[\texttt{N ttss} (Cumulative Multiplication):] Multiplies the contents of the $M$-register by the contents of location \texttt{ttss}, and automatically adds the product directly to the current accumulator value. The final sum resides in the accumulator. Memory and the $M$-register remain unchanged.
     \item[\texttt{D 000y} (Shift Right):] Divides the current contents of the accumulator by $2^y$. The operand address must be formatted as \texttt{000y}, where $0 \le y \le 9$. The accumulator contents remain strictly in floating-point format.
     \item[\texttt{M 000y} (Shift Left):] Multiplies the current contents of the accumulator by $2^y$. The operand address must be formatted as \texttt{000y}, where $0 \le y \le 9$. The accumulator contents remain strictly in floating-point format.
-    \item[\texttt{H ttss} (Hold):] Copies the current contents of the accumulator into memory cell \texttt{ttss}. The accumulator contents remain unchanged.
-    \item[\texttt{C ttss} (Clear):] Copies the current contents of the accumulator into memory cell \texttt{ttss}, and subsequently flushes the accumulator register entirely with zeros.
+    \item[\texttt{H ttss} (Hold):] Copies the current contents of the accumulator into location \texttt{ttss}. The accumulator contents remain unchanged.
+    \item[\texttt{C ttss} (Clear):] Copies the current contents of the accumulator into location \texttt{ttss}, and subsequently flushes the accumulator register entirely with zeros.
 \end{description}
 
 \item Jump / Branch Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{U ttss} (Unconditional Jump):] Overwrites the instruction counter register with the address \texttt{ttss}. Execution loops to fetch the next instruction from cell \texttt{ttss}. This command cannot be used to exit the interpretive system.
+    \item[\texttt{U ttss} (Unconditional Jump):] Overwrites the instruction counter register with the address \texttt{ttss}. Execution loops to fetch the next instruction from location \texttt{ttss}. This command cannot be used to exit the interpretive system.
     \item[\texttt{T ttss} (Test for Minus):] Overwrites the instruction counter register with address \texttt{ttss} if the current accumulator value is negative; execution then branches to \texttt{ttss}. If the accumulator is positive or zero, the branch is ignored and the next sequential instruction is executed. This command cannot be used to exit the interpretive system.
     \item[\texttt{800T ttss} (Conditional Jump):] Overwrites the instruction counter register with address \texttt{ttss} if the accumulator value is negative OR if Program Selector Switch 7 (\texttt{PST}) is turned ON. Otherwise, execution continues sequentially. This command cannot be used to exit the interpretive system.
 \end{description}
 
 \item Address Modification Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{E ttss} (Set Address):] Extracts the operand address portion of the instruction word stored at cell \texttt{ttss} and copies it into the simulated address register. Memory remains unchanged.
+    \item[\texttt{E ttss} (Set Address):] Extracts the operand address portion of the instruction word stored at location \texttt{ttss} and copies it into the simulated address register. Memory remains unchanged.
     \item[\texttt{I ttss} (Increment Address):] Increments the current numeric value of the simulated address register by the value \texttt{ttss}. This instruction can be used to decrement the register by supplying the complement of the value \texttt{ttss}.
-    \item[\texttt{Y ttss} (Store Address):] Copies the tracking address currently held in the simulated address register into the operand address field of the instruction word at cell \texttt{ttss}. The remaining fields of cell \texttt{ttss} and the address register itself are unaltered.
+    \item[\texttt{Y ttss} (Store Address):] Copies the tracking address currently held in the simulated address register into the operand address field of the instruction word at location \texttt{ttss}. The remaining fields of location \texttt{ttss} and the address register itself are unaltered.
     \item[\texttt{Z ttss} (Test for Zero):] Subtracts the literal value \texttt{ttss} from the current contents of the simulated address register. If the result is non-zero, the immediately following sequential instruction is executed. If the result is exactly zero, the next instruction is skipped and execution jumps directly to the second following word (the instruction after next).
-    \item[\texttt{R ttss} (Return):] Computes the current value of the instruction counter register plus 2, and writes that calculated address into the operand address field of the instruction word at cell \texttt{ttss}. The instruction counter itself and the remaining fields of cell \texttt{ttss} are untouched.
+    \item[\texttt{R ttss} (Return):] Computes the current value of the instruction counter register plus 2, and writes that calculated address into the operand address field of the instruction word at location \texttt{ttss}. The instruction counter itself and the remaining fields of location \texttt{ttss} are untouched.
 \end{description}
 
 \item Auxiliary Instructions
@@ -158,7 +158,7 @@ The operand address field for all auxiliary commands must be exactly zero (\text
     \item[\texttt{B 0000} (Set Plus Sign):] Forces the accumulator value to be positive if it is currently negative. If the accumulator is already positive or zero, the command is skipped as a no-operation.
     \item[\texttt{T 0000} (Set Minus Sign):] Forces the accumulator value to be negative if it is currently positive. If the accumulator is already negative, the command is skipped as a no-operation.
     \item[\texttt{Y 0000} (Invert Sign):] Replaces the accumulator contents with its arithmetic complement (negating the current sign).
-    \item[\texttt{Z 0000} (Stop):] Halts all computation loops immediately, provided that physical Break Point Switch 16 (\texttt{PS-16}) is turned OFF. Pressing the physical ``Start'' button on the console resumes execution at the next sequential memory cell. If \texttt{PS-16} is turned ON, this stop command is bypassed entirely.
+    \item[\texttt{Z 0000} (Stop):] Halts all computation loops immediately, provided that physical Break Point Switch 16 (\texttt{PS-16}) is turned OFF. Pressing the physical ``Start'' button on the console resumes execution at the next sequential location. If \texttt{PS-16} is turned ON, this stop command is bypassed entirely.
     \item[\texttt{E 0000} (Exit):] Terminates execution within the interpretive engine. The instruction immediately following this command word is decoded and executed as a standard native machine instruction.
 \end{description}
 
@@ -187,9 +187,9 @@ The operand address field for all function evaluations must be exactly zero (\te
 \label{subsec:data_io_1}
 
 \subsubsection*{Data Input}
-The ``Data Input and Output 1'' subroutine introduces data into the computer for utilization by a main program. Decimal numbers are read from tape, automatically converted into binary floating-point format, and stored into the specified memory cells in the required configuration.
+The ``Data Input and Output 1'' subroutine introduces data into the computer for utilization by a main program. Decimal numbers are read from tape, automatically converted into binary floating-point format, and stored into the specified locations in the required configuration.
 
-This subroutine is invoked directly via an \texttt{I 0000} pseudo-instruction processed within the interpretive loop of the main program. Control automatically returns to the memory cell immediately following this input command once all data elements have been successfully processed and stored.
+This subroutine is invoked directly via an \texttt{I 0000} pseudo-instruction processed within the interpretive loop of the main program. Control automatically returns to the location immediately following this input command once all data elements have been successfully processed and stored.
 
 The input data tape must contain the following expressions in the exact order and format described below:
 \begin{enumerate}[label=\alph*)]
@@ -224,7 +224,7 @@ The following example illustrates the physical layout of a typical structured da
 \multicolumn{3}{|c|}{Input} & S & \multicolumn{2}{c|}{Decimal} & S & \\
 \multicolumn{3}{|c|}{control} & t & \multicolumn{2}{c|}{numbers with} & t & \\
 \multicolumn{3}{|c|}{word} & o & \multicolumn{2}{c|}{sign} & o & \\ \hline
-$\pm$ & P & Cell & p & $\pm$ & & p & CR \\ \hline
+$\pm$ & P & Location & p & $\pm$ & & p & CR \\ \hline
 + & 07 & 2004 & ' & & 1090000 & ' & \emptybox \\ \hline
   &    &      &   & & \phantom{1}120000 & ' & \xbox \\ \hline
   &    &      &   & & \phantom{1}340000 & ' & \emptybox \\ \hline
@@ -249,7 +249,7 @@ The first six decimal numbers are read in and stored as follows:
 \noindent
 \begin{tabular}{ll}
 \toprule
-\textbf{Memory Cell} & \textbf{Contents} \\
+\textbf{Memory Location} & \textbf{Contents} \\
 \midrule
 \texttt{2004}        & $109$ \\
 \texttt{2005}        & $0.012$ \\
@@ -266,7 +266,7 @@ The second record group consisting of five data words would be stored as follows
 \medskip
 \begin{tabular}{ll}
 \toprule
-\textbf{Memory Cell} & \textbf{Contents} \\
+\textbf{Memory Location} & \textbf{Contents} \\
 \midrule
 \texttt{2010}        & $-4320.001$ \\
 \texttt{2011}        & $-0.021$ \\
@@ -281,7 +281,7 @@ The minus-zero control word \texttt{-0000000'} terminates each individual group 
 \end{enumerate}
 
 \subsubsection*{2. Data Output}
-The ``Data Input and Output 1'' subroutine delivers the contents of the floating-point accumulator as a signed, seven-digit decimal mantissa and a signed, two-digit decimal exponent. Following the output execution, a tabulator character (tab space) is issued, and control branches back to the memory cell immediately following the \texttt{P 0000} instruction that originally invoked the subroutine.
+The ``Data Input and Output 1'' subroutine delivers the contents of the floating-point accumulator as a signed, seven-digit decimal mantissa and a signed, two-digit decimal exponent. Following the output execution, a tabulator character (tab space) is issued, and control branches back to the location immediately following the \texttt{P 0000} instruction that originally invoked the subroutine.
 
 \paragraph{Output Format}
 The printed output expression uses the following structural form:
@@ -309,19 +309,19 @@ The following table illustrates the raw machine printout format paired with its 
 \end{tabular}
 
 \subsubsection*{SINE-COSINE 3 --- B1-10.2}
-``Sine-Cosine 3'' calculates the sine or cosine of an argument provided in floating-point radians. Upon returning to the main program, the result is stored in the floating-point accumulator. The return is executed to the cell immediately following the \texttt{S0000} or \texttt{C0000} instruction, depending on which subroutine was invoked.
+``Sine-Cosine 3'' calculates the sine or cosine of an argument provided in floating-point radians. Upon returning to the main program, the result is stored in the floating-point accumulator. The return is executed to the location immediately following the \texttt{S0000} or \texttt{C0000} instruction, depending on which subroutine was invoked.
 
 \subsubsection*{ARCTANGENT 2 --- B1-11.2}
-``Arctangent 2'' calculates the arctangent of an argument located in the floating-point accumulator. The result is placed in the floating-point accumulator in radians when control returns to the cell of the main program following the \texttt{A0000} instruction.
+``Arctangent 2'' calculates the arctangent of an argument located in the floating-point accumulator. The result is placed in the floating-point accumulator in radians when control returns to the location of the main program following the \texttt{A0000} instruction.
 
 \subsubsection*{LOGARITHM 2 --- B3-11.1}
-``Logarithm 2'' calculates the natural logarithm (base $e$) of a number located in the floating-point accumulator. The result remains in the floating-point accumulator upon return to the cell of the main program following the \texttt{N0000} instruction.
+``Logarithm 2'' calculates the natural logarithm (base $e$) of a number located in the floating-point accumulator. The result remains in the floating-point accumulator upon return to the location of the main program following the \texttt{N0000} instruction.
 
 \subsubsection*{EXPONENTIAL FUNCTION 2 --- B3-10.1}
-``Exponential Function 2'' calculates the value $e^x$, where $x$ is the contents of the floating-point accumulator. The result is stored in the floating-point accumulator upon return to the cell of the main program following the \texttt{H0000} instruction.
+``Exponential Function 2'' calculates the value $e^x$, where $x$ is the contents of the floating-point accumulator. The result is stored in the floating-point accumulator upon return to the location of the main program following the \texttt{H0000} instruction.
 
 \subsubsection*{SQUARE ROOT 2 --- B4-10.1}
-``Square Root 2'' calculates the square root of a positive number located in the floating-point accumulator. The result is placed in the floating-point accumulator upon return to the cell of the main program following the \texttt{R0000} instruction.
+``Square Root 2'' calculates the square root of a positive number located in the floating-point accumulator. The result is placed in the floating-point accumulator upon return to the location of the main program following the \texttt{R0000} instruction.
 
 \subsubsection*{CALLING SEQUENCE}
 
@@ -342,7 +342,7 @@ $\alpha+n+1$         & \texttt{XE}                   & \texttt{0000}            
 \end{tabularx}
 \end{table}
 
-Cells $\alpha$ and $\alpha+1$ contain instructions \texttt{R} and \texttt{U}, which store the target address ($\alpha+2$) into the interpreter system and execute a branch to $L$, the starting address of the interpreter system. Cells $\alpha+2$ through $\alpha+n$ contain the actual floating-point instructions. An explicit exit from the interpreter system is required when, as shown here at $\alpha+n+1$, fixed-point machine instructions follow.
+Locations $\alpha$ and $\alpha+1$ contain instructions \texttt{R} and \texttt{U}, which store the target address ($\alpha+2$) into the interpreter system and execute a branch to $L$, the starting address of the interpreter system. Locations $\alpha+2$ through $\alpha+n$ contain the actual floating-point instructions. An explicit exit from the interpreter system is required when, as shown here at $\alpha+n+1$, fixed-point machine instructions follow.
 
 \subsection*{FIXED-POINT TO FLOATING-POINT CONVERSION (AND VICE VERSA) --- L3-12.0}
 \addcontentsline{toc}{subsection}{FIXED-POINT TO FLOATING-POINT CONVERSION (AND VICE VERSA) --- L3-12.0}
@@ -392,7 +392,7 @@ $\alpha+3$               & \multicolumn{2}{c}{etc.}               & Return to ma
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha-1$ loads the floating-point number into the primary hardware accumulator (any instruction achieving this is permissible). The instruction at $\alpha$ stores the address ($\alpha+2$) of the value $q$ into the subroutine. The instruction at $\alpha+1$ causes a branch to the appropriate entry cell, $L+122$, of this subroutine. The instruction at $\alpha+2$ contains the $q$ that the converted fixed-point number should assume, formatted as a decimal sector address. The return from the subroutine occurs at $\alpha+3$.
+The instruction at $\alpha-1$ loads the floating-point number into the primary hardware accumulator (any instruction achieving this is permissible). The instruction at $\alpha$ stores the address ($\alpha+2$) of the value $q$ into the subroutine. The instruction at $\alpha+1$ causes a branch to the appropriate entry location, $L+122$, of this subroutine. The instruction at $\alpha+2$ contains the $q$ that the converted fixed-point number should assume, formatted as a decimal sector address. The return from the subroutine occurs at $\alpha+3$.
 
 \subsubsection*{PROGRAM STOPS}
 
@@ -403,7 +403,7 @@ There are two dedicated program stops within this subroutine. They are listed an
 \setlength{\extrarowheight}{5pt}
 \begin{tabular}{|c|p{8.5cm}|}
 \hline
-\textbf{Memory Cell} & \textbf{Meaning and Remedy} \\ \hline
+\textbf{Memory Location} & \textbf{Meaning and Remedy} \\ \hline
 $L+152$ & The number is too large for the specified $q$ during backward conversion. Pressing ``Start'' clears the accumulator and returns control to the main program. \\ \hline
 $L+262$ & The number requires an exponent greater than 31 during forward conversion. Pressing ``Start'' clears the accumulator and returns control to the main program. \\ \hline
 \end{tabular}
@@ -488,7 +488,7 @@ The initial location of the interpreter system should ideally align with Sector 
 
 Remember that when the interpreter is running all instructions are pseudo-instructions! The interpreter is substituting itself for the standard fetch-execute cycle that the CPU would do. Another way of saying it is that the interpreter is an emulator for a CPU that has a floating-point instruction set, and we have an agreed-upon protocol to enter and exit emulation.
 
-Pseudo-instructions utilizing addresses from \texttt{0000} to \texttt{0009} have special meanings. When pseudo-instructions use these addresses, they do not refer to the actual storage at these addresses, but instead invoke functions in the interpreter. The interpreter utilizes 16 such special instructions, including \texttt{D 000y} and \texttt{M 000y}. Although instructions \texttt{D 000y} and \texttt{M 000y} may carry a literal value of $y$ between 1 and 9, standard instructions like \texttt{D ttss} and \texttt{M ttss} (while in interpreter mode) cannot reference any cell between \texttt{0000} and \texttt{0009}\footnote{The addresses from \texttt{0000} to \texttt{0009}, inclusive, trigger transcendental functions, etc. \emph{when the floating-point interpreter is running}. In normal execution mode, they're used just the same as any other location in the machine.}.
+Pseudo-instructions utilizing addresses from \texttt{0000} to \texttt{0009} have special meanings. When pseudo-instructions use these addresses, they do not refer to the actual storage at these addresses, but instead invoke functions in the interpreter. The interpreter utilizes 16 such special instructions, including \texttt{D 000y} and \texttt{M 000y}. Although instructions \texttt{D 000y} and \texttt{M 000y} may carry a literal value of $y$ between 1 and 9, standard instructions like \texttt{D ttss} and \texttt{M ttss} (while in interpreter mode) cannot reference any location between \texttt{0000} and \texttt{0009}\footnote{The addresses from \texttt{0000} to \texttt{0009}, inclusive, trigger transcendental functions, etc. \emph{when the floating-point interpreter is running}. In normal execution mode, they're used just the same as any other location in the machine.}.
 
 \subsubsection*{EXAMPLE}
 
@@ -498,7 +498,7 @@ This example demonstrates how to evaluate a fourth-degree polynomial using the F
 By applying Horner's Method, the equation is factored to minimize arithmetic operations, reducing it to a sequence of successive multiplications and additions:
 \[ y = (((Ax + B)x + C)x + D)x + E \]
 
-The Interpreter System core is loaded at address \texttt{0300}. The main program begins at cell \texttt{4200}. The five floating-point coefficients ($A, B, C, D, E$) and the variable $x$ are stored as 3-word blocks starting at cell \texttt{4306}.
+The Interpreter System core is loaded at address \texttt{0300}. The main program begins at location \texttt{4200}. The five floating-point coefficients ($A, B, C, D, E$) and the variable $x$ are stored as 3-word blocks starting at location \texttt{4306}.
 
 \begin{table}[h]
 \centering
@@ -538,13 +538,13 @@ Because the pseudo-accumulator manages multi-word operations, each floating-poin
 \toprule
 \textbf{Start Address} & \textbf{Symbol} & \textbf{Allocation Footprint} \\ 
 \midrule
-4306 & A & Occupies cells 4306, 4307, 4308 \\
-4309 & B & Occupies cells 4309, 4310, 4311 \\
-4312 & C & Occupies cells 4312, 4313, 4314 \\
-4315 & D & Occupies cells 4315, 4316, 4317 \\
-4318 & E & Occupies cells 4318, 4319, 4320 \\
-4321 & Y & Result storage (cells 4321, 4322, 4323) \\
-4324 & X & Input variable x (cells 4324, 4325, 4326) \\
+4306 & A & Occupies locations 4306, 4307, 4308 \\
+4309 & B & Occupies locations 4309, 4310, 4311 \\
+4312 & C & Occupies locations 4312, 4313, 4314 \\
+4315 & D & Occupies locations 4315, 4316, 4317 \\
+4318 & E & Occupies locations 4318, 4319, 4320 \\
+4321 & Y & Result storage (locations 4321, 4322, 4323) \\
+4324 & X & Input variable x (locations 4324, 4325, 4326) \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -556,7 +556,7 @@ Because the pseudo-accumulator manages multi-word operations, each floating-poin
 \small
 \ttfamily
 \begin{tabular}{ll}
-( )  & Contents of memory cell or register \\
+( )  & Contents of location or register \\
 $\rightarrow$  & Displaces / moves to / becomes \\
 Acc & Floating-Point Software Accumulator \\
 A Reg. & Address Register \\
@@ -597,7 +597,7 @@ R & ttss & Compare: If (A Reg.) - ttss = 0, skip next instruction; else loop \\
 \end{table}
 \newpage
 \paragraph{Special Behavior for Null Addresses}
-When the address field \texttt{ttss} of an interpreter command equals \texttt{0000} (or a designated function selector ID within Track 00), the default memory interaction is overridden to perform specialized administrative or algorithmic operations rather than referencing physical memory cell zero.
+When the address field \texttt{ttss} of an interpreter command equals \texttt{0000} (or a designated function selector ID within Track 00), the default memory interaction is overridden to perform specialized administrative or algorithmic operations rather than referencing physical location zero.
 
 \paragraph{Interpreter Behavior for Null Addresses (Address = 0000)\protect\footnote{Excluding extended subroutine selection commands under the format \texttt{D000y} or \texttt{M000y}. See Section~0479.}}
 
@@ -657,9 +657,9 @@ The entire system footprint consumes \textbf{28 Tracks} of memory. This is divid
 
 \subsubsection*{INTERNAL REGISTERS}
 
-The floating-point format requires two consecutive memory cells to represent a single data word. Consequently, the interpreter system features two specialized registers designed for data transport, processing, and output while strictly preserving the floating-point structure. These registers—the Floating-Point Accumulator and the Multiplier Register—each occupy two memory cells. 
+The floating-point format requires two consecutive locations to represent a single data word. Consequently, the interpreter system features two specialized registers designed for data transport, processing, and output while strictly preserving the floating-point structure. These registers—the Floating-Point Accumulator and the Multiplier Register—each occupy two locations. 
 
-Address modification can be executed directly within the interpreter system by utilizing a simulated, single-cell Address Register. Additionally, a single-cell Counter Register governs the operational execution flow of the interpreter system loop.
+Address modification can be executed directly within the interpreter system by utilizing a simulated, single-location Address Register. Additionally, a single-location Counter Register governs the operational execution flow of the interpreter system loop.
 
 Upon initial system loading, before any operations have commenced, the contents of all virtual registers are initialized to zero. A detailed breakdown of these specialized registers follows below. (The individual instructions referenced here are explained comprehensively in Section 4, ``Pseudo-Instructions'').
 
@@ -689,11 +689,11 @@ When a subroutine return sequence is initiated, the current contents of this reg
 
 \subsubsection*{INTERNAL NUMBER FORMAT}
 
-Every floating-point number requires two consecutive memory cells for its complete representation. 
+Every floating-point number requires two consecutive locations for its complete representation. 
 
 \begin{itemize}
-    \item \textbf{The first cell} holds the mantissa of the number in binary representation scaled at $q = 0$. Each mantissa consists of an algebraic sign bit and 30 significant binary digits; the most significant bit (MSB) carries a value of $2^{-1}$. The mantissa is therefore always maintained in a strictly normalized state.
-    \item \textbf{The second cell} holds the base-2 exponent, which must be multiplied by the mantissa to obtain the actual value of the represented number. This exponent, maintained at $q = 29$, is a whole binary integer carrying its own algebraic sign bit.
+    \item \textbf{The first location} holds the mantissa of the number in binary representation scaled at $q = 0$. Each mantissa consists of an algebraic sign bit and 30 significant binary digits; the most significant bit (MSB) carries a value of $2^{-1}$. The mantissa is therefore always maintained in a strictly normalized state.
+    \item \textbf{The second location} holds the base-2 exponent, which must be multiplied by the mantissa to obtain the actual value of the represented number. This exponent, maintained at $q = 29$, is a whole binary integer carrying its own algebraic sign bit.
 \end{itemize}
 
 Taken together, these two components represent a floating-point number via the following mathematical relationship:
@@ -704,7 +704,7 @@ Where $Z = \text{The Number}$, $M = \text{The Mantissa}$, and $E = \text{The Exp
 In floating-point memory, the decimal value $3.75$ is internally normalized as $0.9375 \cdot 2^2$. Its exact binary equivalent on the magnetic drum is structured as follows:
 
 \vspace{1em}
-\noindent\textbf{First Cell (Mantissa at $q = 0$):}
+\noindent\textbf{First Location (Mantissa at $q = 0$):}
 \begin{table}[h]
 \centering
 \small
@@ -718,7 +718,7 @@ In floating-point memory, the decimal value $3.75$ is internally normalized as $
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Second Cell (Exponent at $q = 29$):}
+\noindent\textbf{Second Location (Exponent at $q = 29$):}
 \begin{table}[h]
 \centering
 \small
@@ -733,10 +733,10 @@ In floating-point memory, the decimal value $3.75$ is internally normalized as $
 \end{table}
 
 \paragraph{Example 2: Representation of a Negative Number ($-3.75$)}
-A negative number is represented by inverting the leading sign bit of the mantissa cell:
+A negative number is represented by inverting the leading sign bit of the mantissa location:
 
 \vspace{1em}
-\noindent\textbf{First Cell (Mantissa at $q = 0$):}
+\noindent\textbf{First Location (Mantissa at $q = 0$):}
 \begin{table}[h]
 \centering
 \small
@@ -758,7 +758,7 @@ The continuous storage of alternating mantissas and exponents across sequential 
 \ttfamily
 \begin{tabular}{ll}
 \toprule
-\textbf{Memory Location} & \textbf{Cell Contents} \\ 
+\textbf{Memory Location} & \textbf{Location Contents} \\ 
 \midrule
 4304 & Mantissa of Variable 1 \\
 4305 & Binary Exponent of Variable 1 \\
@@ -778,7 +778,7 @@ The continuous storage of alternating mantissas and exponents across sequential 
 
 \subsubsection*{PSEUDO-INSTRUCTIONS}
 
-The following section details the complete catalog of the 33 virtual instructions compiled for the ``Floating-Point Interpreter System 2'' and explains their operational mechanics. Any reference to the ``Accumulator'' designates the designated two-cell memory block allocated to the software Floating-Point Accumulator.
+The following section details the complete catalog of the 33 virtual instructions compiled for the ``Floating-Point Interpreter System 2'' and explains their operational mechanics. Any reference to the ``Accumulator'' designates the designated two-location memory block allocated to the software Floating-Point Accumulator.
 
 \paragraph{Arithmetic Instructions}
 \textit{Note: \texttt{XXXX} represents the absolute starting memory address of the target floating-point number's mantissa.}
@@ -819,14 +819,14 @@ For the power-of-two scaling commands (\texttt{XD000y} and \texttt{XM000y}), the
 \toprule
 \textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
 \midrule
-UXXXX & Unconditional Jump & Forces execution loop to target cell \texttt{XXXX}.\footnote{Crucial constraint: This instruction must not be used to exit the interpreter environment.} \\
+UXXXX & Unconditional Jump & Forces execution loop to target location \texttt{XXXX}.\footnote{Crucial constraint: This instruction must not be used to exit the interpreter environment.} \\
 TXXXX & Test Minus & Jumps to \texttt{XXXX} if (Accumulator) $< 0$; else executes next sequential line. \\
 800TXXXX & Conditional Jump & Jumps to \texttt{XXXX} if (Accumulator) $< 0$ \textbf{OR} if console switch \textsf{PST} is \textsf{ON}. \\
 XXXXX & Set Address & (Address Part of XXXX) $\rightarrow$ Address Register \\
 IXXXX & Increment Address & (Address Register) + XXXX $\rightarrow$ Address Register\footnote{Can perform subtraction/decrements by supplying the two's complement of the address part in the instruction word.} \\
-YXXXX & Store Address & (Address Part of Address Register) $\rightarrow$ Address Part of cell XXXX \\
+YXXXX & Store Address & (Address Part of Address Register) $\rightarrow$ Address Part of location XXXX \\
 ZXXXX & Zero Test & (Address Register) $-$ \texttt{XXXX}. If result $= 0$, skip next instruction; else execute next line. \\
-RXXXX & Return & Links subroutines: ($\text{PC} + 2$) $\rightarrow$ Address Part of target cell XXXX. \\
+RXXXX & Return & Links subroutines: ($\text{PC} + 2$) $\rightarrow$ Address Part of target location XXXX. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -847,7 +847,7 @@ B0000 & Set Plus Sign & Forces (Accumulator) positive \hfill [Absolute Value: $|
 T0000 & Set Minus Sign & Forces (Accumulator) negative \hfill [Inverse Absolute Value: $-|Accumulator|$] \\
 Y0000 & Change Sign & (Accumulator) $\times -1 \rightarrow$ Accumulator \hfill [Toggle sign bit] \\
 Z0000 & Operational Stop & Halts execution if console switch \textsf{PS-16} is \textsf{ON}. Resumes on manual \textsf{START}. \\
-E0000 & Exit Interpreter & Safe exit from Virtual Machine; returns to native hardware control at next cell. \\
+E0000 & Exit Interpreter & Safe exit from Virtual Machine; returns to native hardware control at next location. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -910,10 +910,10 @@ The pseudo-input instruction (\texttt{I0000}) requires a data paper tape formatt
 \paragraph{The Starting Address}
 Every independent data group must begin with its target starting memory location, designated in decimal Track/Sector notation. This must be an absolute address and must be immediately followed by a physical stop-code (\texttt{'}). 
 
-\textit{Example:} The entry \texttt{4200'} instructs the input subroutine to begin storing the incoming converted floating-point variables sequentially starting at memory cell \texttt{4200}.
+\textit{Example:} The entry \texttt{4200'} instructs the input subroutine to begin storing the incoming converted floating-point variables sequentially starting at location \texttt{4200}.
 
 \paragraph{The Data Structure}
-Following the starting address line, one or more signed decimal integers and their exponents are fed into the reader. The subroutine converts this decimal matrix into internal binary floating-point representations and stores them in consecutive, two-cell blocks on the drum.
+Following the starting address line, one or more signed decimal integers and their exponents are fed into the reader. The subroutine converts this decimal matrix into internal binary floating-point representations and stores them in consecutive, two-location blocks on the drum.
 
 Each individual floating-point value must be explicitly split into \emph{two distinct words} on the paper tape, each line capped with a hardware stop-code (\texttt{'}). 
 \begin{itemize}
@@ -1179,7 +1179,7 @@ Exponential function & $L_0+2500$ & $L_0$ & 2 tracks \\
 \end{tabular}
 \end{center}
 
-\textbf{Scratch Storage} --- The program uses cells 6300 to 6363 as working storage.
+\textbf{Scratch Storage} --- The program uses locations 6300 to 6363 as working storage.
 
 \paragraph{Program Stops}
 \begin{center}

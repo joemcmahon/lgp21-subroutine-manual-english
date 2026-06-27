@@ -8,7 +8,7 @@
 
 Data Input 1 functions as a subroutine and is called via a calling sequence in the main program. Before a jump to the subroutine occurs, the calling sequence must store the return address within the subroutine.
 
-If an alternative input device is to be used instead of the default console typewriter, a suitable selection keyword must be included in the calling sequence. Upon return to the main program, all decimal numbers will have been converted and stored in the specified memory cells.
+If an alternative input device is to be used instead of the default console typewriter, a suitable selection keyword must be included in the calling sequence. Upon return to the main program, all decimal numbers will have been converted and stored in the specified locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
@@ -109,7 +109,7 @@ Any arithmetic overflow conditions occurring during data entry or base conversio
 \label{sec:data-input-2}
 
 \subsubsection*{PURPOSE}
-\texttt{J2-10.1} reads data into the computer for use by a main program. The decimal data is read, converted to binary, shifted to the desired fractional bit position ($q$), and, if more than one number is processed, stored in consecutive designated cells. If only a single number is read, it remains in the accumulator after being shifted to its corresponding $q$. Any number of decimal values can be converted and stored via a single program call. The main program must supply all configuration parameters regarding the conversion.
+\texttt{J2-10.1} reads data into the computer for use by a main program. The decimal data is read, converted to binary, shifted to the desired fractional bit position ($q$), and, if more than one number is processed, stored in consecutive designated locations. If only a single number is read, it remains in the accumulator after being shifted to its corresponding $q$. Any number of decimal values can be converted and stored via a single program call. The main program must supply all configuration parameters regarding the conversion.
 
 This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store both the starting address of the **Conversion Control List** and the return address inside the subroutine structure. Upon return to the main program, all data will have been converted and either stored in memory or left in the accumulator.
 
@@ -141,7 +141,7 @@ The subroutine utilizes the sign bits and specific instruction bits of the contr
 * **Negative $N$:** If $N$ is embedded in a negative instruction format (sign bit = \texttt{1}), the word count from the previous run is preserved.
 * **Negative $L$:** If $L$ is inside a negative instruction format, the storage destination address from the previous run is reused. All standard instruction bits for the $N$ and $L$ command entries must otherwise be \texttt{0}.
 * **Negative $Q$:** If the combined $Q/P$ word is negative, the value of $Q$ ($q$) is treated as a negative scale factor.
-* **Initialization Override:** If the very first bit of the instruction cell containing $Q$ and $P$ is a \texttt{1}, the program reuses the exact configuration state of the previous execution run.
+* **Initialization Override:** If the very first bit of the instruction location containing $Q$ and $P$ is a \texttt{1}, the program reuses the exact configuration state of the previous execution run.
 
 \paragraph{Special Case Values:}
 * **$N = 0$:** The routine reads an unlimited stream of data words continuously until the block-termination character ``\texttt{w}'' is encountered on the tape.
@@ -169,12 +169,12 @@ If the input hardware device is to be changed, an alternative calling sequence m
     0613              & \dots           &                  & Main program execution resumes \\
     \midrule
     2430              & \texttt{000Z}   & \texttt{0126}    & $N = 90$ words ($01_{track} \times 64 + 26_{sector} = 90_{10}$) \\
-    2431              & \texttt{000Z}   & \texttt{4200}    & $L = $ Destination cell 4200 \\
+    2431              & \texttt{000Z}   & \texttt{4200}    & $L = $ Destination location 4200 \\
 2432              & \texttt{000Z}   & \texttt{1205}    & $Q = q = 12$, $P = 5$ decimal places \\
 \bottomrule
 \end{tabularx}
 \end{table}
-This configuration instructs the subroutine to ingest 90 decimal words from the tape, convert them to binary, scale them to $q = 12$ with 5 decimal places, and store them sequentially beginning at cell \texttt{4200}. Control then returns to main program cell \texttt{0613}.
+This configuration instructs the subroutine to ingest 90 decimal words from the tape, convert them to binary, scale them to $q = 12$ with 5 decimal places, and store them sequentially beginning at location \texttt{4200}. Control then returns to main program location \texttt{0613}.
 
 \paragraph{Example 2: Indefinite Tape Stream with Reused Base Address}
 \begin{table}[h!]
@@ -216,7 +216,7 @@ This configuration processes an unknown length of data words until a stop code `
 \bottomrule
 \end{tabularx}
 \end{table}
-The subroutine reads a single decimal value from the tape, converts it using the exact scale settings leftover from the last run, and leaves the value directly in the accumulator. No data is written to cell \texttt{1340}.
+The subroutine reads a single decimal value from the tape, converts it using the exact scale settings leftover from the last run, and leaves the value directly in the accumulator. No data is written to location \texttt{1340}.
 
 \paragraph{Example 4: Total Control List Persistence}
 \begin{table}[h!]
@@ -255,7 +255,7 @@ Because the pointer token at \texttt{0503} has its sign bit set to negative, the
 \bottomrule
 \end{tabularx}
 \end{table}
-Because the entry command at \texttt{0504} uses an initialization opcode format starting with a \texttt{1} bit pattern, and points to subroutine entry point \texttt{(0413)}, the routine loads the new parameters, updates the hardware pointer to device \texttt{04}, but **does not read any data from the tape reader**. Control returns immediately to cell \texttt{1234}.
+Because the entry command at \texttt{0504} uses an initialization opcode format starting with a \texttt{1} bit pattern, and points to subroutine entry point \texttt{(0413)}, the routine loads the new parameters, updates the hardware pointer to device \texttt{04}, but **does not read any data from the tape reader**. Control returns immediately to location \texttt{1234}.
 
 \subsubsection*{CALLING SEQUENCES}
 Utilize Calling Sequence 1 if the input unit selection remains unchanged. Use Calling Sequence 2 to declare a new input device structure.
@@ -410,7 +410,7 @@ Upon return to the main program sequence, the converted binary representation of
 \label{sec:data-input-4}
 
 \subsubsection*{PURPOSE}
-\texttt{J2-10.3} reads data into the computer for use by a main program. It reads a predetermined number of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters regarding the conversion must be supplied by the main program.
+\texttt{J2-10.3} reads data into the computer for use by a main program. It reads a predetermined number of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive locations at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters regarding the conversion must be supplied by the main program.
 
 The program functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the starting address of the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted to binary and stored.
 
@@ -429,7 +429,7 @@ The decimal numbers to be converted can consist of an algebraic sign and up to s
 
 The number of decimal values $N$ to be read is limited only by the available memory space. The number of decimal places $P$ must satisfy: $0 \le P \le 11$. The scale factor value must satisfy: $-36 \le \text{scale factor} \le +47$.
 
-The Conversion Control List, which occupies consecutive memory cells, is structured as follows:
+The Conversion Control List, which occupies consecutive locations, is structured as follows:
 \begin{enumerate}
     \item \textbf{Word 1 ($Q$ and $P$):} A single combined configuration word:
     \begin{enumerate}
@@ -515,7 +515,7 @@ The following are examples of Conversion Control Lists:
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read 110 decimal numbers from the tape, convert them to binary, align them for $P=4$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $q=13$. Control then returns to cell \texttt{0535} of the main program.
+This example instructs the subroutine to read 110 decimal numbers from the tape, convert them to binary, align them for $P=4$ decimal places, and store them in consecutive locations starting at location \texttt{1500} at scale factor $q=13$. Control then returns to location \texttt{0535} of the main program.
 
 \paragraph{Example 2: Alternative Device Selection with Negative Scale Factor}
 \begin{table}[h!]
@@ -537,7 +537,7 @@ This example instructs the subroutine to read 110 decimal numbers from the tape,
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read 19 decimal numbers, convert them to binary, align them for $P=8$ decimal places, and store them in consecutive cells starting at location \texttt{1820} at scale factor $@-01$. Input is executed via the peripheral unit corresponding to code \texttt{08}. Control then returns to cell \texttt{0639} of the main program.
+This example instructs the subroutine to read 19 decimal numbers, convert them to binary, align them for $P=8$ decimal places, and store them in consecutive locations starting at location \texttt{1820} at scale factor $@-01$. Input is executed via the peripheral unit corresponding to code \texttt{08}. Control then returns to location \texttt{0639} of the main program.
 
 \subsubsection*{TECHNICAL NOTE}
 To maintain maximum mathematical accuracy, the smallest practical scale factor value should be used. The program does not halt if a number cannot be properly represented or stored at the intended scale factor target; instead, it continues execution using an invalid, meaningless value.
@@ -547,7 +547,7 @@ To maintain maximum mathematical accuracy, the smallest practical scale factor v
 \label{sec:data-input-5}
 
 \subsubsection*{PURPOSE}
-\texttt{J2-10.4} reads data into the computer for use by a main program. It reads an indefinite quantity of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters controlling the conversion must be supplied by the main program.
+\texttt{J2-10.4} reads data into the computer for use by a main program. It reads an indefinite quantity of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive locations at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters controlling the conversion must be supplied by the main program.
 
 Data Input 5 functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the subroutine with the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted and stored.
 
@@ -566,7 +566,7 @@ Data Input 5 can convert decimal numbers consisting of an algebraic sign and up 
 
 The number of decimal places $P$ must satisfy: $0 \le P \le 11$. The scale factor value $Q$ must satisfy: $-36 \le Q \le +47$.
 
-The Conversion Control List, which must be stored in consecutive cells before entering the subroutine, is structured as follows:
+The Conversion Control List, which must be stored in consecutive locations before entering the subroutine, is structured as follows:
 \begin{enumerate}
     \item \textbf{Word 1 ($Q$ and $P$):} A single combined configuration word:
     \begin{enumerate}
@@ -652,7 +652,7 @@ The following examples illustrate the application of the Conversion Control List
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read an indefinite quantity of data words from the tape, convert them to binary, align them for $P=0$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $q=01$. Control then returns to cell \texttt{2003} of the main program.
+This example instructs the subroutine to read an indefinite quantity of data words from the tape, convert them to binary, align them for $P=0$ decimal places, and store them in consecutive locations starting at location \texttt{1500} at scale factor $q=01$. Control then returns to location \texttt{2003} of the main program.
 
 \paragraph{Example 2: Indefinite Stream via Alternative Unit Override}
 \begin{table}[h!]
@@ -673,7 +673,7 @@ This example instructs the subroutine to read an indefinite quantity of data wor
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read an indefinite number of data words via the peripheral device corresponding to selection code \texttt{04}, convert them to binary, align them for $P=9$ decimal places, and store them in consecutive memory cells starting at location \texttt{1200} at scale factor $@-02$. Control then returns to cell \texttt{3003} of the main program.
+This example instructs the subroutine to read an indefinite number of data words via the peripheral device corresponding to selection code \texttt{04}, convert them to binary, align them for $P=9$ decimal places, and store them in consecutive locations starting at location \texttt{1200} at scale factor $@-02$. Control then returns to location \texttt{3003} of the main program.
 
 \subsubsection*{TECHNICAL NOTE}
 To maintain maximum mathematical accuracy, the smallest practical scale factor value should be chosen. The program does not halt if a number cannot be properly represented or stored at the specified scale factor target; instead, it continues execution using an invalid, meaningless value.

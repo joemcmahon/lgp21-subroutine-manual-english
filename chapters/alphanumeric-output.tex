@@ -4,7 +4,7 @@
 \label{sec:alphanumeric-output-1}
 
 \subsubsection*{PURPOSE}
-\texttt{J4-11.0} translates keywords and handles their output as alphabetic and/or numeric text. The alphanumeric text must be stored by the main program in a 4-bit character encoding format. It consists of a group of words composed of special codes corresponding to the characters and functions of the typewriter. The amount of data to be stored for J4-11.0 is limited only by the available memory space. The information must be stored in ascending sequence in consecutive memory cells.
+\texttt{J4-11.0} translates keywords and handles their output as alphabetic and/or numeric text. The alphanumeric text must be stored by the main program in a 4-bit character encoding format. It consists of a group of words composed of special codes corresponding to the characters and functions of the typewriter. The amount of data to be stored for J4-11.0 is limited only by the available memory space. The information must be stored in ascending sequence in consecutive locations.
 
 J4-11.0 operates as a subroutine. It is called by a calling sequence in the main program. Before jumping to the subroutine, the starting address of the data block to be output must be stored within the subroutine. The memory locations following the jump instruction must contain the control keywords. Upon return to the main program, the output operation has already been executed.
 
@@ -93,7 +93,7 @@ There are two distinct calling sequences available for invoking ``Alphanumeric O
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$x$     & \texttt{R} & \texttt{L} & Transfer starting address of data block into subroutine cell \texttt{L}. \\
+$x$     & \texttt{R} & \texttt{L} & Transfer starting address of data block into subroutine location \texttt{L}. \\
 $x+1$   & \texttt{U} & \texttt{L} & Jump to subroutine standard execution entry point. \\
 $x+2$   & \dots      &             & First control keyword string token word. \\
 $\dots$ & \dots      &             & Alphanumeric string control words. \\
@@ -102,7 +102,7 @@ $x+n+1$ & \dots      &             & Main program execution resumes. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-The instruction at location $x$ stores the entry pointer of the data block into the subroutine body. The command at $x+1$ triggers the execution branch. Cells $x+2$ through $x+n$ contain the $n$ string keyword words. Location $x+n+1$ holds the next instruction of the main program to be executed immediately following subroutine exit.
+The instruction at location $x$ stores the entry pointer of the data block into the subroutine body. The command at $x+1$ triggers the execution branch. Locations $x+2$ through $x+n$ contain the $n$ string keyword words. Location $x+n+1$ holds the next instruction of the main program to be executed immediately following subroutine exit.
 
 \paragraph{Calling Sequence 2 (Custom Peripheral Routing)}
 \begin{table}[h!]
@@ -134,7 +134,7 @@ Upon execution return to the main program context, the alphanumeric string array
         \item Relocatable hexadecimal format compatible with Program Input 1.
         \item Relocatable decimal format mapped to the standard coding sheet structure.
     \end{enumerate}
-    \item \textbf{Required Input/Output Units:} Hardware data input units are not required. If an alternative hardware peripheral unit other than the primary console typewriter is designated for text routing, the absolute track operational address entries inside memory cells \texttt{L+06}, \texttt{L+14}, \texttt{L+22}, and \texttt{L+30} of the subroutine body must be manually patched to match the system configuration constants (consult the \textit{LGP-21 Programming Manual} peripheral channel assignment tables for absolute unit selector byte lists).
+    \item \textbf{Required Input/Output Units:} Hardware data input units are not required. If an alternative hardware peripheral unit other than the primary console typewriter is designated for text routing, the absolute track operational address entries inside locations \texttt{L+06}, \texttt{L+14}, \texttt{L+22}, and \texttt{L+30} of the subroutine body must be manually patched to match the system configuration constants (consult the \textit{LGP-21 Programming Manual} peripheral channel assignment tables for absolute unit selector byte lists).
     \item \textbf{Hardware Overflow Flag Status:} The register status is neither read nor impacted by this program's internal loop execution paths.
 \end{enumerate}
 
@@ -144,7 +144,7 @@ Upon execution return to the main program context, the alphanumeric string array
 \addcontentsline{toc}{subsection}{ALPHANUMERIC OUTPUT 2 --- J4-11.1}
 
 \subsubsection*{PURPOSE}
-\texttt{J4-11.1} outputs alphabetic and/or numeric information that has been stored without binarization (i.e., stored as raw character codes). The alphanumeric data must be stored as \textbf{five-character-long words in 6-bit format}. A data block for J4-11.1 must not exceed 63 cells. The data must be stored in consecutive memory cells.
+\texttt{J4-11.1} outputs alphabetic and/or numeric information that has been stored without binarization (i.e., stored as raw character codes). The alphanumeric data must be stored as \textbf{five-character-long words in 6-bit format}. A data block for J4-11.1 must not exceed 63 locations. The data must be stored in consecutive locations.
 
 The program operates as a subroutine called by a calling sequence from the main program. The starting address of the data block must be supplied to the subroutine before entry. Upon return to the main program, the specified information has already been printed.
 
@@ -153,9 +153,9 @@ The program operates as a subroutine called by a calling sequence from the main 
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-Before jumping to the subroutine, the calling sequence must insert into the first cell of the subroutine the address of the \texttt{Z} instruction which contains the starting address of the alphanumeric data block to be printed. This makes it possible to store the data block at any arbitrary location in memory, instead of forcing it to immediately follow the calling sequence as is typical. This \texttt{Z} instruction must not be omitted.
+Before jumping to the subroutine, the calling sequence must insert into the first location of the subroutine the address of the \texttt{Z} instruction which contains the starting address of the alphanumeric data block to be printed. This makes it possible to store the data block at any arbitrary location in memory, instead of forcing it to immediately follow the calling sequence as is typical. This \texttt{Z} instruction must not be omitted.
 
-The data table consists of consecutive words of exactly 5 characters or typewriter functions each (the final word may contain fewer). The number of words in a single block must not exceed 63. The data must be stored in ascending order in consecutive cells. 
+The data table consists of consecutive words of exactly 5 characters or typewriter functions each (the final word may contain fewer). The number of words in a single block must not exceed 63. The data must be stored in ascending order in consecutive locations. 
 
 During input storage, the data must be preceded by the constant keyword of \textbf{J1-10.0} so that it is not binarized. (The input keyword also automatically places an end-of-block marker ``into the final word'').
 
@@ -195,7 +195,7 @@ $+3$ & & \textit{etc.} & Return to the main program. \\
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha$ stores the address ($+2$) of the instruction containing the data block's starting address into the subroutine. The instruction at $+1$ executes a jump to the starting address ($L$) of the subroutine. Cell $+2$ contains the \texttt{Z} instruction with $A$, the starting address of the data block. Cell $\alpha+3$ contains the instruction of the main program that will be executed first after exiting the subroutine. 
+The instruction at $\alpha$ stores the address ($+2$) of the instruction containing the data block's starting address into the subroutine. The instruction at $+1$ executes a jump to the starting address ($L$) of the subroutine. Location $+2$ contains the \texttt{Z} instruction with $A$, the starting address of the data block. Location $\alpha+3$ contains the instruction of the main program that will be executed first after exiting the subroutine. 
 
 \textit{Please note: The \texttt{Z} instruction must always reside directly within the calling sequence, even if the data block immediately follows the calling sequence.}
 
@@ -210,7 +210,7 @@ Upon return to the main program, the desired data block has already been output 
         \item[\textbf{a)}] Arbitrarily relocatable hexadecimal (valid for Program Input 1).
         \item[\textbf{b)}] Arbitrarily relocatable decimal (in coding sheet format).
     \end{itemize}
-    \item \textbf{Required Input/Output Units:} No input units are required. The standard typewriter is selected for output by default. If a different output unit is to be used, the track addresses in cells \texttt{L+03}, \texttt{L+05}, \texttt{L+07}, \texttt{L+09}, and \texttt{L+11} of the subroutine must be replaced with the corresponding selection identifier (see the \textit{LGP-21 Programming Manual}, where selection identifiers and their associated units are listed).
+    \item \textbf{Required Input/Output Units:} No input units are required. The standard typewriter is selected for output by default. If a different output unit is to be used, the track addresses in locations \texttt{L+03}, \texttt{L+05}, \texttt{L+07}, \texttt{L+09}, and \texttt{L+11} of the subroutine must be replaced with the corresponding selection identifier (see the \textit{LGP-21 Programming Manual}, where selection identifiers and their associated units are listed).
     \item \textbf{Overflow:} Neither tested nor altered by the program.
 \end{enumerate}
 

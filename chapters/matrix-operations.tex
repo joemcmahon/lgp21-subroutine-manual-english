@@ -43,7 +43,7 @@ The \ref{H1-11.0} floating-point interpreter provides a software floating-point 
 The input variables are the individual elements of an $N \times N$ matrix, stored sequentially in a row-major configuration (i.e., the first element of the second row immediately follows the final element of the first row). These data values must comply with the floating-point format dictated by Interpretive System 1. The matrix must be non-singular. 
 
 
-Although storing the original matrix elements inherently requires only $N^2$ memory locations, a continuous block of $N^2 + N$ sequential memory cells starting at base address $M$ is strictly required for execution workspace.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
+Although storing the original matrix elements inherently requires only $N^2$ memory locations, a continuous block of $N^2 + N$ sequential locations starting at base address $M$ is strictly required for execution workspace.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
 
 
 Prior to executing the branch to the subroutine, the starting address of the Interpretive System (see Section~\ref{subsec:complex_interpreter}) must be stored into memory location \texttt{L+163}, where \texttt{L} represents the starting address of the Matrix Inversion code. This initialization can be performed manually by the operator immediately after loading the subroutine tape, or it may be handled programmatically by initialization instructions within the main program.
@@ -156,7 +156,7 @@ The calling sequence must supply:
 	\item the starting address of the Interpretive System,
 	\item the dimensions and starting address of the matrix,
 	\item the starting address of the column vector, and
-	\item the starting address for the destination product vector. Upon return to the main program, the calculated product vector resides in the specified memory cells.
+	\item the starting address for the destination product vector. Upon return to the main program, the calculated product vector resides in the specified locations.
 \end{enumerate}
 
 \subsubsection*{STORAGE REQUIREMENTS}
@@ -167,7 +167,7 @@ The calling sequence must supply:
 The input variables are:
 \begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
     \item The elements of a matrix with $i$ rows and $j$ columns, stored sequentially in row-major order (i.e., the first element of the second row immediately follows the last element of the first row).
-    \item The elements of a column vector stored in consecutive memory cells. The number of elements in the vector must equal the number of columns ($j$) in the matrix.
+    \item The elements of a column vector stored in consecutive locations. The number of elements in the vector must equal the number of columns ($j$) in the matrix.
 \end{enumerate}
 \noindent
 The data must be formatted in a style compatible with Floating-Point Interpretive System 1. The dimensions $i$ and $j$ must each be strictly less than 64, though they do not need to be equal. The cumulative number of elements from the matrix, input vector, and output vector must not exceed available memory capacity.
@@ -212,7 +212,7 @@ The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the imm
 The instruction at location $\alpha + 1$ executes an unconditional branch to \texttt{L}, the base address of the subroutine. Locations $\alpha + 2$ through $\alpha + 6$ function as inline data parameters defining the operational addresses and dimensions. Location $\alpha + 7$ contains the first instruction of the main program to be executed after exiting the subroutine.
 
 \subsubsection*{OUTPUT}
-The individual elements of the calculated product vector are saved sequentially in consecutive memory cells, beginning at address $P$.
+The individual elements of the calculated product vector are saved sequentially in consecutive locations, beginning at address $P$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -277,13 +277,13 @@ Upon return to the main program, the calculated product matrix is in the target 
 \subsubsection*{INPUT}
 The input variables are:
 \begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item The elements of matrix $A$ ($n \times m$), stored row-by-row in continuous sequential cells.
-    \item The elements of matrix $B$ ($m \times p$), stored row-by-row in continuous sequential cells. The number of rows in matrix $B$ must precisely equal the number of columns in matrix $A$.
+    \item The elements of matrix $A$ ($n \times m$), stored row-by-row in continuous sequential locations.
+    \item The elements of matrix $B$ ($m \times p$), stored row-by-row in continuous sequential locations. The number of rows in matrix $B$ must precisely equal the number of columns in matrix $A$.
 \end{enumerate}
 \noindent
 All matrices must be stored in a row-major configuration, meaning the first element of the second row immediately follows the terminal element of the first row.
 
-The data must conform to the floating-point layout required by \ref{H1-11.0}. Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ cells to accommodate the inputs and the trailing results workspace.
+The data must conform to the floating-point layout required by \ref{H1-11.0}. Dimensions must be less than 64, and total memory overhead requires a block of $(n \times m) + (m \times p) + (n \times p)$ locations to accommodate the inputs and the trailing results workspace.
 
 \subsubsection*{CALLING SEQUENCE}
 The calling sequence must provide the following information in the exact sequential order specified below:
@@ -323,7 +323,7 @@ $\alpha + 8$      & ---              & ---              & Return to main program
 The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
 
 \subsubsection*{OUTPUT}
-The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured with $n$ rows and $p$ columns, stored row-by-row in continuous sequential memory cells starting at location $C$. Element $c_{21}$ immediately follows element $c_{1p}$, and so forth.
+The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured with $n$ rows and $p$ columns, stored row-by-row in continuous sequential locations starting at location $C$. Element $c_{21}$ immediately follows element $c_{1p}$, and so forth.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -373,17 +373,17 @@ The input consists of the elements of both matrices, each having $i$ rows and $j
 	\item the starting memory address of the storage area for the destination matrix. 
 \end{enumerate}
 \noindent
-Upon return to the main program, the resulting matrix resides in the designated memory cells.
+Upon return to the main program, the resulting matrix resides in the designated locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Space:} 1 track (64 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are the individual elements of the two matrices $A$ and $B$, each containing $i$ rows and $j$ columns. The elements of both matrices must be stored identically—either both in row-major order or both in column-major order—in consecutive memory cells.\footnote{This is significantly more flexible than the Matrix Multiplication routine (\texttt{D1-13.0}). Because addition and subtraction are purely element-by-element operations, the subroutine doesn't actually care about row vs. column orientation, as long as both inputs share the exact same structure. The execution loop simply scans linearly across both matrices.} This means that the first element of the second row immediately follows the last element of the first row (if stored row-by-row), or the first element of the second column immediately follows the last element of the first column (if stored column-by-column).
+The input variables are the individual elements of the two matrices $A$ and $B$, each containing $i$ rows and $j$ columns. The elements of both matrices must be stored identically—either both in row-major order or both in column-major order—in consecutive locations.\footnote{This is significantly more flexible than the Matrix Multiplication routine (\texttt{D1-13.0}). Because addition and subtraction are purely element-by-element operations, the subroutine doesn't actually care about row vs. column orientation, as long as both inputs share the exact same structure. The execution loop simply scans linearly across both matrices.} This means that the first element of the second row immediately follows the last element of the first row (if stored row-by-row), or the first element of the second column immediately follows the last element of the first column (if stored column-by-column).
 
 \noindent
-The data must comply with the floating-point layout required by Interpretive System 1. The matrices must be of identical dimensions. The values $i$ and $j$ must both be strictly less than 64. Although storing the input matrix elements inherently requires only $2(ij)$ sectors, a continuous block of $3(ij)$ memory cells is required across the system to accommodate both inputs and the resulting workspace.
+The data must comply with the floating-point layout required by Interpretive System 1. The matrices must be of identical dimensions. The values $i$ and $j$ must both be strictly less than 64. Although storing the input matrix elements inherently requires only $2(ij)$ sectors, a continuous block of $3(ij)$ locations is required across the system to accommodate both inputs and the resulting workspace.
 
 \subsubsection*{CALLING SEQUENCE}
 The following information must be supplied by the calling sequence in the exact sequential order specified below:
@@ -421,7 +421,7 @@ $\alpha + 7$      & ---              & ---              & Return to main program
 The \texttt{E} instruction at location $\alpha - 1$ is only mandatory if the preceding main program operation was an Interpretive System pseudo-instruction.
 
 \subsubsection*{OUTPUT}
-The individual elements of the resulting matrix $C_{ij}$ are saved in floating-point format in consecutive memory cells, beginning at address $C$.
+The individual elements of the resulting matrix $C_{ij}$ are saved in floating-point format in consecutive locations, beginning at address $C$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -451,7 +451,7 @@ Either matrix $A$ or $B$ may be updated in place if desired. If an independent d
 \label{subsec:matrix_transposition_1}
 
 \subsubsection*{PURPOSE}
-\texttt{D1-15.0} transposes a square matrix stored in memory and saves the transposed results into designated cells. The input consists of the elements of a square matrix whose rank is strictly less than 32. Both fixed-point and floating-point data formats are supported. The total number of elements must not exceed the available memory space.
+\texttt{D1-15.0} transposes a square matrix stored in memory and saves the transposed results into designated locations. The input consists of the elements of a square matrix whose rank is strictly less than 32. Both fixed-point and floating-point data formats are supported. The total number of elements must not exceed the available memory space.
 
 \noindent
 ``Matrix Transposition 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
@@ -467,10 +467,10 @@ Upon return to the main program, the transposed matrix resides in the specified 
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are the elements of a square matrix, stored either row-by-row or column-by-column in consecutive memory cells. In a row-major configuration, the first element of the second row immediately follows the last element of the first row; in a column-major configuration, the first element of the second column immediately follows the last element of the first column. 
+The input variables are the elements of a square matrix, stored either row-by-row or column-by-column in consecutive locations. In a row-major configuration, the first element of the second row immediately follows the last element of the first row; in a column-major configuration, the first element of the second column immediately follows the last element of the first column. 
 
 \noindent
-The data values may be supplied either in standard raw fixed-point fractional format or in the floating-point format dictated by Interpretive System 1 (\texttt{H1-11.0}). The rank $N$ must satisfy $2 < N \le 31$. Although storing the matrix elements inherently requires only $N^2$ sectors, a maximum workspace block of $2N^2$ memory cells is required if the destination area is separate.
+The data values may be supplied either in standard raw fixed-point fractional format or in the floating-point format dictated by Interpretive System 1 (\texttt{H1-11.0}). The rank $N$ must satisfy $2 < N \le 31$. Although storing the matrix elements inherently requires only $N^2$ sectors, a maximum workspace block of $2N^2$ locations is required if the destination area is separate.
 
 \subsubsection*{CALLING SEQUENCE}
 The following information must be supplied by the calling sequence in the exact sequential order specified below:
@@ -542,13 +542,13 @@ Unlike the other routines in the matrix suite, this subroutine \emph{does not} i
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-For every complex data element, both the real and imaginary parts must be stored at the identical binary scaling factor ($q$-factor) in consecutive memory cells. Specifically, the real part must reside at memory cell \texttt{ttss} and the imaginary part at cell \texttt{ttss+1}.
+For every complex data element, both the real and imaginary parts must be stored at the identical binary scaling factor ($q$-factor) in consecutive locations. Specifically, the real part must reside at location \texttt{ttss} and the imaginary part at location \texttt{ttss+1}.
 
 \noindent
-Because each complex number occupies two discrete memory locations, the subroutine implements simulated registers to facilitate instruction execution. These architecture registers consist of a simulated pseudo-accumulator located at cell \texttt{L+33} and a simulated address register located at cell \texttt{L+219}, where \texttt{L} denotes the starting base address of the subroutine. In addition to these active components, the program records the transient state of the physical hardware accumulator at cell \texttt{L+59}.
+Because each complex number occupies two discrete memory locations, the subroutine implements simulated registers to facilitate instruction execution. These architecture registers consist of a simulated pseudo-accumulator located at location \texttt{L+33} and a simulated address register located at location \texttt{L+219}, where \texttt{L} denotes the starting base address of the subroutine. In addition to these active components, the program records the transient state of the physical hardware accumulator at location \texttt{L+59}.
 
 \noindent
-The interpretive engine processes 15 distinct operations. For all arithmetic commands, the address field \texttt{ttss} references the memory cell containing the real component, though the internal loop automatically processes both parts of the complex value. For all other non-arithmetic commands, \texttt{ttss} functions as a standard single-word memory address. Only the instructions explicitly detailed below are structurally valid within an interpretive instruction sequence.
+The interpretive engine processes 15 distinct operations. For all arithmetic commands, the address field \texttt{ttss} references the location containing the real component, though the internal loop automatically processes both parts of the complex value. For all other non-arithmetic commands, \texttt{ttss} functions as a standard single-word memory address. Only the instructions explicitly detailed below are structurally valid within an interpretive instruction sequence.
 
 \paragraph{1. Arithmetic Instructions}
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
@@ -557,23 +557,23 @@ The interpretive engine processes 15 distinct operations. For all arithmetic com
     \item[\texttt{Sttss} (Subtract):] The elements at locations \texttt{ttss} and \texttt{ttss+1} are subtracted from the pseudo-accumulator. The result replaces the contents of the pseudo-accumulator.
     \item[\texttt{Mttss} (Multiply):] The pseudo-accumulator is multiplied by the complex value stored at \texttt{ttss} and \texttt{ttss+1}. The product replaces the contents of the pseudo-accumulator.\footnote{\textbf{Translator's note:} A complex multiplication $(a+bi)(c+di)$ requires computing $(ac-bd) + (ad+bc)i$. Performing this in a single interpretive step saves a massive amount of main-program setup and temporary storage management.}
     \item[\texttt{Dttss} (Divide):] The pseudo-accumulator is divided by the complex value stored at \texttt{ttss} and \texttt{ttss+1}. The quotient replaces the contents of the pseudo-accumulator.
-    \item[\texttt{Httss} (Hold):] The contents of the pseudo-accumulator are copied into memory cells \texttt{ttss} and \texttt{ttss+1}. The pseudo-accumulator remains unchanged.
-    \item[\texttt{Cttss} (Clear):] The contents of the pseudo-accumulator are copied into memory cells \texttt{ttss} and \texttt{ttss+1}, and the pseudo-accumulator is subsequently reset to zero.
+    \item[\texttt{Httss} (Hold):] The contents of the pseudo-accumulator are copied into locations \texttt{ttss} and \texttt{ttss+1}. The pseudo-accumulator remains unchanged.
+    \item[\texttt{Cttss} (Clear):] The contents of the pseudo-accumulator are copied into locations \texttt{ttss} and \texttt{ttss+1}, and the pseudo-accumulator is subsequently reset to zero.
 \end{description}
 
 \paragraph{2. Auxiliary Instructions}
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
     \item[\texttt{XRO0nn} (Shift Right):] Shifts both components of the pseudo-accumulator right by \texttt{nn} binary places ($0 \le \texttt{nn} \le 10$).
     \item[\texttt{XPO0nn} (Shift Left):] Shifts both components of the pseudo-accumulator left by \texttt{nn} binary places ($0 \le \texttt{nn} \le 10$).
-    \item[\texttt{Uttss} (Unconditional Jump):] Transfers execution control. The next pseudo-instruction to be interpreted is fetched from cell \texttt{ttss}. This jump cannot be used to exit the interpreter; \texttt{ttss} must point to a valid complex pseudo-instruction.
+    \item[\texttt{Uttss} (Unconditional Jump):] Transfers execution control. The next pseudo-instruction to be interpreted is fetched from location \texttt{ttss}. This jump cannot be used to exit the interpreter; \texttt{ttss} must point to a valid complex pseudo-instruction.
     \item[\texttt{XE0000} (Exit):] Explicit exit from the Interpretive System. The instruction immediately following \texttt{XE0000} is executed as a native hardware instruction.
 \end{description}
 
 \paragraph{3. Address Modification Instructions}
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{Ettss} (Set Address Register):] The address portion of the word stored at cell \texttt{ttss} is loaded into the simulated address register. Memory remains unchanged.
+    \item[\texttt{Ettss} (Set Address Register):] The address portion of the word stored at location \texttt{ttss} is loaded into the simulated address register. Memory remains unchanged.
     \item[\texttt{Ittss} (Increment Address):] Increments the current value of the simulated address register by the value \texttt{ttss}.
-    \item[\texttt{Yttss} (Inject Address):] Embeds the current value of the simulated address register directly into the address portion of the instruction word at cell \texttt{ttss}. The address register itself and all other memory remains unchanged.
+    \item[\texttt{Yttss} (Inject Address):] Embeds the current value of the simulated address register directly into the address portion of the instruction word at location \texttt{ttss}. The address register itself and all other memory remains unchanged.
     \item[\texttt{Zttss} (Test and Skip):] Subtracts the current value of the simulated address register from the literal value \texttt{ttss}. If the result is exactly zero, the next pseudo-instruction is skipped (execution jumps to the second following word). If the result is non-zero, execution continues normally with the immediately following instruction.
 \end{description}
 

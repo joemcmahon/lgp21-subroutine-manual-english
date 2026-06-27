@@ -143,7 +143,7 @@ $\alpha+3$ & \texttt{Z} & \texttt{00}$K$ & Desired base $K$. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-As usual, any instruction sequence leaving $N$ in the accumulator prior to the call is fine as long as it leaves $N$ there with a positive $q$. The instruction at location $\alpha$ stores the address ($\alpha+2$) of the \texttt{Z} instruction containing $Q$ into the subroutine's internal tracking mechanism, giving the subroutine the address of $Q$ and $K$.\footnote{Translator's note: the subroutine figures out the return address by taking the address supplied by the \texttt{R} instruction and adding 2 to skip over the two parameter words. It then updates a \texttt{U} instruction in \emph{itself} to jump back to the proper return address}.
+As usual, any instruction sequence leaving $N$ in the accumulator prior to the call is fine as long as it leaves $N$ there with a positive $q$. The instruction at location $\alpha$ patches the address of the \texttt{Z} instruction containing $Q$ ($\alpha+2$) into the subroutine, giving it the address of $Q$ and $K$.\footnote{Translator's note: the subroutine figures out the return address by taking the address supplied by the \texttt{R} instruction and adding 2 to skip over the two parameter words. It then updates a \texttt{U} instruction in \emph{itself} to jump back to the proper return address}.
 
 Execution resumes following the second parameter constant upon return from the subroutine.
 
@@ -189,5 +189,5 @@ The behavior on an invalid argument ($N \le 0$) is a little odd. Halting at \tex
 
 The LGP-21's console isn't a wall of indicator lights; it's a small oscilloscope tube that paints the accumulator, the address register, and the current instruction as rows of dashes --- a \texttt{0} bit is drawn low, a \texttt{1} bit drawn high. The machine is slow enough that on a stop, the row sits there steady and you can read off the bits.
 
-So the actual point of \texttt{L+8} probably isn't that the difference makes the value easier to recognize visually --- it's that subtracting that one bit is a cheap way to \emph{prove}, at the stop, that the routine got as far as detecting the error and ran the trap. If the operator sees a value with a flipped low end, the error path ran; if they see the original $N$ untouched, something else stopped the machine. The accumulator doubles as a one-bit status flag without spending a memory cell on one.
+So the actual point of \texttt{L+8} probably isn't that the difference makes the value easier to recognize visually --- it's that subtracting that one bit is a cheap way to \emph{prove}, at the stop, that the routine got as far as detecting the error and ran the trap. If the operator sees a value with a flipped low end, the error path ran; if they see the original $N$ untouched, something else stopped the machine. The accumulator doubles as a one-bit status flag without spending a location on one.
 \newpage

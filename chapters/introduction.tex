@@ -111,12 +111,12 @@ $\alpha+1$  & \texttt{U} & \texttt{L}        & Unconditional branch to the subro
 
 Now wait a minute, I hear you say. A floating-point number is \emph{two} words long. That cannot possibly fit in the single-word hardware accumulator—what kind of trickery is this?
 
-You're right. The full floating-point number doesn't get loaded; only its first word does. But the \texttt{B} instruction itself at cell $\alpha-1$ now contains the exact piece of metadata the subroutine needs: \emph{the starting memory address \texttt{N} of the floating-point block}\footnote{My reaction was ``You are \emph{kidding} me'' with a significant expletive titre.}. 
+You're right. The full floating-point number doesn't get loaded; only its first word does. But the \texttt{B} instruction itself at location $\alpha-1$ now contains the exact piece of metadata the subroutine needs: \emph{the starting memory address \texttt{N} of the floating-point block}\footnote{My reaction was ``You are \emph{kidding} me'' with a significant expletive titre.}. 
 
 This explains why the manual repeatedly states that ``loading this value into the accumulator by any means'' is acceptable for some subroutines, but does \emph{not} say that for this one\footnote{Gun, meet foot.}. The \texttt{B} here is essential to the program working. It relies on the code in the subroutine that's modified by the \texttt{R} instruction to \emph{find and read its caller}:
 \begin{enumerate}
-    \item The subroutine picks up the return address ($\alpha+2$) deposited by the \texttt{R} instruction into cell \texttt{L+offset}.
-    \item It subtracts 3 from that value to locate cell $\alpha-1$ (the \texttt{B} instruction).
+    \item The subroutine picks up the return address ($\alpha+2$) deposited by the \texttt{R} instruction into location \texttt{L+offset}.
+    \item It subtracts 3 from that value to locate location $\alpha-1$ (the \texttt{B} instruction).
 	\item It modifies the next instruction, a \texttt{B}, to set its address to $\alpha-1$.
     \item The modified \texttt{B} instruction loads the literal 32-bit instruction word stored at $\alpha-1$...that contains the address of the floating-point number.
     \item It strips away the \texttt{B} opcode bits using a bitmask, leaving behind only the raw address \texttt{N}.

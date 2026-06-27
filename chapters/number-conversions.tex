@@ -22,7 +22,7 @@ The decimal program to be converted should be stored at least 15 tracks above th
 
 \noindent Program Input 1 as modified by H4-10.0 creates a bitmap table to track relocatable versus absolute instructions.
 
-A second allocation bitmap tracks which memory regions contain valid data, ensuring only actually-populated sectors are eventually punched to tape. PIR's direct absolute memory write command (\texttt{+}) bypasses this tracking tracking mechanism and clobbers live memory cell contents directly; it does |emph{not} update the instruction-patching or allocation bitmaps. Once the new program is loaded, execution can be intercepted via console switch \textsf{PS-4} to hand control back to Program Input 1 for further memory patching prior to output.
+A second allocation bitmap tracks which memory regions contain valid data, ensuring only actually-populated sectors are eventually punched to tape. PIR's direct absolute memory write command (\texttt{+}) bypasses this tracking tracking mechanism and clobbers live location contents directly; it does |emph{not} update the instruction-patching or allocation bitmaps. Once the new program is loaded, execution can be intercepted via console switch \textsf{PS-4} to hand control back to Program Input 1 for further memory patching prior to output.
 
 When the operator resumes program execution at $L_0+0601$ to punch the output, the computer selects the Flexowriter for input and requests the selection keyword for the output unit. The Flexowriter's punch is selected by default; press \textsf{START} to continue with this device, or enter a zero and press \textsf{START} to select the high-speed punch.
 

@@ -30,7 +30,7 @@ These input commands, and the formats of the words that follow them, are discuss
 \begin{itemize}
 \item \texttt{;000TTSS'}: Start Fill 
 
-The Start Fill command sets the starting address \texttt{TTSS} for a series of words to be stored. This value is kept in the ``fill counter'' --- a word within the GPMon program --- and designates which cell will receive the next word. The counter is incremented every time a word other than a keyword is successfully read and stored.
+The Start Fill command sets the starting address \texttt{TTSS} for a series of words to be stored. This value is kept in the ``fill counter'' --- a word within the GPMon program --- and designates which location will receive the next word. The counter is incremented every time a word other than a keyword is successfully read and stored.
 
 The words to be read in may be instructions, hexadecimal words, or alphanumeric words. Words are stored into consecutive locations until input ends or another fill keyword appears. The \texttt{TTSS} address must be in decimal track/sector notation, followed by a stop code. Any physical address in memory can be used. For example, the keyword \texttt{;0001600'} causes fill to start at address 1600.
 
@@ -38,7 +38,7 @@ The words to be read in may be instructions, hexadecimal words, or alphanumeric 
 
 The parsing subroutine identifies a word as an instruction by inspecting its leading bits. A valid instruction must contain zeros in bit positions 1 through 3; bit 0 acts as the sign bit with a \texttt{0} for standard instructions or a \texttt{1} for negative instructions. When this bit pattern is recognized, the word is interpreted as an instruction consisting of an alphabetical command mnemonic (here represented by $\emptyset$) followed by a four-digit decimal operand address ($TTSS$)\footnote{Refer to the \textit{LGP-21 Reference Manual}\cite{lgp21referencemanual} for the defined instruction mnemonics.}.
 
-If the accumulator is cleared prior to input, leading zeros (those preceding the instruction) may be omitted. The entire instruction is converted into its binary equivalent and stored in the cell specified by the fill counter.
+If the accumulator is cleared prior to input, leading zeros (those preceding the instruction) may be omitted. The entire instruction is converted into its binary equivalent and stored in the location specified by the fill counter.
 
 An optional prefix may be added to indicate that instructions are negative, non-relocatable, or both.
 
@@ -92,20 +92,20 @@ The address portion of the command entered is \emph{not} modified by the address
 
 The Direct Execute command allows you to immediately execute a command without writing it to memory.
 
-For example, if we wished to execute an \texttt{H} command to store the hexadecimal word \texttt{73W08} into location 1637, the command sequence \texttt{+00H1637'73W08'} causes the value \texttt{00073W08} to be stored in cell 1637. As a second example, the command \texttt{+00U1735''} (note the two stop codes to indicate ``no second word'') causes a jump to 1735.
+For example, if we wished to execute an \texttt{H} command to store the hexadecimal word \texttt{73W08} into location 1637, the command sequence \texttt{+00H1637'73W08'} causes the value \texttt{00073W08} to be stored in location 1637. As a second example, the command \texttt{+00U1735''} (note the two stop codes to indicate ``no second word'') causes a jump to 1735.
 
 The keyword for the direct command does not alter the fill counter; any subsequent fill continues from the last fill location.
 
 \item \texttt{,00000NN'} Store Hexadecimal Words
 
-This command causes the following \texttt{NN} words to be stored as hexadecimal words in consecutive memory cells according to the current state of the fill counter. \texttt{NN} must be less than 64. The words to be stored must be in hexadecimal format and are not modified.
+This command causes the following \texttt{NN} words to be stored as hexadecimal words in consecutive locations according to the current state of the fill counter. \texttt{NN} must be less than 64. The words to be stored must be in hexadecimal format and are not modified.
 
 For example, \texttt{;0002200',0000003',3W7'140Q''}\footnote{This example string features three consecutive inputs after setting the fill address to 2200: 3W7', 140Q', and a final empty input before the last stop code. Because leading zeros can be dropped and a solo stop code represents zero, the monitor correctly shifts and pads them into full 32-bit words, parsing \texttt{''} correctly as zero, and clearing location 2202 to all zeroes.} causes the memory to look like this after entry:
 
 \begin{center}
 \begin{tabular}{rl}
     \toprule
-    \textbf{Cell} & \textbf{Contents} \\
+    \textbf{Location} & \textbf{Contents} \\
     \midrule
     2200          & \texttt{000003W7} \\
     2201          & \texttt{0000140Q} \\
@@ -128,9 +128,9 @@ For example, the keyword \texttt{V1WC2W00'} causes the next $1\text{W}_{16} = 31
 
 This keyword permits the entry of alphanumeric information in a 6-bit format\footnote{See table 3 in the \textit{LGP-21 Reference Manual}\cite{lgp21referencemanual}}. Information read in this manner can be punched back out directly by print commands without any conversion, or handled by an alphanumeric print program.
 
-Every word, with the exception of the last word of a block, must contain exactly 5 characters (the last word may contain fewer) and must be followed by a stop code. The quantity \texttt{NN} of words to be stored must be less than 64. The \texttt{NN} words are stored in consecutive cells (at $q=29$), starting at the cell indicated by the current state of the fill counter.
+Every word, with the exception of the last word of a block, must contain exactly 5 characters (the last word may contain fewer) and must be followed by a stop code. The quantity \texttt{NN} of words to be stored must be less than 64. The \texttt{NN} words are stored in consecutive locations (at $q=29$), starting at the location indicated by the current state of the fill counter.
 
-For example, the entry \texttt{A0000005' DEPRE'SS ST'ART T'O CON'TINUE'} causes the string ``DEPRESS START TO CONTINUE'' to be stored across five consecutive cells.
+For example, the entry \texttt{A0000005' DEPRE'SS ST'ART T'O CON'TINUE'} causes the string ``DEPRESS START TO CONTINUE'' to be stored across five consecutive locations.
 
 \item \texttt{-000TTSS'} Examine
 
@@ -280,19 +280,19 @@ On the other hand, if it is unnecessary to do so, the modification of an entire 
 \addlinespace
 \texttt{-X$\emptyset$TTSS} & Non-relocatable negative instruction \newline Instruction with negative sign bit or inverted logic flag; not modified. \\
 \addlinespace
-\texttt{;000TTSS} & Start Fill \newline Store the following words (modifier excluded) in consecutive cells starting at \texttt{TTSS}. \\
+\texttt{;000TTSS} & Start Fill \newline Store the following words (modifier excluded) in consecutive locations starting at \texttt{TTSS}. \\
 \addlinespace
 \texttt{/000TTSS} & Set Address Modifier \newline Set the address modifier base to \texttt{TTSS}. Add this value to all subsequent modifiable commands. \\
 \addlinespace
-\texttt{.000TTSS} & Stop and Jump \newline Halt (unless \textsf{PS-32} is pressed) then jump to cell \texttt{TTSS} when the \textsf{START} button is pressed. \\
+\texttt{.000TTSS} & Stop and Jump \newline Halt (unless \textsf{PS-32} is pressed) then jump to location \texttt{TTSS} when the \textsf{START} button is pressed. \\
 \addlinespace
 \texttt{+00$\emptyset$TTSS} & Direct Command \newline Immediately execute a command; a second (hexadecimal) word may be supplied as a data word. \\
 \addlinespace
-\texttt{,00000NN} & Store Hexadecimal Words \newline The next \texttt{NN} hexadecimal words are to be stored consecutively in the cells defined by the fill counter ($1 \le NN \le 64$). \\
+\texttt{,00000NN} & Store Hexadecimal Words \newline The next \texttt{NN} hexadecimal words are to be stored consecutively in the locations defined by the fill counter ($1 \le NN \le 64$). \\
 \addlinespace
 \texttt{VNNCHHHH} & Hexadecimal Fill with Checksum \newline Store \texttt{NN} hexadecimal words starting at \texttt{HHHH} ($1 \le NN \le 40_{16}$). For each group of words, including the command, a checksum is calculated. If \textsf{PST} is \textsf{OFF}, this checksum is compared with the checksum word punched on the tape just following the \texttt{NN} words. If \textsf{PST} is \textsf{ON}, no checksum comparison takes place. \\
 \addlinespace
-\texttt{A00000NN} & Store Alphanumeric Words \newline The next \textsf{NN} words are to be stored in consecutive cells as alphanumeric words containing 5 six-bit characters each at $q=29$ ($1 \le NN \le 63$). \\
+\texttt{A00000NN} & Store Alphanumeric Words \newline The next \textsf{NN} words are to be stored in consecutive locations as alphanumeric words containing 5 six-bit characters each at $q=29$ ($1 \le NN \le 63$). \\
 \addlinespace
 \texttt{-000TTSS} & Examine \newline Load the word at \texttt{TTSS} into the accumulator. Press \textsf{START} to load the word at \texttt{TTSS+1} into the accumulator, and so on. Exit this mode by executing a manual jump to 0000 to restart GPMon. \\
 \addlinespace

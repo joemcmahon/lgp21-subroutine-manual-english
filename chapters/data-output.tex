@@ -10,7 +10,7 @@
 \]
 A maximum of 10 digits can be output. Leading zeros are automatically suppressed. 
 
-The data output routine operates as a subroutine and is invoked via a calling sequence in the main program. Prior to jumping to the subroutine, the binary number to be printed must reside in the accumulator. The required scale factor of the binary number must be stored in the memory cell immediately following the jump instruction. Upon return to the main program, the decimal equivalent of the binary number has already been printed. The main program can be structured to repeatedly invoke Data Output 1 to print an entire list of decimal values sequentially.
+The data output routine operates as a subroutine and is invoked via a calling sequence in the main program. Prior to jumping to the subroutine, the binary number to be printed must reside in the accumulator. The required scale factor of the binary number must be stored in the location immediately following the jump instruction. Upon return to the main program, the decimal equivalent of the binary number has already been printed. The main program can be structured to repeatedly invoke Data Output 1 to print an entire list of decimal values sequentially.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
@@ -29,7 +29,7 @@ The input variables required for Data Output 1 are:
     \item The value $Q$, which represents the scale factor position of the binary number.
 \end{enumerate}
 
-When jumping to the subroutine, $N$ must reside in the accumulator, and $Q$ must be stored in the cell immediately following the branch instruction.
+When jumping to the subroutine, $N$ must reside in the accumulator, and $Q$ must be stored in the location immediately following the branch instruction.
 
 $N$ may be any arbitrary binary number. $Q$ must be a positive integer and can never be greater than 30. $Q$ can be supplied either as the sector address portion of a \texttt{Z} instruction or as a raw hexadecimal constant at $q=29$.
 
@@ -76,9 +76,9 @@ $\alpha+3$             & \dots           &                  & Return point to ma
 \end{tabularx}
 \end{table}
 
-In the calling sequence shown above, the instruction at memory location $\alpha$ copies the absolute tracking address ($\alpha+2$) of the \texttt{Z} instruction containing parameter $Q$ directly into the operand address field of the modified instruction located inside subroutine cell \texttt{L+4} (where \texttt{L} represents the base execution address of the subroutine). 
+In the calling sequence shown above, the instruction at memory location $\alpha$ copies the absolute tracking address ($\alpha+2$) of the \texttt{Z} instruction containing parameter $Q$ directly into the operand address field of the modified instruction located inside subroutine location \texttt{L+4} (where \texttt{L} represents the base execution address of the subroutine). 
 
-The instruction at $\alpha+1$ triggers a branch to entry location \texttt{L}. Memory cell $\alpha+2$ holds the structural value of $Q$ encoded at $q=29$. Finally, cell $\alpha+3$ contains the first instruction of the main program sequence to resume execution after the output parsing completes.
+The instruction at $\alpha+1$ triggers a branch to entry location \texttt{L}. Memory location $\alpha+2$ holds the structural value of $Q$ encoded at $q=29$. Finally, location $\alpha+3$ contains the first instruction of the main program sequence to resume execution after the output parsing completes.
 
 \paragraph{Important Setup Note:}
 The binary number $N$ must be loaded directly into the accumulator immediately prior to executing this calling sequence.
@@ -136,14 +136,14 @@ If a peripheral output device other than the standard console typewriter is requ
 
 By default, fractional values are not mathematically rounded during base conversion. However, rounding can be implemented by inserting a specific add instruction (\texttt{A}) at location \texttt{L + 128}. The algebraic effect of this added rounding value depends entirely on the target scale factor at which the number is to be printed. 
 
-Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at memory cell \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to $q=28$ or $q=29$, and are calculated exactly when the scale factor is precisely $q=30$.
+Alternatively, rounding can be achieved without inserting an additional instruction by directly reducing the constant value stored at location \texttt{L + 352}. Here too, the operational impact depends on the specific scale factor of the number being printed. Integer-only output values are automatically rounded when the scale factor is configured to $q=28$ or $q=29$, and are calculated exactly when the scale factor is precisely $q=30$.
 \newpage
 \subsection*{DATA OUTPUT 2 --- J3-10.1}
 \addcontentsline{toc}{subsection}{DATA OUTPUT 2 --- J3-10.1}
 \label{sec:data-output-2}
 
 \subsubsection*{PURPOSE}
-\texttt{J3-10.1} prints the contents of consecutive memory cells in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to $q=30$. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
+\texttt{J3-10.1} prints the contents of consecutive locations in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to $q=30$. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
 
 The decimal point is only printed if fractional places are explicitly specified. Words sharing the same formatting parameters can be grouped together. Consecutive numbers form a block, and identical word formats form a group within that block. Any number of blocks, and any number of groups within those blocks, are permissible. 
 
@@ -216,7 +216,7 @@ $\alpha+n+1$           & \dots           &                  & Begin next block b
 \bottomrule
 \end{tabularx}
 \end{table}
-Where \texttt{L} is the base starting address of the subroutine. Memory cell $x+n+1$ contains either the negative block parameter for the subsequent data block or the next executable instruction of the main program.
+Where \texttt{L} is the base starting address of the subroutine. Memory location $x+n+1$ contains either the negative block parameter for the subsequent data block or the next executable instruction of the main program.
 
 \paragraph{Calling Sequence 2 (Device Selection Initialization)}
 \begin{table}[h!]
@@ -285,16 +285,16 @@ The subroutine is loaded at base address \texttt{1600}. The calling sequence beg
 
 The comments column illustrates the value for $N$ and the derivation of the formatting values. Note that $\sum N_1$ within each block matches its total block count parameter $N$. Furthermore, when adding up the integer digits $(I)$, decimal places $(D)$, and trailing spaces $(S)$, a constant of \texttt{2} must be added to account for the decimal point and sign characters. 
 
-In cell \texttt{2250}, this formatting constant is only \texttt{1} because no decimal point is required for integer-only output.
+In location \texttt{2250}, this formatting constant is only \texttt{1} because no decimal point is required for integer-only output.
 \newpage
 \subsection*{DATA OUTPUT 3 --- J3-10.2}
 \addcontentsline{toc}{subsection}{DATA OUTPUT 3 --- J3-10.2}
 \label{sec:data-output-3}
 
 \subsubsection*{PURPOSE}
-\texttt{J3-10.2} prints the contents of consecutive memory cells in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to $q=30$. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
+\texttt{J3-10.2} prints the contents of consecutive locations in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to $q=30$. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
 
-Values that are to be printed using identical formatting parameters can be combined into groups. Any number of blocks of consecutive cells, and any number of groups of identical word formats within those blocks, are permissible.
+Values that are to be printed using identical formatting parameters can be combined into groups. Any number of blocks of consecutive locations, and any number of groups of identical word formats within those blocks, are permissible.
 
 The program functions as a subroutine invoked by a calling sequence in the main program. The calling sequence must supply:
 \begin{enumerate}
@@ -359,7 +359,7 @@ $\alpha+n+1$           & \dots           &                  & Beginning of the n
 \bottomrule
 \end{tabularx}
 \end{table}
-\texttt{L} is the starting address of the subroutine. Cell $\alpha+n+1$ contains either the $N$ control word for the next block or the next instruction of the main program.
+\texttt{L} is the starting address of the subroutine. Location $\alpha+n+1$ contains either the $N$ control word for the next block or the next instruction of the main program.
 
 \begin{table}[h!]
 \centering
@@ -427,7 +427,7 @@ The subroutine is loaded at base address \texttt{1600}. The calling sequence beg
 
 The notes column illustrates the value for $N$ and the derivation of the formatting values. Note that $\sum N_1$ within each block matches its total block count parameter $N$. Furthermore, when adding up the integer digits $(I)$, decimal places $(D)$, and trailing spaces $(S)$, a constant of \texttt{2} must be added to account for the decimal point and sign characters. 
 
-In cell \texttt{2250}, this formatting constant is only \texttt{1} because no decimal point is required for integer-only output.
+In location \texttt{2250}, this formatting constant is only \texttt{1} because no decimal point is required for integer-only output.
 
 \subsubsection*{TECHNICAL REMARK}
 This program works identically and satisfactorily with both the Mod 18 and Mod 9 print mechanism variants of the console typewriter.
@@ -546,7 +546,7 @@ This example assumes that Data Output 4 is located at base address \texttt{2300}
 \subsubsection*{PURPOSE}
 \texttt{J3-10.4} outputs a nine-digit decimal number plus an algebraic sign and a decimal point. For a negative number, a minus sign is printed; a space appears in place of a plus sign.
 
-The program functions as a subroutine invoked by a calling sequence in the main program. The calling sequence must supply a keyword in cell $x+2$ that specifies the number of digits in the integer portion of the value.
+The program functions as a subroutine invoked by a calling sequence in the main program. The calling sequence must supply a keyword in location $x+2$ that specifies the number of digits in the integer portion of the value.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
@@ -576,7 +576,7 @@ $x+3$             & \dots           &                  & Main program. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-Memory cell $x-1$ does not strictly require a load (\texttt{B}) instruction. Any instruction that leaves the argument inside the accumulator is permissible. $C$ is an identification digit bounded between 0 and 9.
+Memory location $x-1$ does not strictly require a load (\texttt{B}) instruction. Any instruction that leaves the argument inside the accumulator is permissible. $C$ is an identification digit bounded between 0 and 9.
 
 \subsubsection*{OUTPUT}
 The output consists of: nine decimal digits, an algebraic sign (or a space if positive), and the decimal point. Leading zeros are replaced by spaces.
@@ -650,7 +650,7 @@ Every binary number is scaled and converted as a fraction. The identification di
 \label{sec:data-output-6}
 
 \subsubsection*{PURPOSE}
-\texttt{J3-10.5} prints one or more groups of numbers in decimal notation, each of which can contain one or more individual values. The numbers within a group must be stored in consecutive cells scaled to the same scale factor $q$. Leading zeros are replaced by spaces; a space or a minus sign follows immediately behind the last decimal place.
+\texttt{J3-10.5} prints one or more groups of numbers in decimal notation, each of which can contain one or more individual values. The numbers within a group must be stored in consecutive locations scaled to the same scale factor $q$. Leading zeros are replaced by spaces; a space or a minus sign follows immediately behind the last decimal place.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}

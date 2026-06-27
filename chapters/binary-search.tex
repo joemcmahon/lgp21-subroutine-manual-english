@@ -14,9 +14,9 @@ The subroutine is invoked via a calling sequence from the main program. Upon jum
 \textbf{Temporary storage:} sectors 01, 27, and 44 of track 63
 
 \subsubsection*{INPUT}
-The input variable is a comparison word, $C$. This comparison word can be any arbitrary word in memory and must reside in the accumulator when the jump to the subroutine occurs. All data must be in fixed-point format. The table must consist of at least two words. The words must be stored in consecutive cells and in ascending numerical order.
+The input variable is a comparison word, $C$. This comparison word can be any arbitrary word in memory and must reside in the accumulator when the jump to the subroutine occurs. All data must be in fixed-point format. The table must consist of at least two words. The words must be stored in consecutive locations and in ascending numerical order.
 
-The cells immediately following the jump instruction of the calling sequence must contain:
+The locations immediately following the jump instruction of the calling sequence must contain:
 \begin{enumerate}
     \item \texttt{NNNN}, the number of words in the table in decimal track/sector notation (i.e., modulo 64).
     \item \texttt{T}, the starting address of the table in decimal track/sector notation.
@@ -39,7 +39,7 @@ $\alpha+4$         &            & \textit{etc.}           & Return point in the 
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha-1$ brings $C$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains \texttt{NNNN} modulo 64; for example, \texttt{XZ 0132} represents 96 table words (1 track and 32 sectors). The instruction at $\alpha+3$ contains the table address $T$. Control returns from the subroutine at $\alpha+4$.
+The instruction at $\alpha-1$ brings $C$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains \texttt{NNNN} modulo 64; for example, \texttt{XZ 0132} represents 96 table words (1 track and 32 sectors). The instruction at $\alpha+3$ contains the table address $T$. Control returns from the subroutine at $\alpha+4$.
 
 \subsubsection*{OUTPUT}
 Upon returning to the main program, the address of the word that matches the comparison word stands in the accumulator scaled at $q = 29$.
@@ -63,11 +63,11 @@ Upon returning to the main program, the address of the word that matches the com
     \centering
     \begin{tabular}{l p{4.5cm} p{4.5cm}}
     \toprule
-    \textbf{Memory Cell} & \textbf{Meaning} & \textbf{Remedy} \\
+    \textbf{Memory Location} & \textbf{Meaning} & \textbf{Remedy} \\
     \midrule
     $L_0 + 0130$ & No word in the table matches $C$, or $C$ lies outside the sequence bounds. & Do not continue. The input data must be corrected. \\
     \midrule
-    $L_0 + 0218$ & Either $C$ was modified or the contents of cells $L_0 + 247$ to $L_0 + 259$ were altered when the subroutine was modified to proceed with the same $C$ and identical table values (see under ``Remarks''). & Do not continue. \\
+    $L_0 + 0218$ & Either $C$ was modified or the contents of locations $L_0 + 247$ to $L_0 + 259$ were altered when the subroutine was modified to proceed with the same $C$ and identical table values (see under ``Remarks''). & Do not continue. \\
     \bottomrule
     \end{tabular}
     \end{table}
@@ -79,5 +79,5 @@ If $C$ and the table are to be used repeatedly without any modifications, the fo
     \item Change the content of $L_0 + 0033$ from \texttt{N 0019} to \texttt{U 0054}.
     \item Change the content of $L_0 + 0056$ from \texttt{E 0214} to \texttt{U 0149}.
 \end{enumerate}
-The contents of cells $L_0 + 0007$ and $L_0 + 0247$ to $L_0 + 0259$ must be preserved for subsequent searches.
+The contents of locations $L_0 + 0007$ and $L_0 + 0247$ to $L_0 + 0259$ must be preserved for subsequent searches.
 \newpage

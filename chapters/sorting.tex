@@ -5,7 +5,7 @@
 \subsubsection*{PURPOSE}
 \texttt{L1-10.0} sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. The sorted numbers are stored in the same memory region as the unsorted ones, so no additional memory space is required. The mask determines which parts of the words are compared.
 
-The program operates as a subroutine called by a calling sequence from the main program. Upon jumping to the subroutine, the starting address of the numbers to be sorted must reside in the accumulator, and the address of the mask must have been stored in the subroutine. The two cells following the jump instruction must contain the mask and the ending address of the list. Upon returning to the main program, the numbers stand sorted by magnitude (smallest to largest) in the original memory region of the list.
+The program operates as a subroutine called by a calling sequence from the main program. Upon jumping to the subroutine, the starting address of the numbers to be sorted must reside in the accumulator, and the address of the mask must have been stored in the subroutine. The two locations following the jump instruction must contain the mask and the ending address of the list. Upon returning to the main program, the numbers stand sorted by magnitude (smallest to largest) in the original memory region of the list.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{itemize}
@@ -23,7 +23,7 @@ Sequence of input variables:
 
 The mask must not contain a ``1'' in the sign position, as the subroutine ignores the sign of the numbers being sorted. $L_1$ and $L_2$ are inclusive.
 
-Upon jumping to the subroutine, $L_1$ at $q = 29$ must reside in the accumulator. The cells following the jump instruction must contain the mask and $L_2$. The numbers to be sorted must reside in consecutive cells.
+Upon jumping to the subroutine, $L_1$ at $q = 29$ must reside in the accumulator. The locations following the jump instruction must contain the mask and $L_2$. The numbers to be sorted must reside in consecutive locations.
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
@@ -42,7 +42,7 @@ $+4$         &            & \textit{etc.}           & Return to the main program
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha-1$ brings $L_1$ into the accumulator at $q=29$. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address of the mask ($\alpha+2$) in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the hexadecimal mask. The instruction at $\alpha+3$ contains $L_2$. Cell $\alpha+4$ contains the instruction of the main program that is executed first after the subroutine runs.
+The instruction at $\alpha-1$ brings $L_1$ into the accumulator at $q=29$. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address of the mask ($\alpha+2$) in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains the hexadecimal mask. The instruction at $\alpha+3$ contains $L_2$. Location $\alpha+4$ contains the instruction of the main program that is executed first after the subroutine runs.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -66,7 +66,7 @@ The instruction at $\alpha-1$ brings $L_1$ into the accumulator at $q=29$. (Any 
 \end{enumerate}
 
 \subsubsection*{EXAMPLE}
-Suppose numbers are stored in cells 1500 to 1731, which are to be sorted according to their content in bit positions 7 to 11 and 24 to 29. Let ``Sorting 1'' be stored at 700 to 832, and the main program occupies cells 900 to 1215. The calling sequence would look as follows:
+Suppose numbers are stored in locations 1500 to 1731, which are to be sorted according to their content in bit positions 7 to 11 and 24 to 29. Let ``Sorting 1'' be stored at 700 to 832, and the main program occupies locations 900 to 1215. The calling sequence would look as follows:
 
 \begin{table}[h!]
 \centering
@@ -86,7 +86,7 @@ Suppose numbers are stored in cells 1500 to 1731, which are to be sorted accordi
 \end{tabularx}
 \end{table}
 
-The instruction in 1011 brings $1500$ at $q=29$ into the accumulator; the instruction in 1012 stores the address of the mask to 0703; and the instruction in 1013 effects a jump to the starting address of ``Sorting 1''. Cell 1014 contains the sorting mask. Note that only those bit positions that correspond to ``1'' bits in the mask are compared. The instruction in 1015 defines the ending address of the list. Cell 1016 contains the main program instruction to which execution returns.
+The instruction in 1011 brings $1500$ at $q=29$ into the accumulator; the instruction in 1012 stores the address of the mask to 0703; and the instruction in 1013 effects a jump to the starting address of ``Sorting 1''. Location 1014 contains the sorting mask. Note that only those bit positions that correspond to ``1'' bits in the mask are compared. The instruction in 1015 defines the ending address of the list. Location 1016 contains the main program instruction to which execution returns.
 
 \pagebreak
 
@@ -114,7 +114,7 @@ The input consists of three hexadecimal key words supplied by the calling sequen
 
 The number of records sortable in a single run is limited only by available memory space. For $N$ (the number of words per record), the following applies: $1 \le N \le 64$. The mask should not contain a ``1'' in the sign position, as the subroutine ignores the sign of the words during sorting.
 
-The records to be sorted must reside in consecutive cells.
+The records to be sorted must reside in consecutive locations.
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
@@ -133,7 +133,7 @@ $+4$         &            & \textit{etc.}           & Return to main program. \\
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha-1$ brings $R$ at $q=15$ and $L_1$ at $q=29$ into the accumulator. (Any instruction that accomplishes this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the instruction containing $N$ and $K$ into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains $N$ at $q=15$ and $K$ at $q=29$. Cell $\alpha+3$ contains the mask. After $\alpha+4$, execution returns from the subroutine.
+The instruction at $\alpha-1$ brings $R$ at $q=15$ and $L_1$ at $q=29$ into the accumulator. (Any instruction that accomplishes this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the instruction containing $N$ and $K$ into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains $N$ at $q=15$ and $K$ at $q=29$. Location $\alpha+3$ contains the mask. After $\alpha+4$, execution returns from the subroutine.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -433,9 +433,9 @@ Sample printouts follow, showing what both calling sequences achieve.
 \addcontentsline{toc}{subsection}{SORTING 3 --- L1-10.2}
 
 \subsubsection*{PURPOSE}
-\texttt{L1-10.2} sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. Although the sorted numbers are written back to their original memory region, additional buffer cells are required. The mask determines which parts of the words are compared.
+\texttt{L1-10.2} sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. Although the sorted numbers are written back to their original memory region, additional buffer locations are required. The mask determines which parts of the words are compared.
 
-The program operates as a subroutine called by a calling sequence from the main program. Upon jumping to the subroutine, the number of words in the list must reside in the accumulator. The cells following the jump instruction must contain the starting address of the list and the mask. Upon returning to the main program, the numbers stand sorted by magnitude (smallest to largest) in the original memory region of the list.
+The program operates as a subroutine called by a calling sequence from the main program. Upon jumping to the subroutine, the number of words in the list must reside in the accumulator. The locations following the jump instruction must contain the starting address of the list and the mask. Upon returning to the main program, the numbers stand sorted by magnitude (smallest to largest) in the original memory region of the list.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{itemize}
@@ -451,7 +451,7 @@ The input variables for ``Sorting 3'' are listed below in the sequence of their 
     \item The arbitrary mask directing the sorting process, in hexadecimal notation.
 \end{enumerate}
 
-The numbers to be sorted must be positive and reside in consecutive cells.
+The numbers to be sorted must be positive and reside in consecutive locations.
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
@@ -470,7 +470,7 @@ $+4$         &            & \textit{etc.}           & Return to main program. \\
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha-1$ brings $N$ into the accumulator. (Any instruction that achieves this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the first list word in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the address $S_0$ of the first list word, and cell $\alpha+3$ contains the hexadecimal word representing the mask. After $\alpha+4$, control returns from the subroutine.
+The instruction at $\alpha-1$ brings $N$ into the accumulator. (Any instruction that achieves this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the first list word in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains the address $S_0$ of the first list word, and location $\alpha+3$ contains the hexadecimal word representing the mask. After $\alpha+4$, control returns from the subroutine.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -494,7 +494,7 @@ The instruction at $\alpha-1$ brings $N$ into the accumulator. (Any instruction 
 \end{enumerate}
 
 \subsubsection*{EXAMPLE}
-The contents of cells 1514 to 1645 are to be sorted by magnitude, considering only bit positions 3 to 9 and 18 to 23. Let ``Sorting 3'' occupy 0500 to 0763, and the main program occupies 3600 to 4228.
+The contents of locations 1514 to 1645 are to be sorted by magnitude, considering only bit positions 3 to 9 and 18 to 23. Let ``Sorting 3'' occupy 0500 to 0763, and the main program occupies 3600 to 4228.
 
 \begin{table}[h!]
 \centering
@@ -524,7 +524,7 @@ Please note that during sorting, only those bit positions that correspond to ``1
 
 The sorting process can be executed using any of the three following methods:
 \begin{itemize}
-    \item[\textbf{Method I:}] Sorts the comparison key words by magnitude (smallest value to largest value) and generates a contiguous list of the addresses where these key words are located; i.e., the first cell of the new list contains the address of the key word with the smallest numerical value from the original list.
+    \item[\textbf{Method I:}] Sorts the comparison key words by magnitude (smallest value to largest value) and generates a contiguous list of the addresses where these key words are located; i.e., the first location of the new list contains the address of the key word with the smallest numerical value from the original list.
     \item[\textbf{Method II:}] Sorts the comparison key words by magnitude (smallest value to largest value) and creates a contiguous list containing only the sorted key words themselves.
     \item[\textbf{Method III:}] Sorts the comparison key words by magnitude (smallest value to largest value) and generates a new list containing the fully sorted records. With this method, the new sorted list has the exact same length as the original list.
 \end{itemize}

@@ -19,9 +19,9 @@ The input variables are specified in the following exact sequence:
     \item $N$, the number of words to be copied, in decimal track/sector notation.
 \end{enumerate}
 
-These control parameters must reside in the three cells immediately following the jump instruction of the calling sequence.
+These control parameters must reside in the three locations immediately following the jump instruction of the calling sequence.
 
-The data block must occupy consecutive cells and may be copied in any direction; i.e., $M_2$ may be greater than or less than $M_1$. Overlapping regions are handled safely.
+The data block must occupy consecutive locations and may be copied in any direction; i.e., $M_2$ may be greater than or less than $M_1$. Overlapping regions are handled safely.
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
@@ -40,7 +40,7 @@ $\alpha+5$   &            & \textit{etc.}           & Return point in the main p
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha$ stores the address of the parameter block ($\alpha+2$) into the subroutine tracking logic. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the starting address of the original data block; cell $\alpha+3$ contains the starting address of the new target area; and cell $\alpha+4$ contains the total count of words making up the block.
+The instruction at $\alpha$ stores the address of the parameter block ($\alpha+2$) into the subroutine tracking logic. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains the starting address of the original data block; location $\alpha+3$ contains the starting address of the new target area; and location $\alpha+4$ contains the total count of words making up the block.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -58,7 +58,7 @@ The instruction at $\alpha$ stores the address of the parameter block ($\alpha+2
     Ignored upon entry and not reset upon exit.
 \end{enumerate}
 \subsubsection*{EXAMPLE}
-Suppose a memory block of 200 words (decimal), beginning at cell 0700, is to be copied to a target area starting at cell 4200, and that  ``Memory Copy 1'' is loaded starting at cell 0300. The calling sequence in the main program begins at cell 0500:
+Suppose a memory block of 200 words (decimal), beginning at location 0700, is to be copied to a target area starting at location 4200, and that  ``Memory Copy 1'' is loaded starting at location 0300. The calling sequence in the main program begins at location 0500:
 
 \begin{table}[h!]
 \centering

@@ -85,13 +85,13 @@ Example: The input keyword \texttt{/0001200'} causes $1200$ to be added to all f
 
 \item \texttt{.000TTSS'}
 
-  The Absolute Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \texttt{TTSS}. If the \textsf{PS-32} switch is set to \textsf{ON}, execution continues at the target address.
+  The Absolute Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to location \texttt{TTSS}. If the \textsf{PS-32} switch is set to \textsf{ON}, execution continues at the target address.
 
     Example: The input keyword $.0001663'$ would cause the computer to jump to $1663$ and halt execution (if \textsf{PS-32} is off).
 
 \item \texttt{.100TTSS'}
 
-  The Relative Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to cell \texttt{TTSS} plus the modifier. If the \textsf{PS-32} switch is set to \textsf{ON}, the stop is suppressed.
+  The Relative Stop and Jump Input Keyword causes the computer to stop. If the Start button is subsequently pressed, a jump occurs to location \texttt{TTSS} plus the modifier. If the \textsf{PS-32} switch is set to \textsf{ON}, the stop is suppressed.
 
 Example: If the modifier has been set to $1200$, then the input keyword \texttt{.1001663'} would cause a jump to $2863$.
 
@@ -113,7 +113,7 @@ Example: If 32 refers to a second Flexowriter, then the keyword \texttt{S0003200
 \begin{itemize}
 \item \texttt{000TTSS'}
 
-The Decimal Fill keyword causes the input program to store decimal words in ascending order into consecutive cells, beginning with memory location \texttt{TTSS}.
+The Decimal Fill keyword causes the input program to store decimal words in ascending order into consecutive locations, beginning with memory location \texttt{TTSS}.
 
 Any valid address followed by a stop code may be used. Every decimal input should be preceded by a Decimal Fill keyword. The ``start fill'' address is stored in the start-fill counter. This memory location of the subroutine contains the address for the decimal input. The counter is incremented by 1 each time after a word (not a keyword) is read and stored. The read-in words are stored consecutively until a new decimal fill keyword is read or the input is terminated.
 
@@ -121,15 +121,15 @@ Example: The fill keyword \texttt{;0000400'} would store read-in words beginning
 
 \item \texttt{,00000NN'}
 
-The keyword for entering hexadecimal words causes \texttt{NN} hexadecimal words to be stored, specifically beginning in the memory cell whose address is held in the start-fill counter. \texttt{NN} must be specified in decimal and can take a value from 1 to 63. The stored words are not incremented by the address modifier. Leading zeros may be omitted for the hexadecimal words that are to be read in.
+The keyword for entering hexadecimal words causes \texttt{NN} hexadecimal words to be stored, specifically beginning in the location whose address is held in the start-fill counter. \texttt{NN} must be specified in decimal and can take a value from 1 to 63. The stored words are not incremented by the address modifier. Leading zeros may be omitted for the hexadecimal words that are to be read in.
 
 Each hexadecimal word and keyword must be followed by a stop code. If a zero is to be entered, it is not necessary to write a \texttt{0}. A stop code alone is sufficient to indicate a zero. Each hexadecimal word must not consist of more than 8 characters.
 
-Example: The input keyword \texttt{,0000003'} followed by the three hexadecimal words \texttt{-2'JK73''} would cause the values \texttt{00000002}, \texttt{0000JK73}, and \texttt{00000000} to be stored into the next three consecutive cells.
+Example: The input keyword \texttt{,0000003'} followed by the three hexadecimal words \texttt{-2'JK73''} would cause the values \texttt{00000002}, \texttt{0000JK73}, and \texttt{00000000} to be stored into the next three consecutive locations.
 
 \item \texttt{A00000NN'}
 
-The keyword for entering alphanumeric words causes \texttt{NN} alphanumeric words to be stored, beginning in the memory cell whose address is held in the start-fill counter. The alphanumeric words are shifted two places to the left and stored without binary conversion. \texttt{NN} must be specified in decimal and can take a value from 1 to 63.
+The keyword for entering alphanumeric words causes \texttt{NN} alphanumeric words to be stored, beginning in the location whose address is held in the start-fill counter. The alphanumeric words are shifted two places to the left and stored without binary conversion. \texttt{NN} must be specified in decimal and can take a value from 1 to 63.
 
 Each word can contain up to five characters in 6-bit representation (if more than five characters per word are entered, only the last five are retained). The last stored word receives a group-end indicator, i.e., $1$ at $q=30$. All characters except tape feed (blank tape), delete code, and stop code can be entered; for example, lowercase letters can be stored.
 
@@ -145,15 +145,15 @@ Each hexadecimal keyword and input word must be followed by a stop code. Left-si
 
 Note: The instruction contained within the input keyword does not alter the fill counter.
 
-Example: The input keyword \texttt{+00h1637'} followed by the hexadecimal word \texttt{73W08'} would cause the value \texttt{00073W08} to be stored in memory cell 1637.
+Example: The input keyword \texttt{+00h1637'} followed by the hexadecimal word \texttt{73W08'} would cause the value \texttt{00073W08} to be stored in location 1637.
 
 \item \texttt{-000TTSS'}
 
-The Sequential Display Input Keyword causes the contents of memory cell \texttt{TTSS} to appear in the accumulator when the computer stops. A start signal causes a return to an input command for a new keyword, provided that the \texttt{PST} switch is off. If the \texttt{PST} switch is on, the contents of \texttt{TTSS$ + i$} (where $i = 1, 2, \dots$) will appear in the accumulator.
+The Sequential Display Input Keyword causes the contents of location \texttt{TTSS} to appear in the accumulator when the computer stops. A start signal causes a return to an input command for a new keyword, provided that the \texttt{PST} switch is off. If the \texttt{PST} switch is on, the contents of \texttt{TTSS$ + i$} (where $i = 1, 2, \dots$) will appear in the accumulator.
 
 With each start signal, $i$ is incremented by 1. It is also possible to obtain the address of the displayed word by switching to single-step operation and starting the machine. (The \texttt{B} instruction that fetched the information just displayed will appear in the accumulator.) \texttt{TTSS} may be any arbitrary valid address.
 
-Example: The input keyword \texttt{-0003263'} would directly display the contents of memory cell $3263$ in the accumulator.
+Example: The input keyword \texttt{-0003263'} would directly display the contents of location $3263$ in the accumulator.
 
 Every entered word whose leftmost four bits correspond either to an ``8'' (negative instruction) or a zero (positive instruction) is treated as an instruction. The operand address is altered by the Address Modifier, unless the instruction is preceded by an ``X''. The subroutine allows the inclusion of index tags (used by some interpretive systems) immediately preceding the instructions. The inclusion of an ``X'' or an index tag does not alter the instruction in memory. If the leftmost four bits of a word correspond to any of the numbers $9$ through $13$, an error stop occurs (see the list of error stops).
 
@@ -198,7 +198,7 @@ Note: If the \texttt{PS-32} switch is turned \emph{off}, the computer stops afte
 
 \texttt{PS-32} should be turned \emph{off} before the decimal input section is completely read in; otherwise, the reader mechanism will continue to operate without tape after the read-in process is complete.
 
-The bootstrap always occupies memory cells $0000$ and $0002\dots0008$ (absolute), while the remainder resides in the area designated for the hexadecimal input section.
+The bootstrap always occupies locations $0000$ and $0002\dots0008$ (absolute), while the remainder resides in the area designated for the hexadecimal input section.
 
 \subsubsection*{INSTRUCTIONS FOR RELOADING}
 
@@ -243,8 +243,8 @@ Input units other than the standard typewriter must be specified by a selection 
 \end{itemize}
 \item \texttt{PST} (Program Switch-Typewriter)
 \begin{itemize}
-\item \texttt{OFF}: Only the contents of a single, specific memory cell will appear in the accumulator.
-\item \texttt{ON}: Consecutive memory cells can be loaded into the accumulator by repeatedly pressing the Start button.
+\item \texttt{OFF}: Only the contents of a single, specific location will appear in the accumulator.
+\item \texttt{ON}: Consecutive locations can be loaded into the accumulator by repeatedly pressing the Start button.
 \end{itemize}
 \end{itemize}
 
@@ -373,16 +373,16 @@ S000TTxx  & \textit{Device Select} \newline
             Reads decimal instructions into memory starting at address TTSS. \\
 \addlinespace
 ,00000NN  & Hexadecimal Fill \newline
-            Reads NN hexadecimal words into the following NN consecutive memory cells. \\
+            Reads NN hexadecimal words into the following NN consecutive locations. \\
 \addlinespace
 A00000NN  & Alphanumeric Fill \newline
-            Reads NN alphanumeric words into the following NN consecutive memory cells. \\
+            Reads NN alphanumeric words into the following NN consecutive locations. \\
 \addlinespace
 +00ØTTSS  & Execute Immediate \newline
             Executes the instruction ØTTSS contained within the keyword. If the instruction has no operand, enter a stop code. Otherwise enter the operand word in hexadecimal notation an a stop code. \\
 \addlinespace
 -000TTSS  & Sequential Dump \newline
-            The contents of memory cell TTSS are shown in the console's accumulator display when the computer stops. After pressing START, the computer requests an command if PST is OFF. If PST is ON, pressing START causes the contents of TTSS$ + 1$ to appear in the accumulator, and so on. The address of the cell currently shown in the accumulator display appears in the accumulator if you switch to ``Single Operation'' and press Start. \\
+            The contents of location TTSS are shown in the console's accumulator display when the computer stops. After pressing START, the computer requests an command if PST is OFF. If PST is ON, pressing START causes the contents of TTSS$ + 1$ to appear in the accumulator, and so on. The address of the location currently shown in the accumulator display appears in the accumulator if you switch to ``Single Operation'' and press Start. \\
 \end{longtable}
 
 \newpage

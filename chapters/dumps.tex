@@ -9,7 +9,7 @@
     \item[b)] arbitrarily relocatable decimal, permissible for J1-10.0,
     \item[c)] both: a and b.
 \end{itemize}
-The words can be output as instructions or as hexadecimal constants, depending on appearance or according to the specifications of the user. If hexadecimal words are punched, they are preceded by the input key word for hexadecimal constants. Output occurs cell by cell in ascending sequence.
+The words can be output as instructions or as hexadecimal constants, depending on appearance or according to the specifications of the user. If hexadecimal words are punched, they are preceded by the input key word for hexadecimal constants. Output occurs location by location in ascending sequence.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Memory:} 9 tracks (576 words) \\
@@ -122,7 +122,7 @@ K2-10.0 can be patched to suppress the output of the memory addresses; this prod
 \centering
 \begin{tabular}{lll}
 \toprule
-\textbf{In Cell} & \textbf{Replace} & \textbf{By} \\
+\textbf{In Location} & \textbf{Replace} & \textbf{By} \\
 \midrule
 \texttt{B[$L_0$ + 0242]} & \texttt{$L_0$ + 0234} & \texttt{U[$L_0$ + 0241]} \\
 \bottomrule
@@ -155,7 +155,7 @@ After the dump the specified memory region, the computer requests new output par
 The program is executed by a jump to its starting address.
 
 \subsubsection*{OUTPUT}
-The program prints one address and eight words per line until the content of the last address has been printed out. Hexadecimal words are printed if there are ``1'' bits outside of the sign, operation part, and operand address part, or if the \textsf{PST} is \textsf{ON}. Instruction words are printed if the above conditions do not apply. Negative instructions are preceded by a minus sign. The contents of consecutive cells are output in ascending sequence.
+The program prints one address and eight words per line until the content of the last address has been printed out. Hexadecimal words are printed if there are ``1'' bits outside of the sign, operation part, and operand address part, or if the \textsf{PST} is \textsf{ON}. Instruction words are printed if the above conditions do not apply. Negative instructions are preceded by a minus sign. The contents of consecutive locations are output in ascending sequence.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}

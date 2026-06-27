@@ -48,7 +48,7 @@ Suppose the 8-digit decimal value to be converted is $00024576$, stored in memor
 \end{tabularx}
 \end{table}
 
-The instruction at 1200 loads the data word containing the decimal integer representation. The instruction at 1201 sets the return path to cell 1203 inside the subroutine's exit tracking line (at $0800 + 42$). Cell 1202 triggers the jump to the routine. Upon return to cell 1203, the accumulator contains the true binary value equivalent to \texttt{0x6000} (decimal $24576$) correctly shifted to $q=30$.
+The instruction at 1200 loads the data word containing the decimal integer representation. The instruction at 1201 sets the return path to location 1203 inside the subroutine's exit tracking line (at $0800 + 42$). Location 1202 triggers the jump to the routine. Upon return to location 1203, the accumulator contains the true binary value equivalent to \texttt{0x6000} (decimal $24576$) correctly shifted to $q=30$.
 
 \subsubsection*{OUTPUT}
 Upon returning to the main program, the binarized number scaled at $q = 30$ stands in the accumulator.

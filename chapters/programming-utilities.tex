@@ -43,7 +43,7 @@ $\alpha+4$         &            & \textit{etc.}           & Return point in the 
 \end{tabularx}
 \end{table}
 
-The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) into the tracking logic of the subroutine. The instruction at $\alpha+1$ effects an immediate jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the address $S$, and cell $\alpha+3$ contains the loop execution limit value $X$. Control returns from the subroutine at location $\alpha+4$.
+The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) into the tracking logic of the subroutine. The instruction at $\alpha+1$ effects an immediate jump to $L_0$, the starting address of the subroutine. Location $\alpha+2$ contains the address $S$, and location $\alpha+3$ contains the loop execution limit value $X$. Control returns from the subroutine at location $\alpha+4$.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -62,7 +62,7 @@ The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) in
 \subsubsection*{REMARKS}
 The operand address of \emph{every} single negative instruction embedded within the designated loop block will be incremented before each loop.
 
-If an early exit out of the loop block is triggered before the specified loop iteration count is exhausted, the contents of subroutine cell $L_0 + 2$ must be patched as follows:
+If an early exit out of the loop block is triggered before the specified loop iteration count is exhausted, the contents of subroutine location $L_0 + 2$ must be patched as follows:
 \begin{center}
 \begin{tabular}{ll}
 \textbf{Old Contents:} & $(\dots)$ \\
@@ -78,22 +78,22 @@ $$L = \frac{(2x + y) \cdot z}{w}$$
 
 \textbf{Given Data Arrangements:}
 \begin{itemize}
-    \item Ten values for $x$ stored in cells 3100--3109 scaled at $q = 10$.
-\item Ten values for $y$ stored in cells 3200--3209 scaled at $q = 20$.
-\item Ten values for $z$ stored in cells 3300--3309 scaled at $q = 15$.
-\item Ten values for $w$ stored in cells 3400--3109 scaled at $q = 10$.
+    \item Ten values for $x$ stored in locations 3100--3109 scaled at $q = 10$.
+\item Ten values for $y$ stored in locations 3200--3209 scaled at $q = 20$.
+\item Ten values for $z$ stored in locations 3300--3309 scaled at $q = 15$.
+\item Ten values for $w$ stored in locations 3400--3109 scaled at $q = 10$.
 \end{itemize}
 
 \textbf{Target Destination Area:}
 \begin{itemize}
-    \item Ten calculated values of $L$ to be written to cells 3500--3509 scaled at $q = 23$.
+    \item Ten calculated values of $L$ to be written to locations 3500--3509 scaled at $q = 23$.
 \end{itemize}
 
 \textbf{Available Scaling Constants:}
 \begin{itemize}
-    \item Value $2$ at $q = 15$ located in cell 3000.
-    \item Value $1$ at $q = 5$ located in cell 3001.
-    \item Value $1$ at $q = 3$ located in cell 3002.
+    \item Value $2$ at $q = 15$ located in location 3000.
+    \item Value $1$ at $q = 5$ located in location 3001.
+    \item Value $1$ at $q = 3$ located in location 3002.
 \end{itemize}
 Assume ``Loop Counter 1'' is loaded on track 40 (starting at location 4000).
 

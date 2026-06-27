@@ -5,8 +5,8 @@
 \subsubsection*{PURPOSE}
 The utility program K9-10.0 allows the programmer to debug and improve their program by performing the following functions:
 \begin{enumerate}
-    \item Change the content of specified cells.
-    \item Print the addresses and the content of specified cells.
+    \item Change the content of specified locations.
+    \item Print the addresses and the content of specified locations.
     \item Search a specified memory region for a specific address.
     \item Fill a memory block with a specific bit configuration.
     \item Jump to a specified address.
@@ -22,35 +22,35 @@ The utility program K9-10.0 allows the programmer to debug and improve their pro
 \subsubsection*{INPUT}
 Information is supplied to the subroutine via 13 special key words. Some or all of them can be used. The function of the key words is explained on the following pages. It is assumed that the selection of the desired input unit occurs before input into the subroutine is attempted. The computer halts on a read instruction until the correct key word is entered. Since the key characters ``\texttt{H}'' and ``\texttt{A}'' have dual functions, each is considered as two distinct key words.
 
-\textbf{Note:} For all input key words, starting and ending addresses are inclusive. An ending address that is smaller than or equal to a starting address only affects a single cell. All addresses must be specified in decimal track/sector notation. The computer returns to a read instruction after the execution of each function. The program under test must be stored in memory when the testing procedure begins.
+\textbf{Note:} For all input key words, starting and ending addresses are inclusive. An ending address that is smaller than or equal to a starting address only affects a single location. All addresses must be specified in decimal track/sector notation. The computer returns to a read instruction after the execution of each function. The program under test must be stored in memory when the testing procedure begins.
 \begin{itemize}
 \item LETTER-FREE KEY WORD
 \textbf{Example:} \texttt{1021'B1150} \\
-This key word has no identifying letter before the entered instruction word that is intended to replace the content of a cell. Instead, the desired absolute address is used, followed by the instruction word that is to be stored into the specified cell regardless of its previous content. 
+This key word has no identifying letter before the entered instruction word that is intended to replace the content of a location. Instead, the desired absolute address is used, followed by the instruction word that is to be stored into the specified location regardless of its previous content. 
 
-The operand address of the new instruction is not modified during input. After each successful entry, a carriage return is executed. The above example would store the instruction \texttt{B1150} in cell \texttt{1021}.
+The operand address of the new instruction is not modified during input. After each successful entry, a carriage return is executed. The above example would store the instruction \texttt{B1150} in location \texttt{1021}.
 
 \item \texttt{H} (Change Content)
 \textbf{Example:} \texttt{563'H'35JWK} \\
-Store a hexadecimal word into a cell. The absolute address is used, followed by the character ``\texttt{H}'' and the hexadecimal word. After successful entry, a carriage return is executed. The above example sets the hexadecimal word \texttt{00035JWK} in cell \texttt{0563}.
+Store a hexadecimal word into a location. The absolute address is used, followed by the character ``\texttt{H}'' and the hexadecimal word. After successful entry, a carriage return is executed. The above example sets the hexadecimal word \texttt{00035JWK} in location \texttt{0563}.
 
 \item \texttt{H} (Print Control)
 \textbf{Example:} \texttt{H3200'3210'} \\
-Print the content of all cells between the starting and ending address in hexadecimal format. One address and eight words are printed per line. The above example would print the content of cells \texttt{3200} to \texttt{3210}.
+Print the content of all locations between the starting and ending address in hexadecimal format. One address and eight words are printed per line. The above example would print the content of locations \texttt{3200} to \texttt{3210}.
 
 \item \texttt{A} (Change Content)
 \textbf{Example:} \texttt{1111'A'TOTAL'} \\
-Store an alphanumeric word into a cell, whereby each character has been shifted two binary places to the left. The example would fill the content of \texttt{1111} with the alphanumeric word \texttt{TOTAL}.
+Store an alphanumeric word into a location, whereby each character has been shifted two binary places to the left. The example would fill the content of \texttt{1111} with the alphanumeric word \texttt{TOTAL}.
 
 \item \texttt{A} (Print Control)
 \textbf{Example:} \texttt{A4200'4216'} \\
-Print the content of all cells between the starting and ending address in alphanumeric form. One address and eight words are printed per line. The example would print the content of the cells between \texttt{4200} and \texttt{4216}.
+Print the content of all locations between the starting and ending address in alphanumeric form. One address and eight words are printed per line. The example would print the content of the locations between \texttt{4200} and \texttt{4216}.
 
 \item \texttt{P}
 \textbf{Example:} \texttt{P2000'3203'} \\
-Print the content of all cells between the starting and ending address in program format. That is, the printout appears in instruction format if all bits outside of the sign, operation part, and address part are ``\texttt{0}''; it appears in hexadecimal notation if they are not all zero. One address and its content are printed per line.
+Print the content of all locations between the starting and ending address in program format. That is, the printout appears in instruction format if all bits outside of the sign, operation part, and address part are ``\texttt{0}''; it appears in hexadecimal notation if they are not all zero. One address and its content are printed per line.
 
-If the printout is in instruction format and PS-4 is turned OFF, the content of the cell to which the operand address refers can also be printed out, depending on the nature of the instruction contained therein:
+If the printout is in instruction format and PS-4 is turned OFF, the content of the location to which the operand address refers can also be printed out, depending on the nature of the instruction contained therein:
 
 \begin{table}[h!]
 \centering
@@ -64,21 +64,21 @@ If the printout is in instruction format and PS-4 is turned OFF, the content of 
 \bottomrule
 \end{tabular}
 \end{table}
-The example would print the content of the cells from \texttt{2000} to \texttt{3203}.
+The example would print the content of the locations from \texttt{2000} to \texttt{3203}.
 
 \item \texttt{I}
 \textbf{Example:} \texttt{I1000'2100'} \\
-Print the content of the cells between the starting and ending address in instruction format. One address and eight words are printed per line. The example would print the content of the cells from \texttt{1000} to \texttt{2100}.
+Print the content of the locations between the starting and ending address in instruction format. One address and eight words are printed per line. The example would print the content of the locations from \texttt{1000} to \texttt{2100}.
 
 \item \texttt{S}
 \textbf{Example:} \texttt{S1645'3706'2204'} \\
-Search the memory between the starting and ending address for a specific address. The addresses signify, in order: starting address, ending address, address to be searched for. The found address and the alphabetic designation of the instruction are printed out. The search continues until the entire region has been searched. If the address is found multiple times, a new line is taken for each printout. After the search is finished, a carriage return is executed. The example would search cells \texttt{1645} to \texttt{3706} for the address \texttt{2204}.
+Search the memory between the starting and ending address for a specific address. The addresses signify, in order: starting address, ending address, address to be searched for. The found address and the alphabetic designation of the instruction are printed out. The search continues until the entire region has been searched. If the address is found multiple times, a new line is taken for each printout. After the search is finished, a carriage return is executed. The example would search locations \texttt{1645} to \texttt{3706} for the address \texttt{2204}.
 
 \item \texttt{C}
 \textbf{Example:} \texttt{C2101'2110'F3F3F3F2'} \\
 Fill the region between the starting and ending address with a specific bit configuration. Upon completion, a carriage return and a jump to the starting address of the subroutine are executed. The bit configuration must be specified as a hexadecimal word. 
 
-The example would fill the cells from \texttt{2101} to \texttt{2110} with the bit configuration $[1010001110100011101000111010001]$.
+The example would fill the locations from \texttt{2101} to \texttt{2110} with the bit configuration $[1010001110100011101000111010001]$.
 
 \textbf{Note:} Since a memory word is 31 bits long\footnote{The LGP-21 word is 32 bits including the sign bit; the original German text refers to the 31 magnitude bits.}, the last bit would be lost.
 
@@ -88,17 +88,17 @@ Halt and, after pressing ``Start'', jump to the specified address. The jump addr
 
 \item \texttt{R}
 \textbf{Example:} \texttt{R3663} \\
-Set a return instruction (\texttt{U}) into the specified cell of the subroutine. If the jump is encountered during operation, the original content is stored back into the cell, and a jump to the starting address of the subroutine occurs. If the original content is not stored back into the cell because the jump was not encountered, a jump to this cell causes the re-insertion of the original content into it. Do not set a return instruction if a previous one has not been undone. The example would store a return instruction in cell \texttt{3663}.
+Set a return instruction (\texttt{U}) into the specified location of the subroutine. If the jump is encountered during operation, the original content is stored back into the location, and a jump to the starting address of the subroutine occurs. If the original content is not stored back into the location because the jump was not encountered, a jump to this location causes the re-insertion of the original content into it. Do not set a return instruction if a previous one has not been undone. The example would store a return instruction in location \texttt{3663}.
 
 \item \texttt{SS}
 \textbf{Example:} \texttt{SS1230'} \\
-Set a stop into the specified cell. Any instruction of the program under test can be replaced by a stop; however, only one may be set at any time, otherwise the error printout \texttt{e} occurs. The original content is stored back when a jump to a stop instruction of the subroutine occurs; in the cell behind this stop instruction stands the original content of the cell of the program under test.
+Set a stop into the specified location. Any instruction of the program under test can be replaced by a stop; however, only one may be set at any time, otherwise the error printout \texttt{e} occurs. The original content is stored back when a jump to a stop instruction of the subroutine occurs; in the location behind this stop instruction stands the original content of the location of the program under test.
 
-Simultaneously, a jump to the desired address $+1$ is stored in the next following cell of the subroutine, and a jump to the above address $+2$ in the third following cell. After pressing ``Start'', the program continues to operate. The example would set a stop in cell \texttt{1230}.
+Simultaneously, a jump to the desired address $+1$ is stored in the next following location of the subroutine, and a jump to the above address $+2$ in the third following location. After pressing ``Start'', the program continues to operate. The example would set a stop in location \texttt{1230}.
 
 \item \texttt{RS}
 \textbf{Example:} \texttt{RS0000'} \\
-Undo the stop; replace the cell content with the original content. An error printout \texttt{e} occurs if no stop had been set previously. The address is meaningless and may therefore consist of four arbitrary characters. The example would undo a stop in any arbitrary cell.
+Undo the stop; replace the location content with the original content. An error printout \texttt{e} occurs if no stop had been set previously. The address is meaningless and may therefore consist of four arbitrary characters. The example would undo a stop in any arbitrary location.
 \end{itemize}
 
 For all regions, the ending address must be greater than the starting address.
@@ -151,5 +151,5 @@ The output depends on the chosen key word. Depending on the key word, the output
 \end{enumerate}
 
 \subsubsection*{REMARKS}
-The stored subroutine protects itself. That is, no change is performed in any of its cells. Should one attempt this, \texttt{e} is printed out. The parameters of the protected region can be changed by a jump to $L_0 + 0660$—where $L_0$ is the starting address of the subroutine—and by entering the new desired starting and ending addresses. For example: \texttt{1000'1732'} would define the cells from \texttt{1000} to \texttt{1732} as the new protected region.
+The stored subroutine protects itself. That is, no change is performed in any of its locations. Should one attempt this, \texttt{e} is printed out. The parameters of the protected region can be changed by a jump to $L_0 + 0660$—where $L_0$ is the starting address of the subroutine—and by entering the new desired starting and ending addresses. For example: \texttt{1000'1732'} would define the locations from \texttt{1000} to \texttt{1732} as the new protected region.
 \newpage
