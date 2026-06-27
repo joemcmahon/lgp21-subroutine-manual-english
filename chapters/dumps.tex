@@ -1,7 +1,7 @@
 \section{Memory Dumps}
-\section*{MEMORY PRINT 1 K2-10.0}
+\subsection*{MEMORY PRINT 1 --- K2-10.0}
 
-\subsection*{PURPOSE}
+\subsubsection*{PURPOSE}
 The program K2-10.0 outputs the contents of a specified memory region. There are three possible types of output:
 \begin{itemize}
     \item[a)] in coding sheet format,
@@ -10,13 +10,11 @@ The program K2-10.0 outputs the contents of a specified memory region. There are
 \end{itemize}
 The words can be output as instructions or as hexadecimal constants, depending on appearance or according to the specifications of the user. If hexadecimal words are punched, they are preceded by the input key word for hexadecimal constants. Output occurs cell by cell in ascending sequence.
 
-\subsection*{STORAGE REQUIREMENTS}
-\begin{itemize}
-    \item[] \textbf{Storage cells used:} 9 tracks
-    \item[] \textbf{Temporary storage:} none
-\end{itemize}
+\subsubsection*{STORAGE REQUIREMENTS}
+\textbf{Storage cells used:} 9 tracks \\
+\textbf{Temporary storage:} none
 
-\subsection*{INPUT}
+\subsubsection*{INPUT}
 After a jump to the starting address of K2-10.0, the computer requests the following information:
 
 \begin{table}[h!]
@@ -33,7 +31,7 @@ After a jump to the starting address of K2-10.0, the computer requests the follo
 \end{tabular}
 \end{table}
 
-\noindent \textbf{Note:} The above answers must consist of two digits: zero must be entered as ``\texttt{00}''. The blank lines between pages are output when either the full number of memory addresses has been printed, or when the number of outputted lines plus ``\texttt{skip}'' equals ``\texttt{lins}''.
+\textbf{Note:} The above answers must consist of two digits: zero must be entered as ``\texttt{00}''. The blank lines between pages are output when either the full number of memory addresses has been printed, or when the number of outputted lines plus ``\texttt{skip}'' equals ``\texttt{lins}''.
 
 \begin{table}[h!]
 \centering
@@ -52,16 +50,16 @@ After a jump to the starting address of K2-10.0, the computer requests the follo
 \end{tabular}
 \end{table}
 
-\noindent \textbf{Note:} In all address specifications, the second address must be higher than the first.
+\textbf{Note:} In all address specifications, the second address must be higher than the first.
 
 If \textsf{PS-32} is \textsf{ON} when the program starts, the computer skips the first four questions and uses the values from the previous run or the defaults: \texttt{lins=51}, \texttt{locs=32}, \texttt{wrds=08}, and \texttt{skip=08}.
 
 The program \emph{does not stop} after the answer to ``\texttt{pnch}''. The typewriter lever \textsf{PUNCH ON} should already be pressed when \textsf{START} is pressed.
 
-\subsection*{CALLING SEQUENCE}
+\subsubsection*{CALLING SEQUENCE}
 The program is run by a jump to the starting address.
 
-\subsection*{OUTPUT}
+\subsubsection*{OUTPUT}
 The output occurs in one of two versions, depending on the setting of \textsf{PS-4}.
 \begin{itemize}
     \item[a\textsf{ON})] Each line begins with an address (absolute minus modifier) followed by a space character and one instruction per line. Input key words for hexadecimal words are printed out one to a line and are counted toward the number of lines per page.
@@ -75,7 +73,7 @@ Every word that contains a ``1'' bit outside of the sign position of the operati
 
 Memory is dumped in ascending location order. The program sense switches can be used as noted below to control the output type and format. Once the whole of the selected region has been output, the computer stops; pressing \textsf{START} restarts the program.
 
-\subsection*{OPERATION}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Program input:} \\
     The tape contains the program in two versions:
@@ -113,12 +111,12 @@ Memory is dumped in ascending location order. The program sense switches can be 
     \end{table}
 \end{enumerate}
 
-\subsection*{REMARK}
+\subsubsection*{REMARKS}
 Optimal operation is independent of the starting sector number.
 
 If only a single memory dump is needed, Memory Print 2, K2-10.1 is preferable.
 
-\subsection*{ADDENDUM}
+\subsubsection*{ADDENDUM}
 \textbf{Suppression of the address printout:} \\
 During the generation of a decimal tape, an address is output at the beginning of each line. This tape can be read in via the typewriter using Program Input 1, but not via the high-speed reader.
 
@@ -134,20 +132,17 @@ K2-10.0 can be patched to suppress the output of the memory addresses; this prod
 \bottomrule
 \end{tabular}
 \end{table}
-\noindent $L_0$ is the starting address of K2-10.0.
+$L_0$ is the starting address of K2-10.0.
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Memory Dump 2}
-\subsubsection*{K2-10.1}
+\subsection*{MEMORY DUMP 2 --- K2-10.1}
 
 \subsubsection*{PURPOSE}
 K2-10.1 dumps the contents of consecutive locations in ascending sequence. The words are printed in hexadecimal or in instruction format, depending on the content or the state of the \textsf{PST}. 
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\begin{itemize}
-    \item[] \textbf{Memory used:} 2 tracks
-    \item[] \textbf{Temporary storage:} none
-\end{itemize}
+\textbf{Memory used:} 2 tracks \\
+\textbf{Temporary storage:} none
 
 \subsubsection*{INPUT}
 After jumping to the starting address, the computer requests the following output parameters:
@@ -189,6 +184,6 @@ The program prints one address and eight words per line until the content of the
     \end{table}
 \end{enumerate}
 
-\subsubsection*{REMARK}
+\subsubsection*{REMARKS}
 This program is intended as a simple tool for memory investigation. If an output useful for Program Input 1 is desired, one should use K2-10.0.
 \newpage
