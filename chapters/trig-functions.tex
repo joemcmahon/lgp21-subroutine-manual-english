@@ -320,8 +320,7 @@ The value $N$ at $q=1$, with $-1 \le N \le 1$, must be in the accumulator when t
 
 \subsubsection*{CALLING SEQUENCE}
 \paragraph{Arcsin}
-\begin{table}[h!]
-\centering
+\begin{center}
 \begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
@@ -331,13 +330,12 @@ $\alpha$   & \texttt{R} & \texttt{L+21} & Set return address. \\
 $\alpha+1$      & \texttt{U}          & \texttt{L}       & Call the $\arcsin$ routine.\\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 
 Load $N$ into the accumulator, set the return address at \texttt{L+21}, and jump to \texttt{L} to compute the $\arcsin$. Mainline execution continues after the jump.
 
 \paragraph{Arccos}
-\begin{table}[h!]
-\centering
+\begin{center}
 \begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
@@ -347,7 +345,7 @@ $\alpha$   & \texttt{R} & \texttt{L+21}         & Set return address. \\
 $\alpha+1$      & \texttt{U}  & \texttt{L+211}    & Call the $\arccos$ routine.\\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 
 Load $N$ into the accumulator, set the return address at \texttt{L+21}, and jump to \texttt{L+211} to compute the $\arccos$. Mainline execution continues after the jump.
 
