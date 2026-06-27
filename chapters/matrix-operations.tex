@@ -30,23 +30,20 @@ Floating-Point Interpreter 1 (\texttt{H1-11.0}, Section~\ref{H1-11.0}) provides 
 \label{subsec:matrix_inversion_1}
 
 \subsubsection*{PURPOSE}
-\texttt{D1-11.0} utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}) to replace the elements of a square matrix $A$ with the elements of its inverse, $A^{-1} = B$. The input data must consist of the elements of a square, non-singular matrix whose rank is greater than 1, formatted as floating-point values. The total number of matrix elements must not exceed the available memory space.
+\texttt{D1-11.0} inverts a square matrix in place, using the Floating-Point Interpretive System 1 (\texttt{H1-11.0}) for its arithmetic. The matrix must be square, non-singular, of rank greater than 1, and stored in floating-point format; it can be as large as available memory allows.
 
-
-``Matrix Inversion 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. Furthermore, before branching to the subroutine, the starting address of the Interpretive System must be stored within the subroutine's internal tracking workspace. The calling sequence must supply both the rank of the matrix and its starting memory address. Upon return to the main program, the calculated inverse matrix occupies the exact memory locations originally held by the input matrix.
+Matrix Inversion 1 is called as a subroutine. Before the call you must exit the Interpretive System (with an \texttt{E} instruction) and patch the interpreter's starting address into the subroutine; the calling sequence then supplies the matrix's rank and starting address. On return, the inverse has replaced the original matrix in memory.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Storage:} 2 tracks (128 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are the individual elements of an $N \times N$ matrix, stored sequentially in a row-major configuration (i.e., the first element of the second row immediately follows the final element of the first row). These data values must comply with the floating-point format dictated by Interpretive System 1. The matrix must be non-singular. 
+The input is the $N^2$ elements of an $N \times N$ matrix in floating-point format, stored row-major (so the first element of row 2 immediately follows the last element of row 1). The matrix must be non-singular.
 
+The subroutine needs an extra column of scratch space, so reserve a contiguous block of $N^2 + N$ locations starting at base address $M$ even though only $N^2$ holds the matrix itself.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
 
-Although storing the original matrix elements inherently requires only $N^2$ memory locations, a continuous block of $N^2 + N$ sequential locations starting at base address $M$ is strictly required for execution workspace.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
-
-
-Prior to executing the branch to the subroutine, the starting address of the Interpretive System (see Section~\ref{subsec:complex_interpreter}) must be stored into memory location \texttt{L+163}, where \texttt{L} represents the starting address of the Matrix Inversion code. This initialization can be performed manually by the operator immediately after loading the subroutine tape, or it may be handled programmatically by initialization instructions within the main program.
+Before calling the subroutine, the starting address of the Interpretive System (see Section~\ref{subsec:complex_interpreter}) must be stored at \texttt{L+163}, where \texttt{L} is the base address of the matrix-inversion code. The operator can do this by hand right after loading the tape, or the main program can do it as part of its setup.
 
 \subsubsection*{CALLING SEQUENCE}
 The calling sequence must provide the following parameters:
@@ -74,12 +71,10 @@ $\alpha + 3$      & ---              & ---              & Return to main program
 
 \medskip
 \noindent
-The \texttt{E} instruction at location $\alpha - 1$ is only required if the preceding instruction executed by the main program was an interpretive pseudo-instruction. The instruction at location $\alpha$ copies the address of the packed parameter word ($\alpha + 2$) into the subroutine's entry loop. 
-
-The instruction at location $\alpha + 1$ executes an unconditional branch to \texttt{L}, the base address of the subroutine. Location $\alpha + 2$ holds the packed descriptor word detailing $N$ at a $q$ of 15 and $M$ at a $q$ of 29. Location $\alpha + 3$ contains the next instruction of the main program, which receives control upon subroutine exit.
+The \texttt{E} at $\alpha - 1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction; otherwise it can be omitted. The rest of the sequence is the standard \texttt{R}/\texttt{U} call described in Section~\ref{subsec:standard-call2}, with the packed parameter word at $\alpha + 2$ holding $N$ at $q=15$ and $M$ at $q=29$.
 
 \subsubsection*{OUTPUT}
-The result of Matrix Inversion 1 is the inverted $N \times N$ matrix $B$, stored in row-major order starting at memory location $M$. The elements are held in continuous sequential memory locations such that element $b_{21}$ immediately follows element $b_{1n}$, and so forth.
+The inverse $B$ replaces the original matrix in memory: $N^2$ row-major elements starting at $M$, same layout as the input.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -108,10 +103,10 @@ The result of Matrix Inversion 1 is the inverted $N \times N$ matrix $B$, stored
 \end{enumerate}
 
 \subsubsection*{REMARK}
-While Matrix Inversion 1 heavily depends on the Interpretive System during calculation, an exit sequence is executed internally prior to returning control to the main program; control returns to the main program in native hardware execution mode.
+The subroutine exits the Interpretive System on its own before returning, so control comes back to the main program in native (fixed-point) mode.
 
 \subsubsection*{TRANSLATOR'S NOTES}
-Gauss-Jordan elimination is probably the most sophisticated algorithm usable for this purpose on the LGP-21, but is has some pitfalls. Because it performs a larger total number of arithmetic operations than, say, Gaussian elimination with back-substitution, it is even more vulnerable to subtractive cancellation and catastrophic loss of significance.
+Gauss-Jordan elimination is probably the most sophisticated algorithm usable for this purpose on the LGP-21, but it has some pitfalls. Because it performs a larger total number of arithmetic operations than, say, Gaussian elimination with back-substitution, it is even more vulnerable to subtractive cancellation and catastrophic loss of significance.
 
 Subtractive cancellation occurs when you subtract two nearly identical numbers. The leading bits, which match, cancel each other out and leave zeros.
 
@@ -124,9 +119,9 @@ $$\begin{array}{rcc}
 0.0000000000000000000000000 & 010 & \times 2^e \\
 \end{array}$$
 
-After the subtraction, the only remaining non-zero significant bit are the last two. The floating-point interpreter will normalize this result by shifting it left, which shifts in zeroes from the right side of the word. Because the original numbers only had 30 bits of precision, those newly-added lower bits are \emph{garbage}! You now have a value where the error is as large as the signal itself.
+After the subtraction, the only remaining non-zero significant bits are the last two. The floating-point interpreter will normalize this result by shifting it left, which shifts in zeroes from the right side of the word. Because the original numbers only had 30 bits of precision, those newly-added lower bits are \emph{garbage}! You now have a value where the error is as large as the signal itself.
 
-In a classic Gauss-Jordan implementation, you aren't just clearing elements below the pivot; you are simultaneously clearing elements \emph{above} the pivot to force the left side of the matrix to be a pure identity matrix. This requires roughly $\frac{n^3}{2}$ multiplications and subtractions compared to the $\frac{n^3}{3}$ required by Gaussian elimination. Every extra row operation is another opportunity for a subtractive cancellation event to add errors to your data.
+In a classic Gauss-Jordan implementation, you aren't just clearing elements below the pivot; you are simultaneously clearing elements \emph{above} the pivot to force the left side of the matrix to be a pure identity matrix. This requires roughly $\frac{n^3}{2}$ multiplications and subtractions compared to the $\frac{n^3}{3}$ required by Gaussian elimination. Every extra row operation is another opportunity for subtractive cancellation to add errors to your data.
 
 If a pivot element becomes very small (usually due to an earlier subtractive cancellation), dividing the rest of the row by that tiny pivot scales up any existing truncation errors dramatically. When that row is subsequently subtracted from all the other rows, that amplified noise propagates through the entire matrix.
 
