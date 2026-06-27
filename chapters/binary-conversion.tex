@@ -1,3 +1,72 @@
 \section{Conversion to Binary}
-\subsection{Binary Conversion of Integers 1}
+\subsection{Binary Conversion of Whole Numbers 1}
+
+\subsubsection*{PURPOSE}
+The program L3-10.0 converts a positive 8-digit decimal number into its binary equivalent. Leading zeros must be explicitly included.
+
+The program operates as a subroutine invoked by a calling sequence from the main program. Upon jumping to the subroutine, the return address must be stored, and the argument must reside in the accumulator. Upon returning to the main program, the binarized number is held in the accumulator.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Memroy used:} 58 sectors (starting at sector 00)
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsubsection*{INPUT}
+The input variable -- a positive 8-digit decimal number scaled at $q=31$ -- must reside in the accumulator when the jump to the subroutine occurs. Leading zeros must be explicitly specified.
+
+\subsection*{CALLING SEQUENCE}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Load the input argument @ 31. \\
+$\alpha$     & \texttt{R} & $L_0 + 42$              & Store the return address in the subroutine. \\
+$+1$         & \texttt{U} & $L_0$                   & Jump to the subroutine starting address. \\
+$+2$         &            & \textit{etc.}           & Return point in the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The instruction at $\alpha-1$ brings the argument scaled at $q=31$ into the accumulator. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Control returns to location $\alpha+2$ of the main program.
+
+\subsection*{EXAMPLE}
+Suppose the 8-digit decimal value to be converted is $00024576$, stored in memory location 2500. Let the subroutine ``Binarization 1'' be loaded at location 0800, and the main program calling sequence occupies locations 1200 to 1203.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+1200 & \texttt{B} & 2500 & Bring decimal number $00024576$ @ 31 into the accumulator. \\
+1201 & \texttt{R} & 0842 & Set return address linkage inside the subroutine. \\
+1202 & \texttt{U} & 0800 & Jump to the subroutine entry point. \\
+1203 &            & \textit{etc.} & Execution resumes here with the binary result held in the accumulator @ 30. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The instruction at 1200 loads the data word containing the decimal integer representation. The instruction at 1201 sets the return path to cell 1203 inside the subroutine's exit tracking line (at $0800 + 42$). Cell 1202 triggers the jump to the routine. Upon return to cell 1203, the accumulator contains the true binary value equivalent to \texttt{0x6000} (decimal $24576$) correctly shifted to $q=30$.
+
+\subsection*{OUTPUT}
+Upon returning to the main program, the binarized number scaled at $q=30$ stands in the accumulator.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Execution time:} \\
+    Average of 530 milliseconds.
+    \item \textbf{Program entry:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    No input or output units are required.
+    \item \textbf{Overflow:} \\
+    Ignored upon entry and not reset upon exit.
+\end{enumerate}
 \newpage
