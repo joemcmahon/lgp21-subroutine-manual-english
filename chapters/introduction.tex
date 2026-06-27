@@ -120,7 +120,7 @@ This explains why the manual repeatedly states that ``loading this value into th
 	\item It modifies the next instruction, a \texttt{B}, to set its address to $\alpha-1$.
     \item The modified \texttt{B} instruction loads the literal 32-bit instruction word stored at $\alpha-1$...that contains the address of the floating-point number.
     \item It strips away the \texttt{B} opcode bits using a bitmask, leaving behind only the raw address \texttt{N}.
-	\item Now the subroutine has the address of the first of the three words making up the floating-point number, and can proceed.
+	\item Now the subroutine has the address of the first of the two words making up the floating-point number, and can proceed.
 \end{enumerate}
 The value loaded into the accumulator at step $\alpha-1$ is \emph{entirely ignored}. The \texttt{B} instruction's sole purpose in this calling sequence is to serve as an \emph{executable static data pointer}, which the subroutine finds and dissects to find word 2 (\texttt{N+1}) of the floating-point parameter.
 
