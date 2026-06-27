@@ -4,7 +4,7 @@
 \label{sec:data-output-1}
 
 \subsubsection*{PURPOSE}
-Program J3-10.0 converts binary numbers stored in memory into decimal format, including an algebraic sign and decimal point. The scale factor of the binary number can range between $q=0$ and $q=30$. The maximum number of decimal places printed is mathematically bounded by:
+\texttt{J3-10.0} converts binary numbers stored in memory into decimal format, including an algebraic sign and decimal point. The scale factor of the binary number can range between $q=0$ and $q=30$. The maximum number of decimal places printed is mathematically bounded by:
 \[
 \frac{30 - \text{scale factor}}{3}
 \]
@@ -143,7 +143,7 @@ Alternatively, rounding can be achieved without inserting an additional instruct
 \label{sec:data-output-2}
 
 \subsubsection*{PURPOSE}
-Program J3-10.1 prints the contents of consecutive memory cells in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to $q=30$. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
+\texttt{J3-10.1} prints the contents of consecutive memory cells in decimal notation. Each printed number comprises up to 8 digits plus an algebraic sign and a decimal point. The numbers to be printed must be stored as integers scaled to $q=30$. For positive numbers, all leading zeros and the plus sign are suppressed and replaced by spaces.
 
 The decimal point is only printed if fractional places are explicitly specified. Words sharing the same formatting parameters can be grouped together. Consecutive numbers form a block, and identical word formats form a group within that block. Any number of blocks, and any number of groups within those blocks, are permissible. 
 
@@ -292,7 +292,7 @@ In cell \texttt{2250}, this formatting constant is only \texttt{1} because no de
 \label{sec:data-output-3}
 
 \subsubsection*{PURPOSE}
-Program J3-10.2 prints the contents of consecutive memory cells in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to $q=30$. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
+\texttt{J3-10.2} prints the contents of consecutive memory cells in decimal notation. Each printed number can consist of up to 7 digits, an algebraic sign, a decimal point, and leading zeros. The numbers to be printed must be stored as integers scaled to $q=30$. Leading zeros and the plus sign are suppressed and replaced by spaces. The decimal point is written only if fractional places are explicitly specified. 
 
 Values that are to be printed using identical formatting parameters can be combined into groups. Any number of blocks of consecutive cells, and any number of groups of identical word formats within those blocks, are permissible.
 
@@ -544,7 +544,7 @@ This example assumes that Data Output 4 is located at base address \texttt{2300}
 \label{sec:data-output-5}
 
 \subsubsection*{PURPOSE}
-Program J3-10.4 outputs a nine-digit decimal number plus an algebraic sign and a decimal point. For a negative number, a minus sign is printed; a space appears in place of a plus sign.
+\texttt{J3-10.4} outputs a nine-digit decimal number plus an algebraic sign and a decimal point. For a negative number, a minus sign is printed; a space appears in place of a plus sign.
 
 The program functions as a subroutine invoked by a calling sequence in the main program. The calling sequence must supply a keyword in cell $x+2$ that specifies the number of digits in the integer portion of the value.
 
@@ -650,7 +650,7 @@ Every binary number is scaled and converted as a fraction. The identification di
 \label{sec:data-output-6}
 
 \subsubsection*{PURPOSE}
-Program J3-10.5 prints one or more groups of numbers in decimal notation, each of which can contain one or more individual values. The numbers within a group must be stored in consecutive cells scaled to the same scale factor $q$. Leading zeros are replaced by spaces; a space or a minus sign follows immediately behind the last decimal place.
+\texttt{J3-10.5} prints one or more groups of numbers in decimal notation, each of which can contain one or more individual values. The numbers within a group must be stored in consecutive cells scaled to the same scale factor $q$. Leading zeros are replaced by spaces; a space or a minus sign follows immediately behind the last decimal place.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}

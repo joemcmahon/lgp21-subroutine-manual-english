@@ -4,7 +4,7 @@
 \label{sec:data-input-1}
 
 \subsubsection*{PURPOSE}
-Program J2-10.0 reads data into the computer for use by a main program. The data, provided in decimal notation, is read in, converted to binary, shifted to the desired fractional bit position ($q$), and stored in designated memory locations. During each program execution run, the required quantity of decimal numbers can be converted and stored. All parameters regarding the type of conversion must be input alongside the data.
+\texttt{J2-10.0} reads data into the computer for use by a main program. The data, provided in decimal notation, is read in, converted to binary, shifted to the desired fractional bit position ($q$), and stored in designated memory locations. During each program execution run, the required quantity of decimal numbers can be converted and stored. All parameters regarding the type of conversion must be input alongside the data.
 
 Data Input 1 functions as a subroutine and is called via a calling sequence in the main program. Before a jump to the subroutine occurs, the calling sequence must store the return address within the subroutine.
 
@@ -109,7 +109,7 @@ Any arithmetic overflow conditions occurring during data entry or base conversio
 \label{sec:data-input-2}
 
 \subsubsection*{PURPOSE}
-Program J2-10.1 reads data into the computer for use by a main program. The decimal data is read, converted to binary, shifted to the desired fractional bit position ($q$), and, if more than one number is processed, stored in consecutive designated cells. If only a single number is read, it remains in the accumulator after being shifted to its corresponding $q$. Any number of decimal values can be converted and stored via a single program call. The main program must supply all configuration parameters regarding the conversion.
+\texttt{J2-10.1} reads data into the computer for use by a main program. The decimal data is read, converted to binary, shifted to the desired fractional bit position ($q$), and, if more than one number is processed, stored in consecutive designated cells. If only a single number is read, it remains in the accumulator after being shifted to its corresponding $q$. Any number of decimal values can be converted and stored via a single program call. The main program must supply all configuration parameters regarding the conversion.
 
 This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store both the starting address of the **Conversion Control List** and the return address inside the subroutine structure. Upon return to the main program, all data will have been converted and either stored in memory or left in the accumulator.
 
@@ -312,7 +312,7 @@ To maintain maximum mathematical accuracy and prevent underflow or truncation er
 \label{sec:data-input-3}
 
 \subsubsection*{PURPOSE}
-Program J2-10.2 converts a single signed 7-digit decimal number into binary, or reads and converts it in a single operation. 
+\texttt{J2-10.2} converts a single signed 7-digit decimal number into binary, or reads and converts it in a single operation. 
 
 This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store the return address within the subroutine structures. Depending on the calling sequence chosen, the integer to be converted must already reside in the accumulator. Upon return to the main program, the converted binary number is left in the accumulator at $q=30$.
 
@@ -410,7 +410,7 @@ Upon return to the main program sequence, the converted binary representation of
 \label{sec:data-input-4}
 
 \subsubsection*{PURPOSE}
-Program J2-10.3 reads data into the computer for use by a main program. It reads a predetermined number of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters regarding the conversion must be supplied by the main program.
+\texttt{J2-10.3} reads data into the computer for use by a main program. It reads a predetermined number of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters regarding the conversion must be supplied by the main program.
 
 The program functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the starting address of the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted to binary and stored.
 
@@ -547,7 +547,7 @@ To maintain maximum mathematical accuracy, the smallest practical scale factor v
 \label{sec:data-input-5}
 
 \subsubsection*{PURPOSE}
-Program J2-10.4 reads data into the computer for use by a main program. It reads an indefinite quantity of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters controlling the conversion must be supplied by the main program.
+\texttt{J2-10.4} reads data into the computer for use by a main program. It reads an indefinite quantity of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters controlling the conversion must be supplied by the main program.
 
 Data Input 5 functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the subroutine with the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted and stored.
 

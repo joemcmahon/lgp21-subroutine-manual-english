@@ -4,7 +4,7 @@
 \label{sec:alphanumeric-output-1}
 
 \subsubsection*{PURPOSE}
-Program J4-11.0 translates keywords and handles their output as alphabetic and/or numeric text. The alphanumeric text must be stored by the main program in a 4-bit character encoding format. It consists of a group of words composed of special codes corresponding to the characters and functions of the typewriter. The amount of data to be stored for J4-11.0 is limited only by the available memory space. The information must be stored in ascending sequence in consecutive memory cells.
+\texttt{J4-11.0} translates keywords and handles their output as alphabetic and/or numeric text. The alphanumeric text must be stored by the main program in a 4-bit character encoding format. It consists of a group of words composed of special codes corresponding to the characters and functions of the typewriter. The amount of data to be stored for J4-11.0 is limited only by the available memory space. The information must be stored in ascending sequence in consecutive memory cells.
 
 J4-11.0 operates as a subroutine. It is called by a calling sequence in the main program. Before jumping to the subroutine, the starting address of the data block to be output must be stored within the subroutine. The memory locations following the jump instruction must contain the control keywords. Upon return to the main program, the output operation has already been executed.
 
@@ -144,7 +144,7 @@ Upon execution return to the main program context, the alphanumeric string array
 \addcontentsline{toc}{subsection}{ALPHANUMERIC OUTPUT 2 --- J4-11.1}
 
 \subsubsection*{PURPOSE}
-The program J4-11.1 outputs alphabetic and/or numeric information that has been stored without binarization (i.e., stored as raw character codes). The alphanumeric data must be stored as \textbf{five-character-long words in 6-bit format}. A data block for J4-11.1 must not exceed 63 cells. The data must be stored in consecutive memory cells.
+\texttt{J4-11.1} outputs alphabetic and/or numeric information that has been stored without binarization (i.e., stored as raw character codes). The alphanumeric data must be stored as \textbf{five-character-long words in 6-bit format}. A data block for J4-11.1 must not exceed 63 cells. The data must be stored in consecutive memory cells.
 
 The program operates as a subroutine called by a calling sequence from the main program. The starting address of the data block must be supplied to the subroutine before entry. Upon return to the main program, the specified information has already been printed.
 
