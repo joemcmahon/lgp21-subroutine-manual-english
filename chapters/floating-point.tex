@@ -1037,7 +1037,7 @@ All exponents are strictly maintained at $q = 29$. The physical stopcode trailin
 The processing loop for the second data group is terminated by a single stop-code just as Group 1 was. Note the \emph{second} stopcode, which serves to signal the interpreter that input is complete and execution may continue.
 
 \medskip
-\textbf{Special case:} Please note that any number meant to be input as a literal value of zero \emph{must} be explicitly encoded and punched onto the tape as \texttt{0'} rather than as just a stopcode (\texttt{'})\footnote{This is different from other input routines, particularly the \ref{J1-10.0} loader.}. Explicitly entering the zero values is necessary to allow the input routine to differentiate a true numerical zero from a structural group-termination/input-termination command.
+\textbf{Special case:} Please note that any number meant to be input as a literal value of zero \emph{must} be explicitly encoded and punched onto the tape as \texttt{0'} rather than as just a stopcode (\texttt{'})\footnote{This is different from other input routines, particularly the Program Input 1 (Section~\ref{sec:PIRloader}) loader.}. Explicitly entering the zero values is necessary to allow the input routine to differentiate a true numerical zero from a structural group-termination/input-termination command.
 
 \subsubsection*{OUTPUT}
 The output format works to make the numbers a consistent size on the page, and to have a consistent format. Each number has:

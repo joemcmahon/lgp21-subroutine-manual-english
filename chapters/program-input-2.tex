@@ -153,7 +153,7 @@ The selection codes must be specified in decimal track/sector notation \texttt{T
 
 Tapes to be read by the program should be capable of being typed out on the typewriter; that is, a carriage return should occur after every four to eight words\footnote{Data tapes should contain a carriage return (CR) after every four to eight words simply because of the mechanical realities of working with a hardware Flexowriter as console. If a continuous stream of data was read off a tape without embedded carriage returns, the physical typing element would reach the end of its travel at the right margin and continue to push against the margin as more characters are printed. This both imposes mechanical strain and overprints the input as an unreadable mess of characters at the edge of the log sheet.}.
 
-If incorrect information is read, the program selects the console typewriter\footnote{Automatically reverting control back to the primary console upon start/restart at $0000$ or after an error stop is a fail-safe. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up; it immediately brings the main console back online so the operator can see the error state and intervene.}, prints \texttt{err}, and halts. See ``Error Stops''.\ref{subsec:PIRerrors}
+If incorrect information is read, the program selects the console typewriter\footnote{Automatically reverting control back to the primary console upon start/restart at $0000$ or after an error stop is a fail-safe. If an external high-speed paper tape reader or secondary device feeds malformed data or fails mid-transfer, the system won't lock up; it immediately brings the main console back online so the operator can see the error state and intervene.}, prints \texttt{err}, and halts. See ``Error Stops'' (Section~\ref{subsec:PIRerrors}).
 \end{itemize}
 
 \subsubsection*{PROGRAM EXECUTION}
@@ -229,7 +229,8 @@ If an input unit other than the typewriter's paper tape reader is to be selected
 \end{tabularx}
 \end{center}
 
-\subsubsection*{ERROR STOPS} 
+\subsubsection*{ERROR STOPS}
+\label{subsec:PIRerrors}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 \toprule

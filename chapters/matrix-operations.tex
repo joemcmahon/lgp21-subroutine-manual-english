@@ -46,7 +46,7 @@ The input variables are the individual elements of an $N \times N$ matrix, store
 Although storing the original matrix elements inherently requires only $N^2$ memory locations, a continuous block of $N^2 + N$ sequential memory cells starting at base address $M$ is strictly required for execution workspace.\footnote{The matrix inversion is implemented using a Gauss-Jordan elimination algorithm that requires a one-column working vector to track pivoting operations and column swaps as it performs the inversion in-place.}
 
 
-Prior to executing the branch to the subroutine, the starting address of the Interpretive System \ref{sec:interpretiveSystem} must be stored into memory location \texttt{L+163}, where \texttt{L} represents the starting address of the Matrix Inversion code. This initialization can be performed manually by the operator immediately after loading the subroutine tape, or it may be handled programmatically by initialization instructions within the main program.
+Prior to executing the branch to the subroutine, the starting address of the Interpretive System (see Section~\ref{subsec:complex_interpreter}) must be stored into memory location \texttt{L+163}, where \texttt{L} represents the starting address of the Matrix Inversion code. This initialization can be performed manually by the operator immediately after loading the subroutine tape, or it may be handled programmatically by initialization instructions within the main program.
 
 \subsubsection*{CALLING SEQUENCE}
 The calling sequence must provide the following parameters:
@@ -130,7 +130,7 @@ In a classic Gauss-Jordan implementation, you aren't just clearing elements belo
 
 If a pivot element becomes very small (usually due to an earlier subtractive cancellation), dividing the rest of the row by that tiny pivot scales up any existing truncation errors dramatically. When that row is subsequently subtracted from all the other rows, that amplified noise propagates through the entire matrix.
 
-\ref{sec:D1-11.0} uses a couple of techniques to help prevent this:
+Matrix Inversion 1 (Section~\ref{subsec:matrix_inversion_1}) uses a couple of techniques to help prevent this:
 \begin{itemize}
 	
 \item \textbf{Partial Pivoting}: The routine scans down the current column to find the element with the largest absolute magnitude and swaps that row to the pivot position. This ensures that you are always dividing by the largest possible number, keeping the multipliers less than or equal to 1.0, which drastically decreases error amplification.
@@ -235,7 +235,7 @@ The individual elements of the calculated product vector are saved sequentially 
 The subroutine relies heavily on the Interpretive System for processing all floating-point vector math. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is handed back to the main program in native hardware execution mode.
 
 \subsubsection*{TRANSLATOR'S NOTE}
-This is the first function to use the extended calling sequence that looks like this, documented at \ref{}.
+This is the first function to use the extended calling sequence that looks like this, documented at Section~\ref{subsec:standard-call2}.
 
 Speculating slightly, because I have not seen/dumped the code in question, this is my best guess on how it works.
 \begin{itemize}
@@ -305,7 +305,7 @@ A template for the calling sequence is illustrated below, where \texttt{$L_0$} d
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
 $\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}      & \texttt{$L_0$}   & Store parameter keyword tracking address in subroutine.\footnote{\textbf{Translator's note:} As discussed at \ref{jump-to-return-what}, the \texttt{R} calculates the location $\alpha+2$, effectively the parameter list address, and embeds it into the instruction at \texttt{$L_0$}. The jump to the subroutine executes a \texttt{B} which loads the address of the parameters, adds an offset of $+8$ to compute the final return address, and saves it locally to properly do the return.} \\
+$\alpha$          & \texttt{R}      & \texttt{$L_0$}   & Store parameter keyword tracking address in subroutine.\footnote{\textbf{Translator's note:} As discussed at Section~\ref{subsec:standard-call2}, the \texttt{R} calculates the location $\alpha+2$, effectively the parameter list address, and embeds it into the instruction at \texttt{$L_0$}. The jump to the subroutine executes a \texttt{B} which loads the address of the parameters, adds an offset of $+8$ to compute the final return address, and saves it locally to properly do the return.} \\
 $\alpha + 1$      & \texttt{U}      & \texttt{$L_0$}   & Unconditional branch to subroutine entry. \\
 $\alpha + 2$      & \texttt{Z}      & \texttt{$F_0$}   & Starting address of the Interpretive System. \\
 $\alpha + 3$      & \texttt{Z}      & \texttt{A}       & Starting address of matrix $A$. \\
