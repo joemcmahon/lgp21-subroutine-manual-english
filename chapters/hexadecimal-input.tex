@@ -1,16 +1,14 @@
 \section{Hexadecimal Input}
-\section*{HEXADECIMAL INPUT 3 J5-10.0}
+\subsection*{HEXADECIMAL INPUT 3 --- J5-10.0}
 
-\subsection*{PURPOSE}
+\subsubsection*{PURPOSE}
 The program J5-10.0 reads and stores hexadecimal tapes that were produced by the program Hexadecimal Output 3 (J4-10.2). Only full tracks can be stored, up to the limit of storage space available. The program is optimized for high-speed reading.
 
-\subsection*{STORAGE REQUIREMENTS}
-\begin{itemize}
-\item[] \textbf{Memory used:} 3 tracks
-\item[] \textbf{Temporary storage:} none
-\end{itemize}
+\subsubsection*{STORAGE REQUIREMENTS}
+\textbf{Memory used:} 3 tracks \\
+\textbf{Temporary storage:} none
 
-\subsection*{INPUT}
+\subsubsection*{INPUT}
 After a jump to the starting address of the program, the computer selects the typewriter and requests the identification code for the input unit to be used by the program. Use (\texttt{0000} for the high-speed reader or \texttt{0200} for the Flexowriter reader). Enter the corresponding word in hexadecimal notation and press \textsf{START}.
 
 The program reads tapes in a special hexadecimal word format. The words must be arranged in groups of 64, with each group corresponding to one track. Each group must be preceded by a four-character hexadecimal input command of the form \texttt{tt00}, whereby \texttt{tt} represents the track number. Each group must also be followed by a checksum of all the words in the group.
@@ -24,13 +22,13 @@ The subroutine is capable of accepting a Stop and Jump'' command of the form \te
 
 J5-10.0 performs a check sum of the input as it is read. After each full track, this checksum is compared with the one on the tape following the block. If the checksums match, reading continues. If not, the program prints a carriage return and \texttt{e} is printed, and stops (see error stops).
 
-\subsection*{CALLING SEQUENCE}
+\subsubsection*{CALLING SEQUENCE}
 The program is run by executing by a jump to its starting address. If the program has only just been read in, pressing \textsf{START} runs it.
 
-\subsection*{OUTPUT}
+\subsubsection*{OUTPUT}
 The program to be read in is stored on the specified tracks in the correct sequence. No other output.
 
-\subsection*{OPERATION}
+\subsubsection*{OPERATION}
 \begin{itemize}
 \item \textbf{Time requirement:} approx. 13 sec. for the input of one track.
 \item \textbf{Program input:} \
@@ -81,10 +79,10 @@ The input unit is selected by a suitable selection code at the beginning of the 
 \end{tabular}
 \end{table}
 
-\subsection*{REMARK}
+\subsubsection*{REMARKS}
 The program should be loaded in an even-numbered track, so that the reading-in occurs optimally.
 
-\subsection*{ADDENDUM}
+\subsubsection*{ADDENDUM}
 The tape ``Hexadecimal Input 3'' in arbitrarily relocatable hexadecimal version with Track-00- or Track-63-bootstrap, can be patched so that it can be stored at the beginning of a program tape. After the following alterations, the program will automatically select the same input unit it was read on for its own input.
 
 \begin{verbatim}
