@@ -303,41 +303,19 @@ The subroutine exits the Interpretive System on its own before returning, so con
 \label{subsec:matrix_addition_subtraction_1}
 
 \subsubsection*{PURPOSE}
-The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-14.0} adds or subtracts two matrices $A$ and $B$ and stores the resulting product matrix in a designated memory area. 
+\texttt{D1-14.0} adds or subtracts two $i \times j$ matrices $A$ and $B$ using the Floating-Point Interpretive System 1 (\texttt{H1-11.0}), storing the result in a third memory area. The matrices don't need to be square; $i$ and $j$ must each be less than 64. The two inputs and the destination must all fit in available memory.
 
-The input consists of the elements of both matrices, each having $i$ rows and $j$ columns. All data must be supplied in floating-point format. The matrices do not need to be square. The dimensions $i$ and $j$ must both be strictly less than 64. The cumulative number of elements across matrices $A$, $B$, and the output matrix must not exceed the available memory space.
-
-\noindent
-``Matrix Addition and Subtraction 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
-\begin{enumerate}
-	\item the starting address of the Interpretive System,
-	\item the dimensions and starting addresses of the matrices,
-	\item the arithmetic operation desired (addition or subtraction), and
-	\item the starting memory address of the storage area for the destination matrix. 
-\end{enumerate}
-\noindent
-Upon return to the main program, the resulting matrix resides in the designated locations.
+Matrix Addition and Subtraction 1 is called as a subroutine. Exit the Interpretive System (with an \texttt{E} instruction) before the call. The calling sequence supplies the interpreter's starting address, the matrix dimensions and starting addresses, the desired operation (add or subtract), and the destination address. On return, the result occupies the destination.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Space:} 1 track (64 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are the individual elements of the two matrices $A$ and $B$, each containing $i$ rows and $j$ columns. The elements of both matrices must be stored identically—either both in row-major order or both in column-major order—in consecutive locations.\footnote{This is significantly more flexible than the Matrix Multiplication routine (\texttt{D1-13.0}). Because addition and subtraction are purely element-by-element operations, the subroutine doesn't actually care about row vs. column orientation, as long as both inputs share the exact same structure. The execution loop simply scans linearly across both matrices.} This means that the first element of the second row immediately follows the last element of the first row (if stored row-by-row), or the first element of the second column immediately follows the last element of the first column (if stored column-by-column).
-
-\noindent
-The data must comply with the floating-point layout required by Interpretive System 1. The matrices must be of identical dimensions. The values $i$ and $j$ must both be strictly less than 64. Although storing the input matrix elements inherently requires only $2(ij)$ sectors, a continuous block of $3(ij)$ locations is required across the system to accommodate both inputs and the resulting workspace.
+The inputs are matrices $A$ and $B$, both $i \times j$ and in identical layouts --- both row-major or both column-major.\footnote{This is significantly more flexible than the Matrix Multiplication routine (\texttt{D1-13.0}). Because addition and subtraction are purely element-by-element operations, the subroutine doesn't actually care about row vs. column orientation, as long as both inputs share the exact same structure. The execution loop simply scans linearly across both matrices.} Both must be in Floating-Point Interpretive System 1 format, with $i$ and $j$ each less than 64. The matrices and the destination together require $3(ij)$ locations of memory in total.
 
 \subsubsection*{CALLING SEQUENCE}
-The following information must be supplied by the calling sequence in the exact sequential order specified below:
-\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $F_0$: The starting address of the Interpretive System in decimal track/sector notation.
-    \item $A$: The starting address of matrix $A$ in decimal track/sector notation.
-    \item The size of the matrices, with row count $i$ formatted as a decimal track address and column count $j$ formatted as a decimal sector address.
-    \item The instruction \texttt{A} or \texttt{S}, depending on whether addition or subtraction is desired. This operation symbol is written directly in the instruction field; the starting address of matrix $B$ is specified in the address field of the exact same word.\footnote{Another memory-saving optimization: instead of wasting an entire word on an operation flag or setting up a parsing branch, the subroutine reads this parameter word at $\alpha+5$ and injects it directly into its internal math loop as an executable instruction; the address of the second matrix $B$ is \emph{also} packed into this instruction; the instruction (\texttt{A} for Add, \texttt{S} for Subtract) is executed dynamically against the current matrix address via self-modifying code.}
-    \item $C$: The starting address of the destination storage area for the resulting matrix in decimal track/sector notation.
-\end{enumerate}
-A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of ``Matrix Addition and Subtraction 1''.
+The calling sequence supplies, in order: the Interpretive System's starting address $F_0$, the starting address of matrix $A$, the matrix dimensions (rows $i$ as the track part, columns $j$ as the sector part), the operation word --- an \texttt{A} or \texttt{S} opcode with $B$'s starting address as its operand\footnote{Another memory-saving optimization: instead of wasting an entire word on an operation flag or setting up a parsing branch, the subroutine reads this parameter word at $\alpha+5$ and injects it directly into its internal math loop as an executable instruction; the address of the second matrix $B$ is \emph{also} packed into this instruction; the instruction (\texttt{A} for Add, \texttt{S} for Subtract) is executed dynamically against the current matrix address via self-modifying code.} --- and the destination address $C$. All addresses are in decimal track/sector notation. A template calling sequence (with \texttt{$L_0$} the subroutine's base address) is shown below.
 
 \medskip
 \begin{table}[h!]
@@ -364,7 +342,7 @@ $\alpha + 7$      & ---              & ---              & Return to main program
 The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction.
 
 \subsubsection*{OUTPUT}
-The individual elements of the resulting matrix $C_{ij}$ are saved in floating-point format in consecutive locations, beginning at address $C$.
+The result is written in floating-point format to consecutive locations starting at $C$, $ij$ elements total.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -384,9 +362,9 @@ The individual elements of the resulting matrix $C_{ij}$ are saved in floating-p
 \end{enumerate}
 
 \subsubsection*{REMARKS}
-The subroutine relies internally on the Interpretive System to process all floating-point math steps. The subroutine internally enables and disables the interpreter prior to returning control to the main program; control is returned in native hardware mode.
+The subroutine exits the Interpretive System on its own before returning, so control comes back to the main program in native (fixed-point) mode.
 
-Either matrix $A$ or $B$ may be updated in place if desired. If an independent destination area is chosen, its memory bounds must not overlap with either $A$ or $B$.
+The destination can be matrix $A$, matrix $B$, or a separate region. If you use a separate region, its memory range must not overlap with $A$ or $B$.
 \newpage
 
 \subsection*{MATRIX TRANSPOSITION 1 --- D1-15.0}
