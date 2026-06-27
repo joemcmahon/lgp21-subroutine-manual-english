@@ -1,5 +1,6 @@
 \section{Sorting}
 \subsection*{SORTING 1 --- L1-10.0}
+\addcontentsline{toc}{subsection}{SORTING 1 --- L1-10.0}
 
 \subsubsection*{PURPOSE}
 The program L1-10.0 sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. The sorted numbers are stored in the same memory region as the unsorted ones, so no additional memory space is required. The mask determines which parts of the words are compared.
@@ -90,6 +91,7 @@ The instruction in 1011 brings $1500$ at $@29$ into the accumulator; the instruc
 \pagebreak
 
 \subsection*{SORTING 2 --- L1-10.1}
+\addcontentsline{toc}{subsection}{SORTING 2 --- L1-10.1}
 
 \subsubsection*{PURPOSE}
 The program L1-10.1 sorts one-word or multi-word ``intervals'' [records] within a contiguous memory region by magnitude (smallest value to largest value) according to a designated ``sorting key word'' located within each respective record. Each record can be 1 to 64 words long. An additional memory region is required to temporarily buffer record contents during the sorting process. Sorting occurs relative to an arbitrary mask.
@@ -428,6 +430,7 @@ Sample printouts follow, showing what both calling sequences achieve.
 \newpage
 
 \subsection*{SORTING 3 --- L1-10.2}
+\addcontentsline{toc}{subsection}{SORTING 3 --- L1-10.2}
 
 \subsubsection*{PURPOSE}
 The program L1-10.2 sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. Although the sorted numbers are written back to their original memory region, additional buffer cells are required. The mask determines which parts of the words are compared.
@@ -514,6 +517,7 @@ The contents of cells 1514 to 1645 are to be sorted by magnitude, considering on
 Please note that during sorting, only those bit positions that correspond to ``1'' bits in the mask are compared.
 \pagebreak
 \subsection*{SORTING 4 --- L1-10.3}
+\addcontentsline{toc}{subsection}{SORTING 4 --- L1-10.3}
 
 \subsubsection*{PURPOSE}
 The program L1-10.3 sorts single-word or multi-word ``intervals'' [records]. In a list of single-word records, every word is treated as a comparison word [key]. In a list of multi-word records, any arbitrary word at the same position across all records can be designated as the comparison key word.
