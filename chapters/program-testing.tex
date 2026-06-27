@@ -74,12 +74,12 @@ Print the content of the cells between the starting and ending address in instru
 Search the memory between the starting and ending address for a specific address. The addresses signify, in order: starting address, ending address, address to be searched for. The found address and the alphabetic designation of the instruction are printed out. The search continues until the entire region has been searched. If the address is found multiple times, a new line is taken for each printout. After the search is finished, a carriage return is executed. The example would search cells \texttt{1645} to \texttt{3706} for the address \texttt{2204}.
 
 \item \texttt{C}
-\textbf{Example:} \texttt{C2101'2110'F3F3F3F2'} [sic]\footnote{Architectural Note: The input string \texttt{F3F3F3F2} contains the illegal character `\texttt{F}' relative to the native LGP-21 hexadecimal character set (\texttt{0 1 2 3 4 5 6 7 8 9 f g j k q w}). In native notation, `\texttt{f}' represents the decimal value 10, but a standard capitalized typography literal `\texttt{F}' conflicts with lower-case execution syntax mapping.} \\
+\textbf{Example:} \texttt{C2101'2110'F3F3F3F2'} \\
 Fill the region between the starting and ending address with a specific bit configuration. Upon completion, a carriage return and a jump to the starting address of the subroutine are executed. The bit configuration must be specified as a hexadecimal word. 
 
-The example would fill the cells from \texttt{2101} to \texttt{2110} with the bit configuration $[1010001110100011101000111010001]$ [sic]\footnote{Architectural Note: The literal binary pattern explicitly typed in the German text contains only 31 bits. As stated in the manual text itself, a full LGP-21 register word contains 32 bits, meaning the least significant bit is lost during truncation.}.
+The example would fill the cells from \texttt{2101} to \texttt{2110} with the bit configuration $[1010001110100011101000111010001]$.
 
-\textbf{Note:} Since a memory word is 31 bits long [sic]\footnote{Architectural Note: The LGP-21 hardware tracking word is technically 32 bits including sign and trailing spacer guards. The manual text says ``31 Bits'' here to emphasize the active data-carrying magnitude payload under certain shifts.}, the last bit would be lost.
+\textbf{Note:} Since a memory word is 31 bits long\footnote{The LGP-21 word is 32 bits including the sign bit; the original German text refers to the 31 magnitude bits.}, the last bit would be lost.
 
 \item \texttt{T}
 \textbf{Example:} \texttt{T1000} \\
@@ -87,7 +87,7 @@ Halt and, after pressing ``Start'', jump to the specified address. The jump addr
 
 \item \texttt{R}
 \textbf{Example:} \texttt{R3663} \\
-Set a return instruction (\texttt{U}) into the specified cell of the subroutine [sic]\footnote{Architectural Note: The German text states ``des Unterprogramms'' (of the subroutine), but contextually implies that the trap instruction is inserted into a cell of the \textit{main program under test} so that execution traps back to the debugger subroutine.}. If the jump is encountered during operation, the original content is stored back into the cell, and a jump to the starting address of the subroutine occurs. If the original content is not stored back into the cell because the jump was not encountered, a jump to this cell causes the re-insertion of the original content into it. Do not set a return instruction if a previous one has not been undone. The example would store a return instruction in cell \texttt{3663}.
+Set a return instruction (\texttt{U}) into the specified cell of the subroutine. If the jump is encountered during operation, the original content is stored back into the cell, and a jump to the starting address of the subroutine occurs. If the original content is not stored back into the cell because the jump was not encountered, a jump to this cell causes the re-insertion of the original content into it. Do not set a return instruction if a previous one has not been undone. The example would store a return instruction in cell \texttt{3663}.
 
 \item \texttt{SS}
 \textbf{Example:} \texttt{SS1230'} \\

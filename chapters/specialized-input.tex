@@ -2,7 +2,7 @@
 \subsection*{DIRECTION OR ANGLE INPUT AND OUTPUT 1 --- J9-11.0}
 
 \subsubsection*{PURPOSE}
-The program J9-11.0 reads or prints a positive or negative angle, or a direction, consisting of the specification of the quadrant and a positive angle. All angles must be smaller than $512^\circ$, and direction angles must not be greater than $90^\circ$ [sic]\footnote{Architectural Note: The German text states `Richtungswinkel dürfen nicht größer als 600 sein'' (direction angles must not be greater than 600) in the Purpose section, but explicitly contradicts this later under Input, stating `Die Winkelangaben bei Richtungen dürfen nicht größer als $90^\circ$ sein'' (The angle specifications for directions must not be greater than $90^\circ$). In LGP-21 quadrant geometry, $90^\circ$ is the correct architectural limit. The `600' is a typographical error in the original manual, likely a misprint of $90^\circ$ or $60^\circ$ on a standard typewriter.}. The entered angle or peak circle [vertex circle] of the direction is binarized and placed into the accumulator.
+The program J9-11.0 reads or prints a positive or negative angle, or a direction, consisting of the specification of the quadrant and a positive angle. All angles must be smaller than $512^\circ$, and direction angles must not be greater than $90^\circ$\footnote{The German text here says ``600'' rather than $90^\circ$, but the Input section below correctly gives $90^\circ$, so I've used that value here. Since directions specify a quadrant plus an angle within it, $90^\circ$ is the right limit.}. The entered angle or peak circle [vertex circle] of the direction is binarized and placed into the accumulator.
 
 The printing of an angle occurs in decimal notation in degrees and minutes, each followed by a dash, and in seconds, accurate up to one-tenth of a second. For a direction, the angle is printed in the same way, except that a character \texttt{N} (North) or \texttt{S} (South) precedes it and a character \texttt{E} (East) or \texttt{W} (West) follows it.
 
@@ -18,7 +18,7 @@ The input for the program consists of one of the two following possibilities:
 \item A positive angle in decimal notation in degrees, minutes, and seconds.
 \item A direction, consisting of the characters \texttt{S} or \texttt{N}, a positive angle in decimal notation in degrees, minutes, seconds, and the characters \texttt{E} or \texttt{W}.
 \end{enumerate}
-Each value must be specified as one word; e.g.: \texttt{1422038'} to specify an angle of $142^\circ 20' 38''$; \texttt{S204010W} to specify the direction $\text{SW } 20^\circ 40' 10''$; or \texttt{N000342E} to specify the direction $\text{NE } 0^\circ 3' 42''$ [sic]\footnote{Architectural Note: The text contains minor typos in the symbols used for arcminutes and arcseconds (using various configurations of apostrophes such as $38'$ for seconds or $5120$ instead of $512^\circ$). These are structural transcription discrepancies native to the German source manuscript type-setting.}.
+Each value must be specified as one word; e.g.: \texttt{1422038'} to specify an angle of $142^\circ 20' 38''$; \texttt{S204010W} to specify the direction $\text{SW } 20^\circ 40' 10''$; or \texttt{N000342E} to specify the direction $\text{NE } 0^\circ 3' 42''$.
 
 The angle specification can be at most seven digits; leading zeros on the left may be omitted. All angles must be smaller than $512^\circ$. Every direction specification must consist of eight characters; for vanishing quantities, the zeros must be written out completely; algebraic signs are not specified. The angle specifications for directions must not be greater than $90^\circ$.
 
@@ -29,47 +29,47 @@ In the subroutine, three calling sequences are provided: 1. for input, 2. for an
 Intended for reading in an angle or a direction.
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha$   & \texttt{R} & $L_0 + 47$  & Store return address in the subroutine. \\
-$+1$       & \texttt{U} & $L_0$       & Entry into the subroutine. \\
-$+2$       &            & \textit{etc.} & Return to the main program. \\
+$\alpha$ & \texttt{R} & $L_0 + 47$ & Store return address in the subroutine. \\
+$+1$     & \texttt{U} & $L_0$      & Entry into the subroutine. \\
+$+2$     &            & \textit{etc.} & Return to the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \subsubsection*{2. Angle Output:}
 Intended for printing an angle. The angle must reside in the accumulator at $q = 9$ before the jump into the subroutine occurs.
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha - 1$ & \texttt{B} & $\Gamma$ [sic]\footnote{Architectural Note: The character $\Gamma$ appears in the original manual text as a placeholder address variable for the location of the angle data word.} & Bring the angle into the accumulator. \\
+$\alpha - 1$ & \texttt{B} & \texttt{[angle]} & Bring the angle into the accumulator. \\
 $\alpha$     & \texttt{R} & $L_0 + 249$ & Store return address in the subroutine. \\
 $+1$         & \texttt{U} & $L_0 + 100$ & Entry into the subroutine. \\
 $+2$         &            & \textit{etc.} & Return to the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \subsubsection*{3. Direction Output:}
 Intended for printing a direction. The peak circle of the direction must reside in the accumulator at $q = 9$ when the jump into the subroutine occurs.
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
 $\alpha - 1$ & \texttt{B} & \texttt{C3} & Bring peak circle into the accumulator. \\
 $\alpha$     & \texttt{R} & $L_0 + 219$ & Store return address in the subroutine. \\
-$+1$         & $\pi$ [sic]\footnote{Architectural Note: The instruction column uses the Greek letter $\pi$ here, which is a structural typo in the original German text for the standard LGP unconditional jump command \texttt{U} (or long-form symbol $\mathbf{u}$), as correctly identified in sequences 1 and 2.} & $L_0 + 200$ & Entry into the subroutine. \\
+$+1$         & \texttt{U} & $L_0 + 200$ & Entry into the subroutine. \\
 $+2$         &            & \textit{etc.} & Return to the main program. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 In the calling sequences 2 and 3, the instruction in $\alpha-1$ does not need to be a \texttt{B} instruction. Any instruction sequence that brings the quantity to be outputted at $q = 9$ into the accumulator is permissible. In all calling sequences, the instruction in $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction in $\alpha+1$ effects a jump to the corresponding location of the subroutine. In $\alpha+2$ stands the instruction of the main program that is executed first after running through the subroutine.

@@ -19,7 +19,7 @@ After a jump to the starting address of K2-10.0, the computer requests the follo
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{lp{10cm}}
+\begin{tabularx}{\textwidth}{lX}
 \toprule
 \textbf{Question} & \textbf{Answer} \\
 \midrule
@@ -28,14 +28,14 @@ After a jump to the starting address of K2-10.0, the computer requests the follo
 \texttt{wrds} & The number of words to be printed in one line (only becomes effective if PS-4 is ON) as two decimal digits. \\
 \texttt{skip} & The number of blank lines between two pages as a two-digit decimal number. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \textbf{Note:} The above answers must consist of two digits: zero must be entered as ``\texttt{00}''. The blank lines between pages are output when either the full number of memory addresses has been printed, or when the number of outputted lines plus ``\texttt{skip}'' equals ``\texttt{lins}''.
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{lp{10cm}}
+\begin{tabularx}{\textwidth}{lX}
 \toprule
 \textbf{Question} & \textbf{Answer} \\
 \midrule
@@ -47,7 +47,7 @@ After a jump to the starting address of K2-10.0, the computer requests the follo
 \midrule
 \texttt{pnch} & The boundaries of the output region as one word in decimal track/sector notation (i.e., \texttt{TTSSTTSS}). \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \textbf{Note:} In all address specifications, the second address must be higher than the first.
@@ -86,28 +86,23 @@ Memory is dumped in ascending location order. The program sense switches can be 
     \item \textbf{Program sense switches:}
     \begin{table}[h!]
     \centering
-    \begin{tabular}{ccl}
+    \begin{tabularx}{\textwidth}{ccX}
     \toprule
     \textbf{Switch} & \textbf{Position} & \textbf{Function} \\
     \midrule
-    \textsf{PS-4}  & \textsf{ON}  & Prints an address (minus modifier) and a predetermined number of words per line. \\
-          &     & Key words for hexadecimal input are not counted. \\
-          & \textsf{OFF} & Prints an address and its content per line. \\
-          &     & A key word for hexadecimal input is counted as one line. \\
+    \textsf{PS-4}  & \textsf{ON}  & Prints an address (minus modifier) and a predetermined number of words per line. Key words for hexadecimal input are not counted. \\
+                   & \textsf{OFF} & Prints an address and its content per line. A key word for hexadecimal input is counted as one line. \\
     \midrule
-    \textsf{PS-8}  & \textsf{ON}  & Jump to the starting address of the subroutine and request new parameters \\
-          &     & when the next word is output. \\
-          & \textsf{OFF} & No effect. \\
+    \textsf{PS-8}  & \textsf{ON}  & Jump to the starting address of the subroutine and request new parameters when the next word is output. \\
+                   & \textsf{OFF} & No effect. \\
     \midrule
     \textsf{PS-16} & \textsf{ON}  & Halt after the output of each word. Continuation after pressing ``Start''. \\
-          & \textsf{OFF} & No effect. \\
+                   & \textsf{OFF} & No effect. \\
     \midrule
-    \textsf{PS-32} & \textsf{ON}  & The computer uses the page format from the previous run, or if the program \\
-          &     & was only just read in, the page format native to the original program. \\
-          &     & (i.e., the first four questions and answers are omitted). \\
-          & \textsf{OFF} & Computer requests page format specifications. \\
+    \textsf{PS-32} & \textsf{ON}  & The computer uses the page format from the previous run, or if the program was only just read in, the page format native to the original program (i.e., the first four questions and answers are omitted). \\
+                   & \textsf{OFF} & Computer requests page format specifications. \\
     \bottomrule
-    \end{tabular}
+    \end{tabularx}
     \end{table}
 \end{enumerate}
 
@@ -128,7 +123,7 @@ K2-10.0 can be patched to suppress the output of the memory addresses; this prod
 \toprule
 \textbf{In Cell} & \textbf{Replace} & \textbf{By} \\
 \midrule
-\texttt{B[$L_0$ + 0242]} [sic]\footnote{Architectural Note: The text states ``Ersetze in Zelle B[L+0242]'' which structures the instruction token dynamically inside the location syntax column. It denotes cell location \texttt{$L_0$ + 0242} with a command parameter of \texttt{B}.} & \texttt{$L_0$ + 0234} & \texttt{U[$L_0$ + 0241]} \\
+\texttt{B[$L_0$ + 0242]} & \texttt{$L_0$ + 0234} & \texttt{U[$L_0$ + 0241]} \\
 \bottomrule
 \end{tabular}
 \end{table}
