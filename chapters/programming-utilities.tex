@@ -1,8 +1,7 @@
 \section{Programming Utilities}
-\subsection{LOOP COUNTER 1}
-\subsubsection*{L8-10.0}
+\subsection*{LOOP COUNTER 1 --- L8-10.0}
 
-\subsection*{PURPOSE}
+\subsubsection*{PURPOSE}
 L8-10.0 simulates an index register for the LGP-21. It does this by incrementing the operand addresses of marked instructions, executing a designated sequence of instructions a predetermined number of times, and restoring the modified operand addresses back to their original values. The designated addresses are incremented by 1 before each pass through the loop, and all instructions within the designated loop are executed during every iteration.
 
 The routine is invoked via a subroutine call from the main program. The calling sequence must supply:
@@ -12,13 +11,11 @@ The routine is invoked via a subroutine call from the main program. The calling 
 \end{enumerate}
 \noindent Upon returning to the main program, the specified number of passes will have been completed, and all addresses in the instructions thatwere incremented are safely restored to their initial values.
 
-\subsection*{STORAGE REQUIREMENTS}
-\begin{itemize}
-    \item[] \textbf{Memory used:} 1 track
-    \item[] \textbf{Temporary storage:} none
-\end{itemize}
+\subsubsection*{STORAGE REQUIREMENTS}
+\textbf{Memory used:} 1 track \\
+\textbf{Temporary storage:} none
 
-\subsection*{INPUT}
+\subsubsection*{INPUT}
 The block of instructions to be repeatedly executed must be located in the main program immediately \emph{preceding} the calling sequence. All instructions are permitted.
 
 The operand addresses of all \emph{negative} instructions within the block are incremented by 1 before each loop iteration; that is, any instruction prepended with an operational code modifier of \texttt{800}. For example, the modified instruction \texttt{800A2000} would be transformed to \texttt{800A2001} \emph{before} the first execution pass. The addresses of normal positive instructions remain unaltered.
@@ -29,7 +26,7 @@ The calling sequence must supply the following parameters in this exact sequence
     \item $X$, the \emph{total number} of loop iterations, formatted as the operand inside an \texttt{N} instruction in decimal track/sector notation (i.e., modulo 64).
 \end{enumerate}
 
-\subsection*{CALLING SEQUENCE}
+\subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
 \begin{tabular}{ccc p{6cm}}
@@ -47,7 +44,7 @@ $\alpha+4$         &            & \textit{etc.}           & Return point in the 
 
 The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) into the tracking logic of the subroutine. The instruction at $\alpha+1$ effects an immediate jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the address $S$, and cell $\alpha+3$ contains the loop execution limit value $X$. Control returns from the subroutine at location $\alpha+4$.
 
-\subsection*{OPERATION}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution time:} \\
     Variable per loop. The execution overhead depends strictly on the structural size of the block, the number of modified instructions, and the total number of iterations.
@@ -61,7 +58,7 @@ The instruction at $\alpha$ stores the parameter pointer address ($\alpha+2$) in
     Not checked or processed by this routine.
 \end{enumerate}
 
-\subsection*{REMARKS}
+\subsubsection*{REMARKS}
 The operand address of \emph{every} single negative instruction embedded within the designated loop block will be incremented before each loop.
 
 If an early exit out of the loop block is triggered before the specified loop iteration count is exhausted, the contents of subroutine cell $L_0 + 2$ must be patched as follows:
@@ -74,24 +71,24 @@ If an early exit out of the loop block is triggered before the specified loop it
 
 It is entirely permissible to jump out of an active loop structure mid-execution (for example, executing a subroutine branch), provided that the target subroutine contains \emph{absolutely no modifiable (negative) instructions}\footnote{This is because the loop utility would patch those instructions as the loop runs, but would have no way to track that it modified instructions outside the designated loop block, and would not fix the address fields it updated in the subroutine.}.
 
-\subsection*{EXAMPLE}
+\subsubsection*{EXAMPLE}
 Compute ten values for $L$ according to the mathematical formula:
 $$L = \frac{(2x + y) \cdot z}{w}$$
 
-\noindent \textbf{Given Data Arrangements:}
+\textbf{Given Data Arrangements:}
 \begin{itemize}
     \item Ten values for $x$ stored in cells 3100--3109 scaled at $q = 10$.
-    \item Ten values for $y$ stored in cells 3200--3209 scaled at $q = 20$.
-    \item Ten values for $z$ stored in cells 3300--3309 scaled at $q = 15$.
-    \item Ten values for $w$ stored in cells 3400--3409 scaled at $q = 10$.
+\item Ten values for $y$ stored in cells 3200--3209 scaled at $q = 20$.
+\item Ten values for $z$ stored in cells 3300--3309 scaled at $q = 15$.
+\item Ten values for $w$ stored in cells 3400--3109 scaled at $q = 10$.
 \end{itemize}
 
-\noindent \textbf{Target Destination Area:}
+\textbf{Target Destination Area:}
 \begin{itemize}
     \item Ten calculated values of $L$ to be written to cells 3500--3509 scaled at $q = 23$.
 \end{itemize}
 
-\noindent \textbf{Available Scaling Constants:}
+\textbf{Available Scaling Constants:}
 \begin{itemize}
     \item Value $2$ at $q = 15$ located in cell 3000.
     \item Value $1$ at $q = 5$ located in cell 3001.
@@ -101,7 +98,7 @@ Assume ``Loop Counter 1'' is loaded on track 40 (starting at location 4000).
 
 \newpage
 
-\subsection*{PROGRAM CODING SHEET}
+\subsubsection*{PROGRAM CODING SHEET}
 \begin{table}[h!]
 \centering
 \begin{tabular}{|c|c|l|c|l|p{6cm}|}
@@ -135,10 +132,10 @@ An output subroutine is frequently programmed as a computer-controlled print loo
 
 While this programming approach poses no speed bottleneck when routing output to the standard Flexowriter typewriter, utilizing the high-speed paper tape punch requires a much faster print loop to avoid stalling the peripheral. The optimization method illustrated below permits punching at a rate of approximately 40 characters per second by packing exactly two print operations into a single drum revolution.
 
-\subsection*{EXAMPLE}
+\subsubsection*{EXAMPLE}
 Assume the total number of characters to be printed is stored as a count register scaled at $q = 30$. The following program continuously prints a single character (for example, a Carriage Return) for the exact duration specified by the counter.
 
-\subsection*{PROGRAM CODING SHEET}
+\subsubsection*{PROGRAM CODING SHEET}
 \begin{table}[h!]
 \centering
 \begin{tabular}{|c|l|c|l|p{6.5cm}|}
