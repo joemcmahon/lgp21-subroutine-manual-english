@@ -372,39 +372,19 @@ The destination can be matrix $A$, matrix $B$, or a separate region. If you use 
 \label{subsec:matrix_transposition_1}
 
 \subsubsection*{PURPOSE}
-\texttt{D1-15.0} transposes a square matrix stored in memory and saves the transposed results into designated locations. The input consists of the elements of a square matrix whose rank is strictly less than 32. Both fixed-point and floating-point data formats are supported. The total number of elements must not exceed the available memory space.
+\texttt{D1-15.0} transposes a square matrix in memory, writing the result to a destination address (which may be the same as the source). The matrix's rank must be less than 32. Both fixed-point and floating-point formats are supported. The matrix and (if separate) the destination together must fit in available memory.
 
-\noindent
-``Matrix Transposition 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. The calling sequence must supply: 
-\begin{enumerate}
-	\item the rank and starting address of the matrix, and 
-	\item the destination starting address for the transposed matrix. 
-\end{enumerate}
-\noindent
-Upon return to the main program, the transposed matrix resides in the specified memory locations.
+Matrix Transposition 1 is called as a subroutine. Exit the Interpretive System (with an \texttt{E} instruction) before the call. The calling sequence supplies the matrix's rank and starting address and the destination address. On return, the transposed matrix occupies the destination.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Space:} 1 track, 58 sectors (122 words) \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-The input variables are the elements of a square matrix, stored either row-by-row or column-by-column in consecutive locations. In a row-major configuration, the first element of the second row immediately follows the last element of the first row; in a column-major configuration, the first element of the second column immediately follows the last element of the first column. 
-
-\noindent
-The data values may be supplied either in standard raw fixed-point fractional format or in the floating-point format dictated by Interpretive System 1 (\texttt{H1-11.0}). The rank $N$ must satisfy $2 < N \le 31$. Although storing the matrix elements inherently requires only $N^2$ sectors, a maximum workspace block of $2N^2$ locations is required if the destination area is separate.
+The input is the elements of a square matrix in consecutive locations, either row-major or column-major. The data can be in raw fixed-point fractional format or in Floating-Point Interpretive System 1 format (\texttt{H1-11.0}). The rank $N$ must satisfy $2 < N \le 31$. The matrix takes $N^2$ locations; if the destination is separate, total memory required is $2N^2$.
 
 \subsubsection*{CALLING SEQUENCE}
-The following information must be supplied by the calling sequence in the exact sequential order specified below:
-\begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $N$: The rank (dimension) of the matrix, scaled at $q = 15$.
-    \item $M$: The starting memory address of the matrix, specified in decimal track/sector notation.
-    \item $T$: The starting memory address of the destination storage area for the transposed matrix in decimal track/sector notation.
-\end{enumerate}
-
-Parameters $N$ and $M$ are packed into a single parameter word at location $\alpha+2$. If $N$ is greater than 15, the packed configuration requires hexadecimal entry format. 
-
-\noindent
-The source address $M$ and destination address $T$ may be identical (in-place transposition). However, if the transposed matrix is to be written to a different memory region, that region must not overlap with the original matrix block.
+The calling sequence supplies, in order: the matrix's rank $N$ (at $q=15$) and starting address $M$ --- packed into a single parameter word at $\alpha+2$, requiring hexadecimal entry if $N > 15$ --- and the destination address $T$. All addresses are in decimal track/sector notation. $T$ may equal $M$ (in-place transposition); otherwise, the destination region must not overlap the source. A template calling sequence (with \texttt{L} the subroutine's base address) is shown below.
 
 \medskip
 \begin{table}[h!]
@@ -428,7 +408,7 @@ $\alpha + 4$      & ---              & ---              & Return to main program
 The \texttt{E} at $\alpha-1$ is only needed if the preceding main-program instruction was an interpretive pseudo-instruction.
 
 \subsubsection*{OUTPUT}
-The individual elements of the transposed matrix are saved starting at location $T$. If the original matrix was stored row-by-row, the columns will be laid out row-by-row in the transposed matrix. Conversely, if the original matrix was stored column-by-column, the rows will be laid out column-by-column in the destination block.
+The transposed matrix is written to consecutive locations starting at $T$, in the same row/column orientation as the input (so a row-major input produces a row-major output of the transpose, and likewise for column-major).
 
 \subsubsection*{OPERATING DETAILS}
 
