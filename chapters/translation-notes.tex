@@ -42,11 +42,11 @@ In the subroutines documented below, I've carried over the original \texttt{@n} 
 
 \subsection{Document organization}
 First, the code described in this document spans a wide range of functions. Some of it really is subroutines, some of it what we'd call functions (subroutines that return a specific value or result), and some is what we'd
-call a program, utility. or monitor. The original document simply calls everything a suroutine, and what the document calls a ``calling sequence'' is how the code is executed. This means that some ``calling sequences'' really are a set of machine instructions that perform a subroutine call, while others are a series of operations that the machine operator must perform to load and start the program.
+call a program, utility. or monitor. The original document simply calls everything a subroutine, and what the document calls a ``calling sequence'' is how the code is executed. This means that some ``calling sequences'' really are a set of machine instructions that perform a subroutine call, while others are a series of operations that the machine operator must perform to load and start the program.
 
-Because the actual function of the code is highly variable, I've chosen to refer to the individual programs as appropriate, whether a function, subroutine, utility, etc. ``Calling sequence'' is altered as appropriate for the kind of program in question; it may be termed  ``Execution'' or ``Usage'' instead.
+Because the actual function of the code is highly variable, I've chosen to refer to the individual programs as appropriate, whether a function, subroutine, utility, etc. ``Calling sequence'' is altered as appropriate for the kind of program in question; in particular, where the code is a stand-alone program rather than a callable subroutine, the heading appears as ``Operating Instructions'' instead.
 
-The document is organized in broad section, with the broadly broken into mathematical functions, a pair of floating-point calculators, input and output support code, utilities, and a grab-bag of miscellaneous other algorithms and utilities: sorts, searches, data maintenance/backup, and programming tools. (The tool that automates self-modifying code loops is particularly engaging!)
+The document is organized in broad sections, broken into mathematical functions, a pair of floating-point calculators, input and output support code, utilities, and a grab-bag of miscellaneous other algorithms and utilities: sorts, searches, data maintenance/backup, and programming tools. (The tool that automates self-modifying code loops is particularly engaging!)
 
 \subsubsection*{Code names}
 The programs do not have names! This is probably because the name was pretty arbitrary as far as the machine was concerned -- you can't load a program by name, etc.; it's all simply reference material for humans.
@@ -54,8 +54,8 @@ As such the names are assigned to organize the programs, from broad functional g
 
 The first character of the name establishes which broad area a program falls into: \texttt{B} is mathematical, \texttt{D} is matrixes, \texttt{J} is input/output, and so on. The second character refines this: \texttt{B1} is trig functions; \texttt{B3} is exponential/log functions; \texttt{B4} is roots. There is no rule as to how the refinement is assigned other than personal taste.
 
-The numeric part of the name refines the classification further. \texttt{B1} is trig; \texttt{B1-10} is sine and cosine, \texttt{B1-11} is arctangent, \texttt{B1-12} is arcsin/arccos. Within that numeric classification, we have a point number that differentiates implementations. So \texttt{B1-10.0} (we number the point classifications from \texttt{0}) is mathematics (\texttt{B}), trigonometry (\texttt{1}), sine/cosine (\texttt{-10}), first implementation (\texttt{.1}). As a sample,
-\texttt{B1-10.0} is the \emph{first} sine and cosine implementation, which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation, which accepts radians.
+The numeric part of the name refines the classification further. \texttt{B1} is trig; \texttt{B1-10} is sine and cosine, \texttt{B1-11} is arctangent, \texttt{B1-12} is arcsin/arccos. Within that numeric classification, we have a point number that differentiates implementations. So \texttt{B1-10.0} (we number the point classifications from \texttt{0}) is mathematics (\texttt{B}), trigonometry (\texttt{1}), sine/cosine (\texttt{-10}), first implementation (\texttt{.0}). As a sample,
+\texttt{B1-10.0} is the \emph{first} sine and cosine implementation (point number \texttt{.0}), which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation (point number \texttt{.1}), which accepts radians.
 
 These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents. I have not reordered any of the programs to ensure that any cross-referencing between the German and English versions of the document were easy to do.
 \subsection{LGP-21 coding conventions}
@@ -110,7 +110,7 @@ This convention uses the \texttt{R} instruction to load the address of the \emph
 
 \subsubsection*{Deep Wizardry: Floating-Point Parameters}
 
-A third, even more astounding calling sequence passes a multi-word floating-point\footnote{While the LGP-21 lacks floating-point \emph{hardware}, it relies entirely on a software-driven floating-point math \emph{interpreter}. See Section~\ref{H1-10.1}.} number to a subroutine as an argument.
+A third, even more astounding calling sequence passes a multi-word floating-point\footnote{While the LGP-21 lacks floating-point \emph{hardware}, it relies entirely on a software-driven floating-point math \emph{interpreter}. See Section~\ref{H1-11.0}.} number to a subroutine as an argument.
 
 \begin{table}[h]
 \centering
@@ -126,7 +126,7 @@ $\alpha+1$        & \texttt{U}           & \texttt{L}       & Unconditional bran
 
 Now wait a minute, I hear you say. A floating-point number is \emph{three} words long. That cannot possibly fit in the single-word hardware accumulator—what kind of trickery is this?
 
-You're right. The full floating-pint number doesn't get loaded; only its first word does. But the \texttt{B} instruction itself at cell $\alpha-1$ now contains the exact piece of metadata the subroutine needs: \emph{the starting memory address \texttt{N} of the floating-point block}\footnote{My reaction was ``You are \emph{kidding} me'' with a significant expletive titre.}. 
+You're right. The full floating-point number doesn't get loaded; only its first word does. But the \texttt{B} instruction itself at cell $\alpha-1$ now contains the exact piece of metadata the subroutine needs: \emph{the starting memory address \texttt{N} of the floating-point block}\footnote{My reaction was ``You are \emph{kidding} me'' with a significant expletive titre.}. 
 
 This explains why the manual repeatedly states that ``loading this value into the accumulator by any means'' is acceptable for some subroutines, but does \emph{not} say that for this one\footnote{Gun, see foot.}. The \texttt{B} here is essential to the program working. It relies on the code modified by the \texttt{R} instruction to find and read its caller:
 \begin{enumerate}
@@ -137,11 +137,11 @@ This explains why the manual repeatedly states that ``loading this value into th
     \item It strips away the \texttt{B} opcode bits using a bitmask, leaving behind only the raw address \texttt{N}.
 	\item Now the subroutine has the address of the first of the three words making up the floating-point number, and can proceed.
 \end{enumerate}
-The value loaded into the accumulator at step $\alpha-1$ is \emph{entirely ignored}. The \texttt{B} instruction's sole purpose in this calling sequence is to serve as an \emph{executable static data pointer}, which the subroutine finds and dissects to find word 2 (\texttt{N+1} of the floating-point parameter.
+The value loaded into the accumulator at step $\alpha-1$ is \emph{entirely ignored}. The \texttt{B} instruction's sole purpose in this calling sequence is to serve as an \emph{executable static data pointer}, which the subroutine finds and dissects to find word 2 (\texttt{N+1}) of the floating-point parameter.
 
 \subsection{Repeated/redundant information}
 
-Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard \texttt{B}/\texttt{R}/\texttt{U} instruction sequence used to call a function as noted in \ref{subsec:standard-call}. I have tried to condense this where possible.
+Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard \texttt{B}/\texttt{R}/\texttt{U} instruction sequence used to call a function as noted in Section~\ref{subsec:standard-call1}. I have tried to condense this where possible.
 
 Some subroutines use unusual parameterization (such as patching the values of words in the subroutine itself!), or are actually programs to be loaded and run, and I have retained all of the setup information and/or programming information as it was originally written in these cases.
 
