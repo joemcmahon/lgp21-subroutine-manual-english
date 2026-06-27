@@ -40,11 +40,9 @@ Addition and subtraction require that the $q$ factors of both operands be identi
     \end{center}
 Obviously, the answer is not $2.0$, as it should be. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
 
-Scale factor changes occur during multiplication and division as well: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
+Multiplication and division also change the scale factor. Multiplication \emph{adds} $q$ values, division \emph{subtracts} them: a $q=4$ value times a $q=5$ value gives a $q=9$ result. The bit width of the word doesn't change, so the further the result's $q$ drifts from where you want it, the more significant figures you've lost.
 
-Multiplying $q=4$ value by a $q=5$ value yields a $q=9$ value. This can be left-shifted to restore it to a $q=4$ or $q=5$ value; you should note that this many bits of precision have been lost in the operation. Not perfect, but acceptable.
-
-However, division, as mentioned previously \emph{requires} that the divisor have a smaller $q$ than the dividend. If it is larger, the operation overflows, and the most significant figures are lost in the operation. Dividing a $q=9$ number by a $q=2$ one will yield a result that is a $q=7$ number. On the other hand, dividing a $q=1$ number by an $q=9$ one results in a scale factor of $-8$, an overflow, and a loss of the 8 most significant figures of the result. To return this (invalid) result to a $q=1$ value, it would need to be shifted right \emph{8} bits -- and those 8 bits are now zero and the actual value has been lost. If a $q=9$ value was desired, the overflow will have lost \emph{17} bits. 
+Division has the extra restriction noted earlier: the divisor's magnitude must exceed the dividend's. Equivalently, if subtracting $q_\text{divisor}$ from $q_\text{dividend}$ gives a negative result, the operation overflows and the high-order bits are gone for good. Dividing a $q=1$ value by a $q=9$ value formally yields $q=-8$ --- i.e.\ the top 8 bits of the answer were thrown away.
  
 It is vital to remember that the LGP-21 hardware itself does not know about scale factors and does not check them or track them, and that this is absolutely, 100\% \emph{your job}.
 
