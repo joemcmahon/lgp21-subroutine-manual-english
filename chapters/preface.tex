@@ -1,0 +1,41 @@
+\section{Preface}
+\subsection{Document organization}
+First, the code described in this document spans a wide range of functions. Some of it really is subroutines, some of it what we'd call functions (subroutines that return a specific value or result), and some is what we'd
+call a program, utility. or monitor. The original document simply calls everything a subroutine, and what the document calls a ``calling sequence'' is how the code is executed. This means that some ``calling sequences'' really are a set of machine instructions that perform a subroutine call, while others are a series of operations that the machine operator must perform to load and start the program.
+
+Because the actual function of the code is highly variable, I've chosen to refer to the individual programs as appropriate, whether a function, subroutine, utility, etc. ``Calling sequence'' is altered as appropriate for the kind of program in question; in particular, where the code is a stand-alone program rather than a callable subroutine, the heading appears as ``Operating Instructions'' instead.
+
+The document is organized in broad sections, broken into mathematical functions, a pair of floating-point calculators, input and output support code, utilities, and a grab-bag of miscellaneous other algorithms and utilities: sorts, searches, data maintenance/backup, and programming tools. (The tool that automates self-modifying code loops is particularly engaging!)
+
+\subsubsection*{Code names}
+The programs do not have names! This is probably because the name was pretty arbitrary as far as the machine was concerned -- you can't load a program by name, etc.; it's all simply reference material for humans.
+As such the names are assigned to organize the programs, from broad functional groups down to exactly which program is which.
+
+The first character of the name establishes which broad area a program falls into: \texttt{B} is mathematical, \texttt{D} is matrixes, \texttt{J} is input/output, and so on. The second character refines this: \texttt{B1} is trig functions; \texttt{B3} is exponential/log functions; \texttt{B4} is roots. There is no rule as to how the refinement is assigned other than personal taste.
+
+The numeric part of the name refines the classification further. \texttt{B1} is trig; \texttt{B1-10} is sine and cosine, \texttt{B1-11} is arctangent, \texttt{B1-12} is arcsin/arccos. Within that numeric classification, we have a point number that differentiates implementations. So \texttt{B1-10.0} (we number the point classifications from \texttt{0}) is mathematics (\texttt{B}), trigonometry (\texttt{1}), sine/cosine (\texttt{-10}), first implementation (\texttt{.0}). As a sample,
+\texttt{B1-10.0} is the \emph{first} sine and cosine implementation (point number \texttt{.0}), which accepts degrees; \texttt{B1-10.1} is the \emph{second} sine and cosine implementation (point number \texttt{.1}), which accepts radians.
+
+These break up reasonably well into sections and subsections, so I've done that to make it easier to navigate the table of contents. I have not reordered any of the programs to ensure that any cross-referencing between the German and English versions of the document was easy to do.
+
+\subsection{Repeated/redundant information}
+
+Because this is a reference manual meant for use by people who were casually programmers and principally something else entirely, this manual fairly consistently repeats things like the standard \texttt{B}/\texttt{R}/\texttt{U} instruction sequence used to call a function as noted in Section~\ref{subsec:standard-call1}. I have tried to condense this where possible; some of it still remains. We'll get it on the next edit.
+
+Some subroutines use unusual parameterization (such as patching the values of words in the subroutine itself to save parameters there!), or are actually programs to be loaded and run and not subroutines at all. I have retained all of the setup information and/or programming information as it was originally written in these cases.
+
+\subsection{Archeological notes}
+
+Reading the original German document, it becomes extremely clear that a number of different hands wrote the code and documentation of it. A deep textual analysis would be rewarding to get a better handle on this; unfortunately, the act of translation obscures this significantly, but a few pointers still remain -- there are a few program examples that were provided as LGP-21 \emph{coding sheets} -- the literal ``we need to punch this on the tape and feed it to PIR'' data -- and I've preserved these to remind us that there is some interesting research there for a digital archaeologist.
+
+\subsection{Acknowledgements and disclaimers}
+Thanks in particular to David Lovett of Usagi Electric for resurrecting a real, physical LGP-21 and starting me down this road; Rhys Weatherly for the lgp21-tools, and Paul Kimpel for the wonderful LGP-21 web emulator that has given me such a lot of pleasure learning the machine.
+
+Thanks also to the many people whose names I don't know\footnote{Send me patches via GitHub so I can credit you, please!}, who have tirelessly made sure that important historical documents like the original German version of this manual and the programs that go with it have been preserved. This document is my small contribution to this historical preservation effort, and I am immensely grateful to those giants upon whose shoulders I stand. 
+
+This work \emph{is} a translation, and I cannot guarantee I have been completely accurate, whether from misunderstanding or transcription error. I've done my best to be sure my interpretation of what's documented here is correct, but I have not run or tested all of the programs referenced, and I can't make any guarantees as to their fitness and accuracy, nor can I be sure that the document I've translated here is in fact 100 percent accurate itself! I have made corrections where
+errors were obvious, but I may have missed things.
+
+To that end, this document will be up on GitHub; please feel free to submit PRs for corrections and errata there if you find anything that needs a fix. I intend to CC license this document such that it can be freely built upon and distributed, but that credit for the basic work is retained.
+
+\newpage
