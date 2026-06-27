@@ -17,28 +17,36 @@ Modern embedded systems use similar notation (referred to as \emph{Q-notation} o
 
 \subsubsection*{LGP-21 Fractional Fixed-point Implementation}
 \label{sec:fractional-fixed-point}
-The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+1$, with the physical binary point fixed immediately to the right of the (leftmost) sign bit. To work with integers or mixed numbers, the programmer must mentally shift this binary point to the right by $n$ bits (as indicated by the $@n$ notation). 
+The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+1$, with the physical binary point fixed immediately to the right of the (leftmost) sign bit. To work with integers or mixed numbers, the programmer must mentally shift this binary point to the right by $n$ bits.
 
-For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
+This manual is inconsistent as to how this is notated (most likely because of many cooks in the kitchen). The scaling factor is $q$, but there are multiple notations for it. Some contributors use $q$ = $n$. Others prefer a shorthand $@n$ notation.
 
-\subsubsection*{Addition/Subtraction Pitfalls}
-Addition and subtraction require that the scale factors (\texttt{@n}) of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction. If you add two numbers with different $q$ factors without shifting them appropriately, the machine will blindly align their bits and perform the operation, smashing incommensurate units of completely different mathematical weights into the same columns. 
+However it is notated, the scaling factor represent's the \emph{programmer's} division of the 31 bits of the LGP-21's word into a \emph{logical} integer portion and fractional portion. The hardware binary point remains fixed, but the programmer's may shift. 
 
-    For example, if you attempt to add $1.0$ scaled at $\texttt{@1}$ to $1.0$ scaled at $\texttt{@4}$ without normalizing them first:
+For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$ to be represented) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
+
+I have retained the melange of different notations for now, but I plan to standardize the usage as $q=n$ for scale factors.
+
+\subsubsection*{Arithmetic Operations and Scale Factors}
+Addition and subtraction require that the $q$ factors of both operands be identical before the operation is executed. The LGP-21 treats every 31-bit word as a raw fixed-point fraction with the hardware binary point just to the right of the sign bit. If you add two numbers with different $q$ factors without shifting them so their $q$ factors match, the machine will simply perform the operation requested on the two numbers.
+
+    For example, if you attempt to add $1.0$ scaled at $q=1$ to $1.0$ scaled at $q=4$ without normalizing them first:
     \begin{center}
     \begin{tabular}{rrc}
         $1.0 \text{ at } \texttt{@1} \rightarrow$ & \texttt{0 100000...} & (Hardware sees $2^{29}$) \\
         $+ \quad 1.0 \text{ at } \texttt{@4} \rightarrow$ & \texttt{0 000100...} & (Hardware sees $2^{26}$) \\ \hline
-        \text{Raw Sum} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
+        \text{Result} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
     \end{tabular}
     \end{center}
-Depending on which scale factor you \emph{think} the result is in, your answer is now either $1.125$ (if you assume the result is $\texttt{@1}$) or $9.0$ (if you assume $\texttt{@4}$). The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
+The meaning of this number is ambiguous (and categorically invalid). Depending on which scale factor you \emph{think} the result is using, your answer is now either $1.125$ (if you assume the result is $q=1$ or $9.0$ (if you assume $q=4$. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
+
+Scale factor changes occur during multiplication and division as well: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
+
+Multiplying $q=4$ value by a $q=5$ value yields a $q=9$ value. This can be left-shifted to restore it to a $q=4$ or $q=5$value; you should note that this many bits of precision have been lost in the operation. Not perfect, but acceptable.
+
+However, division, as mentioned previously \emph{requires} that the divisor have a smaller $q$ than the dividend. If it is larger, the operation overflows, and the most significant figures are lost in the operation. Dividing a $q=9$ number by a $q=2$ one will yield a result that is a $q=7$ number. On the other hand, dividing a $q=1$ number by an $q=9$ one results in a scale factor of $-8$, an overflow, and a loss of the 8 most significant figures of the result. To return this (invalid) result to a $q=1$ value, it would need to be shifted right \emph{8} bits -- and those 8 bits are now zero and the actual value has been lost. If a $q=9$ value was desired, the overflow will have lost \emph{17} bits. 
  
-It is vital to understand that the LGP-21 hardware itself does not know about scale factors and has no way to check them or track them.  Scale factor changes occur during multiplication and division: multiplication \emph{adds} the scale factors, and division \emph{subtracts} them. After a multiplication or division, the result must be shifted left or right to ensure that the result conforms to the scale factor desired.
-
-As an example, if an \texttt{@1} value were to be divided by an \texttt{@9} one, the resulting scale factor would be $-8$, meaning that to return it to an \texttt{@1} value, the result would need to be shifted right \emph{8} bits, and for an \texttt{@9} result, it would need to be shifted right \emph{17}(!) bits.
-
-In the subroutines documented below, I've carried over the original \texttt{@n} notation where it was used, most often for referring to values in storage (e.g., $\theta@9$) or the accumulator (accumulator\texttt{@1}).
+It is vital to remember that the LGP-21 hardware itself does not know about scale factors and does not check them or track them, and that this is absolutely, 100\% \emph{your job}.
 
 \subsection{Document organization}
 First, the code described in this document spans a wide range of functions. Some of it really is subroutines, some of it what we'd call functions (subroutines that return a specific value or result), and some is what we'd
