@@ -1,5 +1,4 @@
-\subsection{Program Loader 2}
-\subsubsection*{J1-10.1}
+\subsection*{PROGRAM LOADER 2 --- J1-10.1}
 \label{sec:interactive-monitor}
 
 \subsubsection*{PURPOSE}
@@ -7,7 +6,7 @@ Program J1-10.1 is a general-purpose memory loader and monitor utility, hereafte
 
 Additionally, this program can load memory contents directly into the accumulator, execute instructions directly without storing them in memory, and perform manual program jumps.
 
-\subsubsection*{Memory usage}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -166,8 +165,8 @@ The following steps are necessary to load the program from tape:
   \item Press the \textsf{START} button.
 \end{enumerate}
 
-\subsection{Operating Instructions}
-\subsubsection*{Initial Load}
+\subsubsection*{OPERATING INSTRUCTIONS}
+\paragraph{Initial Load}
 
 The program tape contains the software in two separate versions: a) a relocatable hexadecimal format with its own bootstrap routine, and b) a decimal format matching the standard coding sheet layout.
 
@@ -195,7 +194,7 @@ The input procedure is executed as follows:
     \item The typewriter's \textsf{MANUAL INPUT} indicator lamp lights up, signaling that the computer is ready for manual keyboard input.
 \end{enumerate}
 
-\subsubsection*{Re-reading the Tape}
+\paragraph{Re-reading the Tape}
 
 If the program fails to execute after step~\ref{step:execute-rest}, or if it becomes corrupted in memory after loading, the bootstrap routine may still be intact. In this case, the program can be reloaded without re-entering the bootstrap sequence by proceeding as follows:
 
@@ -212,10 +211,10 @@ If the program fails to execute after step~\ref{step:execute-rest}, or if it bec
 
 If the tape fails to read properly this time, the entire initial load bootstrap procedure must be repeated from the beginning.
 
-\subsubsection*{Required Input/Output Units}
+\subsubsection*{REQUIRED INPUT/OUTPUT UNITS}
 If an input unit other than the typewriter's paper tape reader is to be selected, the selection command (\texttt{S}) must be used. The program selects the required output units automatically.
 
-\subsubsection*{Meaning of the Program Switch Keys}
+\subsubsection*{MEANING OF THE PROGRAM SWITCH KEYS}
 \begin{center}
 \begin{tabular}{lll}
 \toprule
@@ -229,7 +228,7 @@ If an input unit other than the typewriter's paper tape reader is to be selected
 \end{tabular}
 \end{center}
 
-\subsubsection*{Error Stops} 
+\subsubsection*{ERROR STOPS} 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
@@ -311,7 +310,7 @@ $\emptyset$ & Any defined opcode \\
 \end{tabular}
 \end{center}
 
-\subsubsection*{Translator Notes}
+\subsubsection*{Translator's Notes}
 Rather than just a loader, GPMon is more of a programmer's interactive monitor.
 
 Notably, PIR uses the Flexowriter stop code (\texttt{'}) to terminate a command. GPMon does not. This means GPMon relies heavily on interactive execution via the Flexowriter keyboard, requiring you to physically hit the \textsf{START COMP} lever or \textsf{START} button on the computer to continue execution.
