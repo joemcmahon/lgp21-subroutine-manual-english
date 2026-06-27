@@ -1,4 +1,194 @@
 \section{Memory Dumps}
-\subsection{Memory Dump 1}
+\section*{MEMORY PRINT 1 K2-10.0}
+
+\subsection*{PURPOSE}
+The program K2-10.0 outputs the contents of a specified memory region. There are three possible types of output:
+\begin{itemize}
+    \item[a)] in coding sheet format,
+    \item[b)] arbitrarily relocatable decimal, permissible for J1-10.0,
+    \item[c)] both: a and b.
+\end{itemize}
+The words can be output as instructions or as hexadecimal constants, depending on appearance or according to the specifications of the user. If hexadecimal words are punched, they are preceded by the input key word for hexadecimal constants. Output occurs cell by cell in ascending sequence.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Storage cells used:} 9 tracks
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsection*{INPUT}
+After a jump to the starting address of K2-10.0, the computer requests the following information:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lp{10cm}}
+\toprule
+\textbf{Question} & \textbf{Answer} \\
+\midrule
+\texttt{lins} & Number of lines per page as a two-digit decimal number. \\
+\texttt{locs} & Number of memory addresses to be printed on a page as two decimal digits. \\
+\texttt{wrds} & The number of words to be printed in one line (only becomes effective if PS-4 is ON) as two decimal digits. \\
+\texttt{skip} & The number of blank lines between two pages as a two-digit decimal number. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Note:} The above answers must consist of two digits: zero must be entered as ``\texttt{00}''. The blank lines between pages are output when either the full number of memory addresses has been printed, or when the number of outputted lines plus ``\texttt{skip}'' equals ``\texttt{lins}''.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lp{10cm}}
+\toprule
+\textbf{Question} & \textbf{Answer} \\
+\midrule
+\texttt{md a} & The boundaries of the memory region in which the modifier is to become effective (see below) in one word in decimal track/sector notation (i.e., \texttt{TTSSTTSS}). \\
+\midrule
+\texttt{modi} & The value that is to be subtracted from the address part of the instructions in the modification region, in decimal track/sector notation. \\
+\midrule
+\texttt{hx a} & The boundaries of the region that is to be output in the form of hexadecimal words, regardless of content, as one word per region in decimal track/sector notation (i.e., \texttt{TTSSTTSS}). The termination of input is designated by pressing \textsf{START} twice after the last address. \\
+\midrule
+\texttt{pnch} & The boundaries of the output region as one word in decimal track/sector notation (i.e., \texttt{TTSSTTSS}). \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Note:} In all address specifications, the second address must be higher than the first.
+
+If \textsf{PS-32} is \textsf{ON} when the program starts, the computer skips the first four questions and uses the values from the previous run or the defaults: \texttt{lins=51}, \texttt{locs=32}, \texttt{wrds=08}, and \texttt{skip=08}.
+
+The program \emph{does not stop} after the answer to ``\texttt{pnch}''. The typewriter lever \textsf{PUNCH ON} should already be pressed when \textsf{START} is pressed.
+
+\subsection*{CALLING SEQUENCE}
+The program is run by a jump to the starting address.
+
+\subsection*{OUTPUT}
+The output occurs in one of two versions, depending on the setting of \textsf{PS-4}.
+\begin{itemize}
+    \item[a\textsf{ON})] Each line begins with an address (absolute minus modifier) followed by a space character and one instruction per line. Input key words for hexadecimal words are printed out one to a line and are counted toward the number of lines per page.
+    \item[\textsf{OFF})] Each line begins with the address (absolute minus modifier) of the first word of that line, followed by a space character and as many words as specified for ``\texttt{wrds}''. Input key words for hexadecimal words are not counted toward the number of words per line.
+\end{itemize}
+For both formats, eight characters are output per word. Hexadecimal words contain leading zeros where applicable. Instruction words replace leading zeros with spaces.
+
+All instructions outside the modification region are preceded by an ``\texttt{X}'' during output. \texttt{P} and \texttt{I} instructions are never modified and are always provided with an \texttt{X}\footnote{Relocating unit constants is a bad idea.}. Hexadecimal words are output in groups of at most 63 words; each group is preceded by a command for hexadecimal input (see J1-10.0 regarding the command).
+
+Every word that contains a ``1'' bit outside of the sign position of the operation part and the operand address field is output as a hexadecimal word. If a word looks like an instruction but is in reality a hexadecimal word, this must be specified during the entry of \texttt{hx a}. If instructions in the modification region are not designated as hexadecimal words, or if they are not \texttt{P} or \texttt{I} instructions, the modifier is subtracted from the operand addresses and they are not dumped with an \texttt{X}.
+
+Memory is dumped in ascending location order. The program sense switches can be used as noted below to control the output type and format. Once the whole of the selected region has been output, the computer stops; pressing \textsf{START} restarts the program.
+
+\subsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Program input:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    The subroutine selects the paper tape typewriter for input and output.
+    \item \textbf{Program sense switches:}
+    \begin{table}[h!]
+    \centering
+    \begin{tabular}{ccl}
+    \toprule
+    \textbf{Switch} & \textbf{Position} & \textbf{Function} \\
+    \midrule
+    \textsf{PS-4}  & \textsf{ON}  & Prints an address (minus modifier) and a predetermined number of words per line. \\
+          &     & Key words for hexadecimal input are not counted. \\
+          & \textsf{OFF} & Prints an address and its content per line. \\
+          &     & A key word for hexadecimal input is counted as one line. \\
+    \midrule
+    \textsf{PS-8}  & \textsf{ON}  & Jump to the starting address of the subroutine and request new parameters \\
+          &     & when the next word is output. \\
+          & \textsf{OFF} & No effect. \\
+    \midrule
+    \textsf{PS-16} & \textsf{ON}  & Halt after the output of each word. Continuation after pressing ``Start''. \\
+          & \textsf{OFF} & No effect. \\
+    \midrule
+    \textsf{PS-32} & \textsf{ON}  & The computer uses the page format from the previous run, or if the program \\
+          &     & was only just read in, the page format native to the original program. \\
+          &     & (i.e., the first four questions and answers are omitted). \\
+          & \textsf{OFF} & Computer requests page format specifications. \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+\end{enumerate}
+
+\subsection*{REMARK}
+Optimal operation is independent of the starting sector number.
+
+If only a single memory dump is needed, Memory Print 2, K2-10.1 is preferable.
+
+\subsection*{ADDENDUM}
+\textbf{Suppression of the address printout:} \\
+During the generation of a decimal tape, an address is output at the beginning of each line. This tape can be read in via the typewriter using Program Input 1, but not via the high-speed reader.
+
+K2-10.0 can be patched to suppress the output of the memory addresses; this produces a tape that can be entered via the high-speed reader.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{In Cell} & \textbf{Replace} & \textbf{By} \\
+\midrule
+\texttt{B[$L_0$ + 0242]} [sic]\footnote{Architectural Note: The text states ``Ersetze in Zelle B[L+0242]'' which structures the instruction token dynamically inside the location syntax column. It denotes cell location \texttt{$L_0$ + 0242} with a command parameter of \texttt{B}.} & \texttt{$L_0$ + 0234} & \texttt{U[$L_0$ + 0241]} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\noindent $L_0$ is the starting address of K2-10.0.
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Memory Dump 2}
+\subsubsection*{K2-10.1}
+
+\subsubsection*{PURPOSE}
+K2-10.1 dumps the contents of consecutive locations in ascending sequence. The words are printed in hexadecimal or in instruction format, depending on the content or the state of the \textsf{PST}. 
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Memory used:} 2 tracks
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsubsection*{INPUT}
+After jumping to the starting address, the computer requests the following output parameters:
+\begin{enumerate}
+    \item $L_s$ Starting address of the region to be output in decimal track/sector notation.
+    \item $L_e$ Ending address of the region to be output in decimal track/sector notation.
+\end{enumerate}
+The ending address of a region must in each case be higher than the starting address. If $L_e$ is numerically smaller than $L_s$, the computer prints $L_e$ and a carriage return, and requests new parameters.
+
+After the dump the specified memory region, the computer requests new output parameters.
+
+\subsubsection*{CALLING SEQUENCE}
+The program is executed by a jump to its starting address.
+
+\subsubsection*{OUTPUT}
+The program prints one address and eight words per line until the content of the last address has been printed out. Hexadecimal words are printed if there are ``1'' bits outside of the sign, operation part, and operand address part, or if the \textsf{PST} is \textsf{ON}. Instruction words are printed if the above conditions do not apply. Negative instructions are preceded by a minus sign. The contents of consecutive cells are output in ascending sequence.
+
+\subsubsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Program input:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    The subroutine selects the paper tape typewriter for input and output.
+    \item \textbf{Program sense switches:}
+    \begin{table}[h!]
+    \centering
+    \begin{tabular}{ccl}
+    \toprule
+    \textbf{Switch} & \textbf{Position} & \textbf{Function} \\
+    \midrule
+    \textsf{PST}             & \textsf{ON}                & Print in hexadecimal word format. \\
+                    & \textsf{OFF}               & Print in the format defined by the memory content. \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+\end{enumerate}
+
+\subsubsection*{REMARK}
+This program is intended as a simple tool for memory investigation. If an output useful for Program Input 1 is desired, one should use K2-10.0.
 \newpage

@@ -1,7 +1,661 @@
 \section{Data Input}
 \subsection{Data Input 1}
+\subsubsection*{J2-10.0}
+\label{sec:data-input-1}
+
+\subsubsection*{PURPOSE}
+Program J2-10.0 reads data into the computer for use by a main program. The data, provided in decimal notation, is read in, converted to binary, shifted to the desired fractional bit position ($q$), and stored in designated memory locations. During each program execution run, the required quantity of decimal numbers can be converted and stored. All parameters regarding the type of conversion must be input alongside the data.
+
+Data Input 1 functions as a subroutine and is called via a calling sequence in the main program. Before a jump to the subroutine occurs, the calling sequence must store the return address within the subroutine.
+
+If an alternative input device is to be used instead of the default console typewriter, a suitable selection keyword must be included in the calling sequence. Upon return to the main program, all decimal numbers will have been converted and stored in the specified memory cells.
+
+\subsubsection*{MEMORY USAGE}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 4 tracks \\
+    Buffer usage    & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{INPUT REQUIREMENTS}
+To process decimal numbers using J2-10.0, the following information must be entered in the specified order, with each entry followed by a stop code (\texttt{'}):
+
+\begin{enumerate}
+    \item \textbf{Decimal Places ($P$):} The number of decimal places $P$ for each subsequent data word, entered in decimal form ($0 \le P \le 11$).
+    \item \textbf{Scale Factor ($Q$):} The value representing the fixed-point scaling factor $q$ at which the words should be stored. $Q$ must consist of exactly three characters, including the sign ($-36 \le Q \le +46$).
+    \item \textbf{Starting Address:} The initial destination address of the memory allocation block, specified in decimal track/sector notation (\texttt{TTSS}).
+    \item \textbf{Decimal Data:} Decimal numbers consisting of a maximum of 7 digits, preceded by a sign. Negative numbers must explicitly include the minus sign and all leading zeros to the left. For positive numbers, both the sign and leading zeros may be omitted.
+    \item \textbf{Control Character \texttt{j}:} The letter ``\texttt{j}'' instructs the parser to stop reading data and prepare to read a new set of $P$, $Q$, and destination address parameters.
+    \item \textbf{Control Character \texttt{w}:} The letter ``\texttt{w}'' terminates the routine and executes a return to the main program.
+\end{enumerate}
+
+\subsubsection*{REMARKS}
+If the decimal place count $P$, scale factor $Q$, or the target address sequence changes mid-tape, a \texttt{j} command must be injected, followed by the updated $P$ and $Q$ values, and the target address (any parameters that are identical must be repeated).
+
+\paragraph{Example Input Stream:}
+\begin{center}
+\texttt{4'+13'2318'627138'48390'j'} \\
+\texttt{2'+20'3800'5134'664'-0000047'w'}
+\end{center}
+
+\noindent This sequence performs the following operations:
+\begin{itemize}
+    \item The decimal numbers \texttt{62.7138} and \texttt{4.8390} are converted at a scaling factor of $q=13$ and stored in locations \texttt{2318} and \texttt{2319}, respectively.
+    \item The control character \texttt{j} ends the block. 
+    \item The numbers \texttt{51.34}, \texttt{6.64}, and \texttt{-0.47} are then converted at a scaling factor of $q=20$ and stored in locations \texttt{3800}, \texttt{3801}, and \texttt{3802}. 
+    \item The control character \texttt{w} stops input and triggers the return to the main program.
+\end{itemize}
+
+By default, the subroutine selects the standard console typewriter for input. A modified calling sequence to select an alternative input unit is available. When using the alternative sequence, the corresponding selection code must be loaded into the accumulator at $q=23$ when the jump to the subroutine is executed.
+
+\subsubsection*{CALLING SEQUENCES}
+Calling Sequence 1 selects the standard console typewriter for input. For alternative input devices, use Calling Sequence 2.
+
+\paragraph{Calling Sequence 1 (Standard Input)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha$               & \texttt{R}      & \texttt{L+138}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L}       & Enter subroutine. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at location $ stores the return address (+2$) within the subroutine structures. The instruction at +1$ executes a branch to the start of the subroutine (\texttt{L}). Location +2$ contains the first main program instruction to be executed after the subroutine finishes.
+
+\paragraph{Calling Sequence 2 (Alternative Input Device)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[TTSS]}  & Load alternative device selection code. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+138}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+247}   & Enter subroutine at device override entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \midrule
+    \texttt{TTSS}     & \texttt{Z}      & \texttt{SS00}    & Input device selection code data word. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at $\alpha-1$ loads the selection code for the new input unit into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction at $\alpha+1$ executes a branch to entry point \texttt{L+247} of the subroutine. Here, the internal input device selection parameters are modified, and the subroutine runs normally until control returns to location $\alpha+2$ via a branch instruction at \texttt{L+138}.
+
+\subsubsection*{PROGRAM LOADING INSTRUCTIONS}
+The routine tape contains the program in two distinct formats:
+\begin{enumerate}[label=\alph*)]
+    \item A relocatable hexadecimal format compatible with loader program J1-10.0.
+    \item A relocatable decimal format utilizing the standard coding sheet layout.
+\end{enumerate}
+
+\subsubsection*{EXECUTION TIME}
+The program processes and converts decimal data into binary at an average rate of 35 five-digit numbers per minute.
+
+\subsubsection*{REQUIRED INPUT/OUTPUT UNITS}
+The standard console typewriter is selected for input by default. No hardware output device is required. The device assignment can be altered dynamically via Calling Sequence 2 (see above).
+
+\subsubsection*{OVERFLOW}
+Any arithmetic overflow conditions occurring during data entry or base conversion are intentionally ignored. The system's overflow register flag is automatically reset to zero before control returns to the main program.
+\newpage
+
 \subsection{Data Input 2}
+\subsubsection*{J2-10.1}
+\label{sec:data-input-2}
+
+\subsubsection*{PURPOSE}
+Program J2-10.1 reads data into the computer for use by a main program. The decimal data is read, converted to binary, shifted to the desired fractional bit position ($q$), and, if more than one number is processed, stored in consecutive designated cells. If only a single number is read, it remains in the accumulator after being shifted to its corresponding $q$. Any number of decimal values can be converted and stored via a single program call. The main program must supply all configuration parameters regarding the conversion.
+
+This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store both the starting address of the **Conversion Control List** and the return address inside the subroutine structure. Upon return to the main program, all data will have been converted and either stored in memory or left in the accumulator.
+
+\subsubsection*{MEMORY USAGE}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 4 tracks, 48 sectors \\
+    Buffer usage    & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{INPUT REQUIREMENTS}
+The data to be processed must be entered as 7-digit decimal numbers preceded by a sign. For positive numbers, both the sign and leading zeros may be omitted. Before jumping to the subroutine, the main program must have stored a **Conversion Control List** in consecutive memory locations. The structure of this list is as follows:
+
+\begin{enumerate}
+    \item \textbf{Word 1 ($N$):} The number of data words to process, specified using track/sector notation (i.e., modulo 64 format).
+    \item \textbf{Word 2 ($L$):} The initial destination address for the data, specified in decimal track/sector notation.
+    \item \textbf{Word 3 ($Q$ and $P$):} A single combined configuration word:
+    \begin{enumerate}
+        \item \textbf{$Q$ (Track Portion):} The target fixed-point scale factor $q$ entered as a decimal track address ($-47 \le Q \le +36$).
+        \item \textbf{$P$ (Sector Portion):} The number of decimal places entered as a decimal sector address ($0 \le P \le 11$).
+    \end{enumerate}
+\end{enumerate}
+
+\subsubsection*{CONTROL MATRIX FLAGS}
+The subroutine utilizes the sign bits and specific instruction bits of the control list to determine state persistence from previous execution runs:
+* **Negative $N$:** If $N$ is embedded in a negative instruction format (sign bit = \texttt{1}), the word count from the previous run is preserved.
+* **Negative $L$:** If $L$ is inside a negative instruction format, the storage destination address from the previous run is reused. All standard instruction bits for the $N$ and $L$ command entries must otherwise be \texttt{0}.
+* **Negative $Q$:** If the combined $Q/P$ word is negative, the value of $Q$ ($q$) is treated as a negative scale factor.
+* **Initialization Override:** If the very first bit of the instruction cell containing $Q$ and $P$ is a \texttt{1}, the program reuses the exact configuration state of the previous execution run.
+
+\paragraph{Special Case Values:}
+* **$N = 0$:** The routine reads an unlimited stream of data words continuously until the block-termination character ``\texttt{w}'' is encountered on the tape.
+* **$N = 1$:** The single data word read is converted and left in the accumulator at the specified $q$; it is \emph{not} written to the destination address $L$.
+* **Negative List Address Instruction:** The accumulator must hold an instruction containing the starting address of the control list when entering the subroutine. If this setup instruction is negative, the subroutine uses the exact control values from the prior run. 
+* **Control Pre-Load Optimization:** If the first bit of the instruction containing the control list address is set to a \texttt{1}, the subroutine pre-loads and sets up the new control values **without reading any data tape**. This allows setup parameters to be configured just once for an entire sequence of subsequent operations.
+
+\paragraph{Alternative Input Unit Selection:}
+If the input hardware device is to be changed, an alternative calling sequence must be used (by default, the subroutine reverts to the console typewriter). A device change requires a **fourth word** added to the Conversion Control List. This extra word must contain the destination device identification selection code specified as a decimal track address. This assignment remains active until explicitly overwritten by a new selection word.
+
+\subsubsection*{APPLICATION EXAMPLES}
+\textit{Note: Addresses enclosed in parentheses represent relative internal offsets inside the subroutine space.}
+
+\paragraph{Example 1: Standard Block Load}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0500              & \texttt{000Z}   & \texttt{2430}    & Starting address of Control List \\
+    0610              & \texttt{000B}   & \texttt{0500}    & Load list pointer into accumulator \\
+    0611              & \texttt{000R}   & \texttt{(0442)}  & Set return address \\
+    0612              & \texttt{000U}   & \texttt{(0445)}  & Jump to subroutine entry point \\
+    0613              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2430              & \texttt{000Z}   & \texttt{0126}    & $N = 90$ words ($01_{track} \times 64 + 26_{sector} = 90_{10}$) \\
+    2431              & \texttt{000Z}   & \texttt{4200}    & $L = $ Destination cell 4200 \\
+    2432              & \texttt{000Z}   & \texttt{1205}    & $Q = q = 12$, $P = 5$ decimal places \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This configuration instructs the subroutine to ingest 90 decimal words from the tape, convert them to binary, scale them to $q=12$ with 5 decimal places, and store them sequentially beginning at cell \texttt{4200}. Control then returns to main program cell \texttt{0613}.
+
+\paragraph{Example 2: Indefinite Tape Stream with Reused Base Address}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0501              & \texttt{000Z}   & \texttt{2433}    & Starting address of Control List \\
+    0729              & \texttt{000B}   & \texttt{0501}    & Load list pointer \\
+    0730              & \texttt{000R}   & \texttt{(0442)}  & Set return address \\
+    0731              & \texttt{000U}   & \texttt{(0445)}  & Jump to subroutine \\
+    0732              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2433              & \texttt{000Z}   & \texttt{0000}    & $N = 0$ (Read indefinitely until \texttt{w}) \\
+    2434              & \texttt{800Z}   & \texttt{0000}    & Negative instruction flag: Reuse destination address $L$ from previous run \\
+    2435              & \texttt{800Z}   & \texttt{0109}    & Negative scale flag: $Q = q = -01$, $P = 9$ decimal places \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This configuration processes an unknown length of data words until a stop code ``\texttt{w}'' marks the end of the block. The numbers are scaled to $q=-1$ with 9 decimal places and stored sequentially starting directly from the last memory address boundary computed during the previous subroutine invocation.
+
+\paragraph{Example 3: Single Word Accumulator Read}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0502              & \texttt{000Z}   & \texttt{2436}    & Starting address of Control List \\
+    1925              & \texttt{000B}   & \texttt{0502}    & Load list pointer \\
+    1926              & \texttt{000R}   & \texttt{(0442)}  & Set return address \\
+    1927              & \texttt{000U}   & \texttt{(0445)}  & Jump to subroutine \\
+    1928              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2436              & \texttt{000Z}   & \texttt{0001}    & $N = 1$ word (Leave in Accumulator) \\
+    2437              & \texttt{000Z}   & \texttt{1340}    & $L = 1340$ (Dummy address required by parser, but ignored) \\
+    2438              & \texttt{000P}   & \texttt{0000}    & First bit is \texttt{1}: Reuse $Q$ ($q$) and $P$ states from previous run \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The subroutine reads a single decimal value from the tape, converts it using the exact scale settings leftover from the last run, and leaves the value directly in the accumulator. No data is written to cell \texttt{1340}.
+
+\paragraph{Example 4: Total Control List Persistence}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0503              & \texttt{800Z}   & \texttt{0000}    & Negative pointer instruction: Reuse prior configuration \\
+    3618              & \texttt{000B}   & \texttt{0503}    & Load negative pointer execution command \\
+    3619              & \texttt{000R}   & \texttt{(0442)}  & Set return address \\
+    3620              & \texttt{000U}   & \texttt{(0445)}  & Jump to subroutine \\
+    3621              & \dots           &                  & Main program execution resumes \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Because the pointer token at \texttt{0503} has its sign bit set to negative, the subroutine bypasses parsing new parameters entirely and mirrors the execution profile of the preceding run.
+
+\paragraph{Example 5: Non-Reading Control Parameter Ingestion}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0504              & \texttt{000P}   & \texttt{2439}    & Opcode is \texttt{P} (First bit is \texttt{1}): Configuration initialization entry point \\
+    1231              & \texttt{000B}   & \texttt{0504}    & Load control initialization command \\
+    1232              & \texttt{000R}   & \texttt{(0442)}  & Set return address \\
+    1233              & \texttt{000U}   & \texttt{(0413)}  & Jump to secondary initialization entry point \\
+    1234              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2439              & \texttt{800Z}   & \texttt{0000}    & Negative instruction flag: Reuse $N$ from previous run \\
+    2440              & \texttt{000Z}   & \texttt{1500}    & Set new target address $L = 1500$ \\
+    2441              & \texttt{000Z}   & \texttt{2700}    & Set new scale settings: $Q = q = 27$, $P = 0$ decimal places \\
+    2442              & \texttt{000Z}   & \texttt{0400}    & Hardware override: Select alternative input device code \texttt{04} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Because the entry command at \texttt{0504} uses an initialization opcode format starting with a \texttt{1} bit pattern, and points to subroutine entry point \texttt{(0413)}, the routine loads the new parameters, updates the hardware pointer to device \texttt{04}, but **does not read any data from the tape reader**. Control returns immediately to cell \texttt{1234}.
+
+\subsubsection*{CALLING SEQUENCES}
+Utilize Calling Sequence 1 if the input unit selection remains unchanged. Use Calling Sequence 2 to declare a new input device structure.
+
+\paragraph{Calling Sequence 1 (Retain Input Unit)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load the pointer instruction containing the Control List address. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+442}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+445}   & Jump to subroutine main entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Calling Sequence 2 (Modify Input Unit)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load the pointer instruction containing the Control List address. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+442}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+413}   & Jump to device-configuration entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The input hardware unit used by the system will dynamically match whichever device selection code is currently declared inside the Conversion Control List.
+
+\subsubsection*{OPERATING INSTRUCTIONS}
+
+\begin{enumerate}
+    \item \textbf{Execution Time:} The program processes and converts decimal data into binary at an average rate of 40 five-digit numbers per minute.
+    \item \textbf{Program Loading Instructions:} The routine tape contains the software in two distinct formats:
+    \begin{enumerate}[label=\alph*)]
+        \item A relocatable hexadecimal format compatible with loader program J1-10.0.
+        \item A relocatable decimal format utilizing the standard coding sheet layout.
+    \end{enumerate}
+    \item \textbf{Required Input/Output Units:} The subroutine automatically selects the standard console typewriter for input, unless an alternative unit override has been explicitly established via Calling Sequence 2. No hardware output devices are required.
+    \item \textbf{Overflow:} Any arithmetic overflow conditions occurring during data entry or base conversion are explicitly ignored upon input. The CPU's internal overflow register flag is automatically cleared and reset to zero before the routine exits back to the main program.
+\end{enumerate}
+
+\subsubsection*{TECHNICAL NOTE}
+To maintain maximum mathematical accuracy and prevent underflow or truncation errors during fixed-point binary conversion, the programmer should always specify the smallest practical scale factor value $Q$ ($q$) necessary for the expected data range.
+\newpage
 \subsection{Data Input 3}
+\subsubsection*{J2-10.2}
+\label{sec:data-input-3}
+
+\subsubsection*{PURPOSE}
+Program J2-10.2 converts a single signed 7-digit decimal number into binary, or reads and converts it in a single operation. 
+
+This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store the return address within the subroutine structures. Depending on the calling sequence chosen, the integer to be converted must already reside in the accumulator. Upon return to the main program, the converted binary number is left in the accumulator at @30.
+
+\subsubsection*{MEMORY USAGE}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 1 track, 9 sectors \\ 
+                    & \small(\textit{Note: The program must be loaded to start at sector 00 of an arbitrary track.}) \\
+    Buffer usage    & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{INPUT REQUIREMENTS}
+The input variable is a decimal number $N$, which is either read directly from tape by the subroutine or supplied internally by the main program:
+
+\begin{itemize}
+    \item \textbf{Tape Input via Subroutine:} $N$ may consist of up to seven decimal digits plus a sign. For positive numbers, the plus sign may be omitted. For negative numbers, the minus sign must explicitly precede the seven digits.
+    \item \textbf{Internal Input via Accumulator:} If the number is supplied by the main program, it must already be loaded into the accumulator at either @30 or @31, depending on the calling sequence used.
+    \item \textbf{Sign Bit Positions:} The sign of the pre-loaded number is determined dynamically by specific bit slices:
+    \begin{itemize}
+        \item If $N$ is at @30, the sign is indicated by **bit position 2**.
+        \item If $N$ is at @31, the sign is indicated by **bit position 3**.
+    \end{itemize}
+    A \texttt{1} in the respective bit position designates a negative number, while a \texttt{0} designates a positive number.
+\end{itemize}
+
+\subsubsection*{CALLING SEQUENCES}
+Calling Sequence 1 must be used if $N$ is to be read from tape by the subroutine. If $N$ is supplied internally by the main program, choose Calling Sequence 2 (for $N$ at @31) or Calling Sequence 3 (for $N$ at @30).
+
+\paragraph{Calling Sequence 1 (Tape Input)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha$               & \texttt{R}      & \texttt{L+44}    & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L}       & Enter subroutine at tape-read entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program; $N$ read from tape. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at location $\alpha$ stores the return address ($\alpha+2$) inside the subroutine. The instruction at $\alpha+1$ executes a branch to the initial starting address of the subroutine (\texttt{L}). Location $\alpha+2$ contains the first main program instruction executed after the subroutine runs.
+
+\paragraph{Calling Sequence 2 (Accumulator Input at @31)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{I}      &                  & Read/Input $N$ into the accumulator. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+44}    & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+2}     & Enter subroutine at @31 handling entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at $\alpha-1$ reads or brings $N$ into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+2}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 3 of the accumulator dictates the sign evaluation, and $N$ is processed at @31.
+
+\paragraph{Calling Sequence 3 (Accumulator Input at @30)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[Dest]}  & Bring $N$ from memory into the accumulator. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+44}    & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+58}    & Enter subroutine at @30 handling entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at $\alpha-1$ loads $N$ from memory into the accumulator. The instruction at $\alpha$ sets the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+58}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 2 of the accumulator dictates the sign evaluation, and $N$ is processed at @30.
+
+\subsubsection*{OUTPUT}
+Upon return to the main program sequence, the converted binary representation of the decimal number $N$ resides completely within the accumulator scaled exactly to @30.
+
+\subsubsection*{OPERATING INSTRUCTIONS}
+\begin{enumerate}
+    \item \textbf{Execution Time:} The program requires approximately 1.1 seconds to read and binary-convert a single 5-digit decimal number.
+    \item \textbf{Program Loading Instructions:} The routine tape contains the software in two distinct formats:
+    \begin{enumerate}[label=\alph*)]
+        \item A relocatable hexadecimal format compatible with loader program J1-10.0.
+        \item A relocatable decimal format utilizing the standard coding sheet layout.
+    \end{enumerate}
+    \item \textbf{Required Input/Output Units:} When executing Calling Sequence 1, the subroutine automatically selects the standard console typewriter for input. For Calling Sequences 2 and 3, device selection is purely a function of the main program logic. No hardware output devices are required.
+    \item \textbf{Overflow:} Arithmetic overflow states are neither evaluated nor altered by this program.
+\end{enumerate}
+\newpage
 \subsection{Data Input 4}
+\subsubsection*{J2-10.3}
+\label{sec:data-input-4}
+
+\subsubsection*{PURPOSE}
+Program J2-10.3 reads data into the computer for use by a main program. It reads a predetermined number of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters regarding the conversion must be supplied by the main program.
+
+The program functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the starting address of the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted to binary and stored.
+
+\subsubsection*{MEMORY USAGE}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 3 tracks, 52 sectors \\
+    Buffer usage    & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{INPUT REQUIREMENTS}
+The decimal numbers to be converted can consist of an algebraic sign and up to seven digits. A negative number must explicitly consist of its minus sign and seven digits; for positive numbers, both the sign and leading zeros may be omitted.
+
+The number of decimal values $N$ to be read is limited only by the available memory space. The number of decimal places $P$ must satisfy: $0 \le P \le 11$. The scale factor value must satisfy: $-36 \le \text{scale factor} \le +47$.
+
+The Conversion Control List, which occupies consecutive memory cells, is structured as follows:
+\begin{enumerate}
+    \item \textbf{Word 1 ($Q$ and $P$):} A single combined configuration word:
+    \begin{enumerate}
+        \item \textbf{$Q$ (Track Portion):} The target fixed-point scale factor entered as a two-digit decimal track address.
+        \item \textbf{$P$ (Sector Portion):} The number of decimal places entered as a two-digit decimal sector address.
+    \end{enumerate}
+    \item \textbf{Word 2 ($N$):} The number of words to be read, specified in track/sector notation (i.e., modulo 64 format).
+    \item \textbf{Word 3 (Address):} The initial destination address for the data, specified in decimal track/sector notation.
+\end{enumerate}
+
+The scale factor is negative if the instruction containing $Q$ is formatted as a negative instruction (sign bit = \texttt{1}). All other instructions in the control list must be positive.
+
+Additionally, an instruction containing the starting address of the Control List must be present. This instruction must reside in the accumulator when the jump to the subroutine is executed.
+
+If the selection of the input unit is to be modified, a special calling sequence must be used (by default, the subroutine selects the standard console typewriter). This requires a **fourth word** in the Conversion Control List, which contains the desired device selection code as a decimal track address. This selection code remains effective until explicitly replaced by a different one.
+
+\subsubsection*{CALLING SEQUENCES}
+If the standard console typewriter is to be used as the input device, Calling Sequence 1 must be used. Calling Sequence 2 is intended for variable device selection override.
+
+\paragraph{Calling Sequence 1 (Standard Input)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load starting address of Control List. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+351}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+308}   & Enter subroutine at standard entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at $\alpha-1$ loads the instruction containing the starting address of the Control List into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$) within the subroutine structures. The instruction at $\alpha+1$ causes a jump to location \texttt{L+308} of the subroutine, where \texttt{L} is the base address of the subroutine. Location $\alpha+2$ contains the first instruction of the main program to be executed after completing the subroutine.
+
+\paragraph{Calling Sequence 2 (Variable Device Selection Override)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load starting address of Control List. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+351}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+300}   & Enter subroutine at device-selection entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Calling Sequence 2 is identical to Calling Sequence 1, except for the instruction at $\alpha+1$. This instruction causes a jump to \texttt{L+300}, so that the desired device selection is performed based on the selection code provided in the fourth word of the Control List.
+
+\subsubsection*{OPERATING INSTRUCTIONS}
+\begin{enumerate}
+    \item \textbf{Execution Time:} The program reads and binary-converts decimal data at an average rate of 40 five-digit numbers per minute.
+    \item \textbf{Program Loading Instructions:} The routine tape contains the software in two distinct formats:
+    \begin{enumerate}[label=\alph*)]
+        \item A relocatable hexadecimal format compatible with loader program J1-10.0.
+        \item A relocatable decimal format utilizing the standard coding sheet layout.
+    \end{enumerate}
+    \item \textbf{Required Input/Output Units:} The subroutine automatically selects the standard console typewriter for input, unless an alternative device selection override has been established via Calling Sequence 2. No hardware output devices are required.
+    \item \textbf{Overflow:} Any arithmetic overflow conditions occurring during data entry or base conversion are ignored upon input, but the overflow flag is automatically reset to zero prior to returning to the main program.
+\end{enumerate}
+
+\subsubsection*{EXAMPLES}
+The following are examples of Conversion Control Lists:
+
+\paragraph{Example 1: Standard Typewriter Block Ingestion}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0500              & \texttt{Z}      & \texttt{2420}    & Starting address of Control List \\
+    0532              & \texttt{B}      & \texttt{0500}    & Load list pointer into accumulator \\
+    0533              & \texttt{R}      & \texttt{L+0351}  & Set return address \\
+    0534              & \texttt{U}      & \texttt{L+0308}  & Jump to standard entry point \\
+    0535              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2420              & \texttt{Z}      & \texttt{1304}    & $Q = \text{@13}$, $P = 4$ decimal places \\
+    2421              & \texttt{Z}      & \texttt{0146}    & $N = 110$ words ($01_{\text{track}} \times 64 + 46_{\text{sector}} = 110_{10}$) \\
+    2422              & \texttt{Z}      & \texttt{1500}    & Target starting address for data block \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This example instructs the subroutine to read 110 decimal numbers from the tape, convert them to binary, align them for $P=4$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor \texttt{@13}. Control then returns to cell \texttt{0535} of the main program.
+
+\paragraph{Example 2: Alternative Device Selection with Negative Scale Factor}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    0501              & \texttt{Z}      & \texttt{2423}    & Starting address of Control List \\
+    0636              & \texttt{B}      & \texttt{0501}    & Load list pointer \\
+    0637              & \texttt{R}      & \texttt{L+0351}  & Set return address \\
+    0638              & \texttt{U}      & \texttt{L+0300}  & Jump to device-selection override entry point \\
+    0639              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2423              & \texttt{800Z}   & \texttt{0108}    & Negative instruction flag: $Q = \text{@-01}$, $P = 8$ decimal places \\
+    2424              & \texttt{Z}      & \texttt{0019}    & $N = 19$ words ($00_{\text{track}} \times 64 + 19_{\text{sector}} = 19_{10}$) \\
+    2425              & \texttt{Z}      & \texttt{1820}    & Target starting address for data block \\
+    2426              & \texttt{Z}      & \texttt{0800}    & Device selection code data word (Device code \texttt{08}) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This example instructs the subroutine to read 19 decimal numbers, convert them to binary, align them for $P=8$ decimal places, and store them in consecutive cells starting at location \texttt{1820} at scale factor \texttt{@-01}. Input is executed via the peripheral unit corresponding to code \texttt{08}. Control then returns to cell \texttt{0639} of the main program.
+
+\subsubsection*{TECHNICAL NOTE}
+To maintain maximum mathematical accuracy, the smallest practical scale factor value should be used. The program does not halt if a number cannot be properly represented or stored at the intended scale factor target; instead, it continues execution using an invalid, meaningless value.
+\newpage
 \subsection{Data Input 5}
+\subsubsection*{J2-10.4}
+\label{sec:data-input-5}
+
+\subsubsection*{PURPOSE}
+Program J2-10.4 reads data into the computer for use by a main program. It reads an indefinite quantity of decimal data words, converts them to binary, aligns them according to a specified decimal point ($P$), and stores them in consecutive memory cells at a designated scale factor. During a single program execution run, any quantity of decimal numbers can be converted and stored. All parameters controlling the conversion must be supplied by the main program.
+
+Data Input 5 functions as a subroutine called via a calling sequence in the main program. The calling sequence must supply the subroutine with the Conversion Control List as well as the return address. Upon return to the main program, all data has been converted and stored.
+
+\subsubsection*{MEMORY USAGE}
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    Program storage & 3 tracks, 48 sectors \\
+    Buffer usage    & None \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{INPUT REQUIREMENTS}
+Data Input 5 can convert decimal numbers consisting of an algebraic sign and up to seven digits into binary. A negative number must explicitly consist of its minus sign and seven digits; for positive numbers, both the sign and leading zeros may be omitted.
+
+The number of decimal places $P$ must satisfy: $0 \le P \le 11$. The scale factor value $Q$ must satisfy: $-36 \le Q \le +47$.
+
+The Conversion Control List, which must be stored in consecutive cells before entering the subroutine, is structured as follows:
+\begin{enumerate}
+    \item \textbf{Word 1 ($Q$ and $P$):} A single combined configuration word:
+    \begin{enumerate}
+        \item \textbf{$Q$ (Track Portion):} The target fixed-point scale factor entered as two decimal digits in the track address field.
+        \item \textbf{$P$ (Sector Portion):} The number of decimal places entered as two decimal digits in the sector address field.
+    \end{enumerate}
+    \item \textbf{Word 2 (Address):} The initial destination address for the data, specified in decimal track/sector notation.
+\end{enumerate}
+
+The scale factor $Q$ is negative if the instruction containing it is formatted as a negative instruction (sign bit = \texttt{1}). All other instructions in the control list must be positive.
+
+Additionally, an instruction containing the starting address of the Control List must be present. This instruction must reside in the accumulator when the jump to the subroutine is executed.
+
+The ingestion of decimal numbers is terminated by the specific stop code keyword \texttt{w'}.
+
+If the selection of the input unit is to be modified, a special calling sequence can be used (by default, the subroutine selects the standard console typewriter). This requires an additional **third word** in the Conversion Control List, which follows the other two. This instruction must contain the device selection code for the desired unit in its decimal track address field. This selection code remains effective until explicitly replaced by a different selection code.
+
+\subsubsection*{CALLING SEQUENCES}
+Calling Sequence 1 should be used if the standard console typewriter is chosen as the input device; otherwise, use Calling Sequence 2 to select a specific alternative peripheral unit.
+
+\paragraph{Calling Sequence 1 (Standard Input)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load starting address of Control List. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+347}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+308}   & Enter subroutine at standard entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+The instruction at $\alpha-1$ loads the instruction containing the starting address of the Control List into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$) inside the subroutine structures. The instruction at $\alpha+1$ causes a jump to location \texttt{L+308} of the subroutine, where \texttt{L} is the base address of the subroutine. Location $\alpha+2$ contains the first instruction of the main program to be executed after completing the subroutine.
+
+\paragraph{Calling Sequence 2 (Variable Device Selection Override)}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    $\alpha-1$             & \texttt{B}      & \texttt{[List]}  & Load starting address of Control List. \\
+    $\alpha$               & \texttt{R}      & \texttt{L+347}   & Set return address. \\
+    $\alpha+1$             & \texttt{U}      & \texttt{L+300}   & Enter subroutine at device-selection entry point. \\
+    $\alpha+2$             & \dots           &                  & Return point to main program. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Calling Sequence 2 differs from Calling Sequence 1 only by the instruction at $\alpha+1$. This instruction causes a jump to \texttt{L+300} of the subroutine, so that the corresponding peripheral unit is selected based on the selection code provided in the Control List.
+
+\subsubsection*{OPERATING INSTRUCTIONS}
+\begin{enumerate}
+    \item \textbf{Execution Time:} The program reads and binary-converts data at an average rate of 40 five-digit numbers per minute.
+    \item \textbf{Program Loading Instructions:} The routine tape contains the software in two distinct formats:
+    \begin{enumerate}[label=\alph*)]
+        \item A relocatable hexadecimal format compatible with loader program J1-10.0.
+        \item A relocatable decimal format utilizing the standard coding sheet layout.
+    \end{enumerate}
+    \item \textbf{Required Input/Output Units:} The subroutine automatically selects the standard console typewriter for input. This assignment can be altered dynamically via alternative Calling Sequence 2 (see above). No hardware output devices are required.
+    \item \textbf{Overflow:} Any arithmetic overflow conditions occurring during data entry or base conversion are ignored upon input, but the overflow register flag is automatically reset to zero prior to returning to the main program.
+\end{enumerate}
+
+\subsubsection*{EXAMPLES}
+The following examples illustrate the application of the Conversion Control List:
+
+\paragraph{Example 1: Indefinite Stream via Standard Typewriter}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    1700              & \texttt{Z}      & \texttt{2900}    & Starting address of Control List \\
+    2000              & \texttt{B}      & \texttt{1700}    & Load list pointer into accumulator \\
+    2001              & \texttt{R}      & \texttt{L+0347}  & Set return address \\
+    2002              & \texttt{U}      & \texttt{L+0308}  & Jump to standard entry point \\
+    2003              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2900              & \texttt{Z}      & \texttt{0100}    & $Q = \text{@01}$, $P = 0$ decimal places \\
+    2901              & \texttt{Z}      & \texttt{1500}    & Target starting address for data block \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This example instructs the subroutine to read an indefinite quantity of data words from the tape, convert them to binary, align them for $P=0$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor \texttt{@01}. Control then returns to cell \texttt{2003} of the main program.
+
+\paragraph{Example 2: Indefinite Stream via Alternative Unit Override}
+\begin{center}
+\begin{tabular}{ccll}
+    \toprule
+    \textbf{Location} & \textbf{Opcode} & \textbf{Address} & \textbf{Description} \\
+    \midrule
+    1701              & \texttt{Z}      & \texttt{2902}    & Starting address of Control List \\
+    3000              & \texttt{B}      & \texttt{1701}    & Load list pointer \\
+    3001              & \texttt{R}      & \texttt{L+0347}  & Set return address \\
+    3002              & \texttt{U}      & \texttt{L+0300}  & Jump to device-selection override entry point \\
+    3003              & \dots           &                  & Main program execution resumes \\
+    \midrule
+    2902              & \texttt{800Z}   & \texttt{0209}    & Negative instruction flag: $Q = \text{@-02}$, $P = 9$ decimal places \\
+    2903              & \texttt{Z}      & \texttt{1200}    & Target starting address for data block \\
+    2904              & \texttt{Z}      & \texttt{0400}    & Device selection code data word (Device code \texttt{04}) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+This example instructs the subroutine to read an indefinite number of data words via the peripheral device corresponding to selection code \texttt{04}, convert them to binary, align them for $P=9$ decimal places, and store them in consecutive memory cells starting at location \texttt{1200} at scale factor \texttt{@-02}. Control then returns to cell \texttt{3003} of the main program.
+
+\subsubsection*{TECHNICAL NOTE}
+To maintain maximum mathematical accuracy, the smallest practical scale factor value should be chosen. The program does not halt if a number cannot be properly represented or stored at the specified scale factor target; instead, it continues execution using an invalid, meaningless value.
 \newpage

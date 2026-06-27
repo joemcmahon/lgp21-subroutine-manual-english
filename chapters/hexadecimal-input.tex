@@ -1,3 +1,99 @@
 \section{Hexadecimal Input}
-\subsection{Hexadecimal Input 1}
+\section*{HEXADECIMAL INPUT 3 J5-10.0}
+
+\subsection*{PURPOSE}
+The program J5-10.0 reads and stores hexadecimal tapes that were produced by the program Hexadecimal Output 3 (J4-10.2). Only full tracks can be stored, up to the limit of storage space available. The program is optimized for high-speed reading.
+
+\subsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+\item[] \textbf{Memory used:} 3 tracks
+\item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsection*{INPUT}
+After a jump to the starting address of the program, the computer selects the typewriter and requests the identification code for the input unit to be used by the program. Use (\texttt{0000} for the high-speed reader or \texttt{0200} for the Flexowriter reader). Enter the corresponding word in hexadecimal notation and press \textsf{START}.
+
+The program reads tapes in a special hexadecimal word format. The words must be arranged in groups of 64, with each group corresponding to one track. Each group must be preceded by a four-character hexadecimal input command of the form \texttt{tt00}, whereby \texttt{tt} represents the track number. Each group must also be followed by a checksum of all the words in the group.
+
+The words must be in the specific order described below, with the words separated by a single space. This optimizes the read/write speed of the program at the expense of pre-shuffling the words from 00, 01, 02,$\dots$, 64 into the indicated order.
+\begin{quote}
+56, 58, 60, 63, 01, 03, 05, 62, 00, 02, 04, 06, 08, 10, 12, 07, 09, 11, 13, 15, 17, 19, 14, 16, 18, 20, 22, 24, 26, 21, 23, 25, 27, 29, 31, 33, 28, 30, 32, 34, 36, 38, 40, 35, 37, 39, 41, 43, 45, 47, 42, 44, 46, 48, 50, 52, 54, 49, 51, 53, 55, 57, 59, 61.
+\end{quote}
+
+The subroutine is capable of accepting a Stop and Jump'' command of the form \texttt{8000ttss}, whereby \texttt{ttss} is a track/sector address in hexadecimal notation. The key word must always \emph{follow} a checksum to avoid it being stored as part of the input. If this command is read after a checksum, the computer stops, and when \textsf{START}is pressed, a jump occurs to the address specified in the command and execution continues.
+
+J5-10.0 performs a check sum of the input as it is read. After each full track, this checksum is compared with the one on the tape following the block. If the checksums match, reading continues. If not, the program prints a carriage return and \texttt{e} is printed, and stops (see error stops).
+
+\subsection*{CALLING SEQUENCE}
+The program is run by executing by a jump to its starting address. If the program has only just been read in, pressing \textsf{START} runs it.
+
+\subsection*{OUTPUT}
+The program to be read in is stored on the specified tracks in the correct sequence. No other output.
+
+\subsection*{OPERATION}
+\begin{itemize}
+\item \textbf{Time requirement:} approx. 13 sec. for the input of one track.
+\item \textbf{Program input:} \
+The tape contains the program in four versions:
+\begin{itemize}
+\item[a)] Arbitrarily relocatable hexadecimal with bootstrap on track 00.
+\item[b)] Arbitrarily relocatable hexadecimal with bootstrap on track 63.
+\item[c)] Arbitrarily relocatable hexadecimal permissible for Program Input 1 (J1-10.0).
+\item[d)] Arbitrarily relocatable decimal in coding sheet format.
+\end{itemize}
+The input procedure varies depending on the version used:
+\end{itemize}
+
+\subsubsection*{Arbitrarily relocatable hexadecimal with bootstrap}
+Arbitrarily relocatable hexadecimal programs with their own bootstrap permit the operator to enter the program either via the paper tape typewriter or via the high-speed reader, since a special bootstrap is provided for each input unit. They appear on the tape in the following sequence:
+\begin{enumerate}
+\item Track-00-bootstrap for input of the program via the high-speed reader.
+\item Track-00-bootstrap for input of the program via the paper tape typewriter.
+\item Program J5-10.0.
+\item Track-63-bootstrap for input of the program via the high-speed reader.
+\item Track-63-bootstrap for input of the program via the paper tape typewriter.
+\item Program J5-10.0.
+\end{enumerate}
+One chooses a bootstrap corresponding to the desired track and input unit, and enters it according to the bootstrap procedure (described in Program Input 1).
+
+The first instruction stored in the bootstrap is the adress modifier, which sets the starting address of the program to be stored. The following modifiers are preset on the tape, and can be changed as desired:
+\begin{itemize}
+\item Track-00-bootstraps have the modifier \texttt{0000}.
+\item Track-63-bootstraps have the modifier \texttt{6100}.
+\end{itemize}
+
+\subsubsection*{Arbitrarily relocatable hexadecimal, permissible for Program Input 1}
+This version is read in according to the procedure described in Program Input 1.
+
+\subsubsection*{Required input/output units:} \
+The input unit is selected by a suitable selection code at the beginning of the operation of the subroutine (see Input). An output unit is not required.
+
+\subsubsection*{Error stops:}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Printout} & \textbf{Meaning and Remedy} \\
+\midrule
+\texttt{e} & The checksums do not match. Rewind the tape \\
+& to the beginning of the last group and restart. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{REMARK}
+The program should be loaded in an even-numbered track, so that the reading-in occurs optimally.
+
+\subsection*{ADDENDUM}
+The tape ``Hexadecimal Input 3'' in arbitrarily relocatable hexadecimal version with Track-00- or Track-63-bootstrap, can be patched so that it can be stored at the beginning of a program tape. After the following alterations, the program will automatically select the same input unit it was read on for its own input.
+
+\begin{verbatim}
+'c01gj'8'u02g4'j's01k0'10'c0068'30'u0034'64'u0068'w4'b00k.j'w8'
+u02g8'70'u0074'78'u007j'80'u0084'88'c0118'8j'b0100'
+1q0'a0000'1q4'a0000'1q8'a0000'1qj'a0000'1w0'a0000'1w4'a0000'
+1w8'a0000'200'80010000'204'18'2f4'kj'2f8'q4'2fj''c00w4''
+\end{verbatim}
+
+The alteration adds four additional instructions in the first line and modifies the last word in the last line. The rest of the program, including bootstrap, remains unaltered.
+
 \newpage

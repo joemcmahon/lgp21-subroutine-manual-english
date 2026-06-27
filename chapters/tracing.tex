@@ -1,3 +1,104 @@
 \section{Tracing}
-\subsection{Trace 1}
+\subsubsection*{TRACE 1 K1-10.0}
+
+\subsubsection*{PURPOSE}
+The program K1-10.0 facilitates the debugging of a fixed-point program residing in memory by providing a detailed printout. Any or all addresses, instructions, and/or the results of their execution can be printed. Addresses are written in decimal track/sector notation; calculation results are written in hexadecimal form.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+    \item[] \textbf{Storage cells used:} 3 tracks, 51 sectors
+    \item[] \textbf{Temporary storage:} none
+\end{itemize}
+
+\subsubsection*{INPUT}
+This subroutine stablishes simulated counters, instruction registers, an accumulator, and a \textsf{PST} [Program Sense Switch] in memory.
+
+When the program is executed, the computer selects the Flexowriter, prints a carriage return, and requests the address of the main program which is to be traced in decimal track/sector notation.
+
+When this address has been entered, or when \textsf{PST} has been turned \textsf{ON}, the computer selects the typewriter, executes a carriage return, and requests an output formatting command. A list of command characters and their functions follows. The registers mentioned in these commands -— accumulator, counter register, and instruction register -— are the registers simulated by this program.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cl}
+\toprule
+\textbf{Command} & \textbf{Function} \\
+\midrule
+\texttt{T} & Turns on simulated \textsf{PST}. This ``switch'' has the same function \\
+           & while tracing the tested program as the real PST would \\
+           & during normal operation of the traced program. \\
+\midrule
+\texttt{C} & Print the contents of the simulated counter register in decimal track/sector \\
+           & notation after the execution of each instruction of the traced program. \\
+\midrule
+\texttt{R} & Print the contents of the instruction register in instruction format after \\
+           & execution of each instruction of the traced program. The instruction \\
+           & is preceded by a space character or a minus sign. \\
+\midrule
+\texttt{A} & Print the contents of the accumulator in hexadecimal notation after the \\
+           & execution of each instruction of the traced program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Note:} Any combination of the above command characters can be entered and the corresponding commands remain in effect until the next input. Entering a new command disables all functions first and then re-enables the ones entered. These characters may be entered in any order.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cl}
+\toprule
+\textbf{Command} & \textbf{Function} \\
+\midrule
+\texttt{X} & Restart the program and enter a new address \\
+           & for tracing. \\
+\midrule
+\texttt{O} & Continue tracing from the point where execution was stopped, without printout. \\
+\midrule
+(none)     & Pressing \textsf{START} without entering \texttt{T}, \texttt{C}, \texttt{R}, or \texttt{A} causes tracing to continue \\
+           & from the point where execution was stopped; the previous key words remain effective. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Note:} The accumulator is never re-initialized by ``Trace 1''. The program under test must take care of this housekeeping itself.
+
+\subsubsection*{CALLING SEQUENCE}
+Start execution via a jump to the starting address.
+
+\subsubsection*{OUTPUT}
+The program prints the content of the simulated registers and/or the accumulator depending on the key word specification after each instruction of the program under test has been executed.
+
+The instructions of the program under test are in fact executed exactly as they would be during normal program flow. Any output from the traced program is written on the same line as the content of the simulated registers. When the program traces without printing, any output that occurs is executed exactly where the \texttt{P} instruction of the traced program has it.
+
+If the physical \textsf{PST} switch is turned \textsf{ON} during tracing, the computer print a carriage return and the contents of the simulated registers according to the currently-specified command characters. The computer then stops and requests the entry of a command. Continuously pressing \textsf{START} in this state causes the execution of the respective next instruction of the traced program, exactly as if the computer were in \textsf{ONE OPER} mode. This continues until \textsf{PST} is turned \textsf{OFF}.
+
+Note that tracing without output can cause confusion if the traced program executes an \texttt{I} instruction. If the \textsf{PST} in \textsf{ON}, the computer prints a carriage return, the address of the last traced instruction, and requests a new command. In this state, pressing \textsf{START} allows execution to continue, but if the following instruction requests input again, the computer stops again -— but this time Any input will be routed to the program under test. This state can be recognized by the fact that there was no address printout before the computer stopped.
+
+\subsubsection*{OPERATION}
+\begin{enumerate}
+    \item \textbf{Program input:} \\
+    The tape contains the program in two versions:
+    \begin{itemize}
+        \item[a)] arbitrarily relocatable, hexadecimal, permissible for J1-10.0, and
+        \item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+    \end{itemize}
+    \item \textbf{Required input/output units:} \\
+    The subroutine selects the paper tape typewriter for input and output.
+    \item \textbf{Program sense switches:}
+    \begin{table}[h!]
+    \centering
+    \begin{tabular}{ccl}
+    \toprule
+    \textbf{Switch} & \textbf{Position} & \textbf{Function K1-10.0} \\
+    \midrule
+    PST             & OFF               & No effect. \\
+                    & ON                & Jump to an input instruction of the program to enter new commands. \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+    \item \textbf{Error stops:} \\
+    The subroutine executes all \texttt{Z} instructions of the program under test as stops. The only stop instructions in the trace program itself are before the initial output formatting command and before the entry of a new trace address.
+\end{enumerate}
+
+\subsubsection*{REMARK}
+If the traced program requests input during checking, the least significant bit of the entered word is lost.
 \newpage

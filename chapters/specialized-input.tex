@@ -1,3 +1,122 @@
 \section{Specialized Input/Output}
 \subsection{Angle or Direction I/O}
+\subsection*{DIRECTION OR ANGLE INPUT AND OUTPUT 1 J9-11.0}
+
+\subsubsection*{PURPOSE}
+The program J9-11.0 reads or prints a positive or negative angle, or a direction, consisting of the specification of the quadrant and a positive angle. All angles must be smaller than $512^\circ$, and direction angles must not be greater than $90^\circ$ [sic]\footnote{Architectural Note: The German text states `Richtungswinkel dürfen nicht größer als 600 sein'' (direction angles must not be greater than 600) in the Purpose section, but explicitly contradicts this later under Input, stating `Die Winkelangaben bei Richtungen dürfen nicht größer als $90^\circ$ sein'' (The angle specifications for directions must not be greater than $90^\circ$). In LGP-21 quadrant geometry, $90^\circ$ is the correct architectural limit. The `600' is a typographical error in the original manual, likely a misprint of $90^\circ$ or $60^\circ$ on a standard typewriter.}. The entered angle or peak circle [vertex circle] of the direction is binarized and placed into the accumulator.
+
+The printing of an angle occurs in decimal notation in degrees and minutes, each followed by a dash, and in seconds, accurate up to one-tenth of a second. For a direction, the angle is printed in the same way, except that a character \texttt{N} (North) or \texttt{S} (South) precedes it and a character \texttt{E} (East) or \texttt{W} (West) follows it.
+
+The program operates as a subroutine that is called by a calling sequence of the main program. Before the jump into the subroutine, the calling sequence must store the return address. In the case of the output function, the angle or the direction must stand in the accumulator before the entry into the subroutine occurs. Upon return to the main program, the angle or the direction is read and placed into the accumulator if the input function was called, or the angle or the direction is printed if the output function was called.
+
+\subsubsection*{STORAGE REQUIREMENTS}
+\begin{itemize}
+\item[] \textbf{Storage cells used:} 2 tracks, 61 sectors
+\item[] \textbf{Temporary storage:} sectors 2, 5, 15, 17, 48, 51, 52, 56, and 60 of track 63
+\end{itemize}
+
+\subsubsection*{INPUT}
+The input for the program consists of one of the two following possibilities:
+\begin{enumerate}
+\item A positive angle in decimal notation in degrees, minutes, and seconds.
+\item A direction, consisting of the characters \texttt{S} or \texttt{N}, a positive angle in decimal notation in degrees, minutes, seconds, and the characters \texttt{E} or \texttt{W}.
+\end{enumerate}
+Each value must be specified as one word; e.g.: \texttt{1422038'} to specify an angle of $142^\circ 20' 38''$; \texttt{S204010W} to specify the direction $\text{SW } 20^\circ 40' 10''$; or \texttt{N000342E} to specify the direction $\text{NE } 0^\circ 3' 42''$ [sic]\footnote{Architectural Note: The text contains minor typos in the symbols used for arcminutes and arcseconds (using various configurations of apostrophes such as $38'$ for seconds or $5120$ instead of $512^\circ$). These are structural transcription discrepancies native to the German source manuscript type-setting.}.
+
+The angle specification can be at most seven digits; leading zeros on the left may be omitted. All angles must be smaller than $512^\circ$. Every direction specification must consist of eight characters; for vanishing quantities, the zeros must be written out completely; algebraic signs are not specified. The angle specifications for directions must not be greater than $90^\circ$.
+
+\subsubsection*{CALLING SEQUENCE}
+In the subroutine, three calling sequences are provided: 1. for input, 2. for angle output, 3. for direction output. In every case, $L_0$ is the starting address of the subroutine.
+
+\subsubsection*{1. Input:}
+Intended for reading in an angle or a direction.
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccl}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$   & \texttt{R} & $L_0 + 47$  & Store return address in the subroutine. \\
+$+1$       & \texttt{U} & $L_0$       & Entry into the subroutine. \\
+$+2$       &            & \textit{etc.} & Return to the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{2. Angle Output:}
+Intended for printing an angle. The angle must reside in the accumulator at $q=9$ before the jump into the subroutine occurs.
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccl}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$ & \texttt{B} & $\Gamma$ [sic]\footnote{Architectural Note: The character $\Gamma$ appears in the original manual text as a placeholder address variable for the location of the angle data word.} & Bring the angle into the accumulator. \\
+$\alpha$     & \texttt{R} & $L_0 + 249$ & Store return address in the subroutine. \\
+$+1$         & \texttt{U} & $L_0 + 100$ & Entry into the subroutine. \\
+$+2$         &            & \textit{etc.} & Return to the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{3. Direction Output:}
+Intended for printing a direction. The peak circle of the direction must reside in the accumulator at $q=9$ when the jump into the subroutine occurs.
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccl}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$ & \texttt{B} & \texttt{C3} & Bring peak circle into the accumulator. \\
+$\alpha$     & \texttt{R} & $L_0 + 219$ & Store return address in the subroutine. \\
+$+1$         & $\pi$ [sic]\footnote{Architectural Note: The instruction column uses the Greek letter $\pi$ here, which is a structural typo in the original German text for the standard LGP unconditional jump command \texttt{U} (or long-form symbol $\mathbf{u}$), as correctly identified in sequences 1 and 2.} & $L_0 + 200$ & Entry into the subroutine. \\
+$+2$         &            & \textit{etc.} & Return to the main program. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In the calling sequences 2 and 3, the instruction in $\alpha-1$ does not need to be a ``Bring'' instruction. Any instruction sequence that brings the quantity to be outputted at $q=9$ into the accumulator is permissible. In all calling sequences, the instruction in $\alpha$ stores the return address ($\alpha+2$) into the subroutine. The instruction in $\alpha+1$ effects a jump to the corresponding location of the subroutine. In $\alpha+2$ stands the instruction of the main program that is executed first after running through the subroutine.
+
+\subsubsection*{OUTPUT}
+The program binarizes every entered angle or the peak circle of every direction specification and places them at $q=9$ into the accumulator.
+
+Each angle printout occurs in decimal form in degrees, minutes, seconds, and tenths of a second, whereby the degrees and minutes are followed by a separation dash; e.g., an angle of $80^\circ 37' 01''$ would be printed out as \texttt{80-37-01.0}.
+
+Upon output of a direction, the angle is written in the same manner, however one of the letters \texttt{N} or \texttt{S} precedes the angle specification, and one of the letters \texttt{E} or \texttt{W} follows it; i.e., a direction of $\text{NW } 42^\circ 1' 28''$ would be printed as \texttt{N 42-01-28.0W}.
+
+\subsubsection*{OPERATION}
+\begin{enumerate}
+\item \textbf{Accuracy:} max. error: $\pm 1$ second.
+\item \textbf{Time requirement:} approx. 1.5 seconds to read or write a quantity.
+\item \textbf{Program input:} \
+The tape contains the program in two ways:
+\begin{itemize}
+\item[a)] arbitrarily relocatable, hexadecimal, permissible for Program Input 1, and
+\item[b)] arbitrarily relocatable, decimal, in coding sheet format.
+\end{itemize}
+\item \textbf{Required input/output units:} \
+The subroutine selects the paper tape typewriter both for the input and for the output. The selection can be changed by changing the following memory contents:
+\begin{table}[h!]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Input (\texttt{80XItt00})} & \textbf{Output (\texttt{80XPtt00})} & \textbf{Output (\texttt{XPtt00})} \\
+\midrule
+$L_0 + 1$   & $L_0 + 105$ & $L_0 + 116$ \\
+$L_0 + 113$ & $L_0 + 121$ & $L_0 + 126$ \\
+$L_0 + 123$ & $L_0 + 133$ & $L_0 + 136$ \\
+$L_0 + 131$ & $L_0 + 142$ & $L_0 + 210$ \\
+$L_0 + 140$ & $L_0 + 216$ &             \\
+& $L_0 + 218$ &             \\
+\bottomrule
+\end{tabular}
+\end{table}
+\item \textbf{Overflow:} \\
+Is not tested upon entry, but is however reset upon output.
+\end{enumerate}
+
+\subsubsection*{REMARK}
+After each outputted value, a tabulator jump [tab command] is executed.
+
+To suppress the printing of the period and the last decimal place, change $L_0+137$ from \texttt{E0252} to \texttt{U0247}.
 \newpage
