@@ -225,7 +225,7 @@ The argument passed in the accumulator must be rescaled as well to the same $q$ 
 
 \subsubsection*{Translator's Notes}
 \paragraph{Arctangent calculations near 90 degrees}
-At the default $q=9$, the input fits in roughly $\pm 2^9 \approx \pm 512$. As an angle approaches 90\textdegree, its tangent grows without bound, so an input above 512 has no valid representation and a calculation involving such a value will overflow.
+At the default $q=9$, the input fits in roughly $\pm 2^9 \approx \pm 512$. As an angle approaches 90°, its tangent grows without bound, so an input above 512 has no valid representation and a calculation involving such a value will overflow.
 
 To extend the range, repatch the constants at $\alpha+56$ and $\alpha+59$ to a larger $q$. The input must use the same $q$ as the constants; the routine does \emph{not} check this, and a mismatch produces silent garbage. Note also that the word width is fixed at 31 bits, so every bit you give to the integer side is taken from the fractional side --- pushing $q$ higher costs precision on smaller results.
 
@@ -242,7 +242,7 @@ The program \texttt{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, t
     x &= \sqrt{x^2 + y^2} \cos \theta
 \end{align}
 
-The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result is the angle expressed as a fraction of a half-turn (so 1.0 corresponds to $180\textdegree = \pi$ radians); multiply by 180 to convert to degrees, or by $\pi$ to convert to radians.
+The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result is the angle expressed as a fraction of a half-turn (so 1.0 corresponds to 180° or $\pi$ radians); multiply by 180 to convert to degrees, or by $\pi$ to convert to radians.
 
 \texttt{B1-11.1} uses a standard LGP-21 subroutine call, but the $y$ value must be stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator prior to the call. Upon returning to the main program, the result will be in the accumulator $q=1$.
 
