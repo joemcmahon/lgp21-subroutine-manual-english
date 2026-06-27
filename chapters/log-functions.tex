@@ -173,17 +173,17 @@ Upon the return branch to the main program, the calculated logarithm to the desi
     Overflow is neither checked upon entry to the subroutine nor reset upon exit.
 
     \item \textbf{Error Stops:} \\
-  \begin{tabularx}{\textwidth}{lX} % Adjust the 9cm width to fit your page margins
+  \begin{tabularx}{\textwidth}{lX}
     \toprule
     \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
     \midrule
-    \texttt{main program+8}  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1$q=30$)$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
+    $\alpha+8$  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1 \text{ at } q=30)$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
     \bottomrule
   \end{tabularx}
 \end{enumerate}
 
 \subsubsection*{Translator's Notes}
-The behavior on an invalid argument ($N \le 0$) is a little odd. Halting at \texttt{L+8} leaves execution close to the error, fine; but why also leave $N - (1\text{ at }$q=30$)$ in the accumulator instead of just $N$?
+The behavior on an invalid argument ($N \le 0$) is a little odd. Halting at \texttt{L+8} leaves execution close to the error, fine; but why also leave $N - (1 \text{ at } q=30)$ in the accumulator instead of just $N$?
 
 ``$1$ at $q=30$'' means a single \texttt{1} bit in position 30 of the word, i.e.\ the value $2^{-30}$ --- one bit short of the LSB. Subtracting it from $N$ is essentially $N - \epsilon$: the result looks almost identical to $N$ if you read it as a number, but the low end of the word will differ.
 
