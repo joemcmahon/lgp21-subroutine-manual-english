@@ -1,6 +1,5 @@
 \section{Sorting}
-\subsection{SORTING 1}
-\subsubsection*{L1-10.0}
+\subsection*{SORTING 1 --- L1-10.0}
 
 \subsubsection*{PURPOSE}
 The program L1-10.0 sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. The sorted numbers are stored in the same memory region as the unsorted ones, so no additional memory space is required. The mask determines which parts of the words are compared.
@@ -23,16 +22,16 @@ Sequence of input variables:
 
 The mask must not contain a ``1'' in the sign position, as the subroutine ignores the sign of the numbers being sorted. $L_1$ and $L_2$ are inclusive.
 
-Upon jumping to the subroutine, $L_1$ at $q=29$ must reside in the accumulator. The cells following the jump instruction must contain the mask and $L_2$. The numbers to be sorted must reside in consecutive cells.
+Upon jumping to the subroutine, $L_1$ at $q = 29$ must reside in the accumulator. The cells following the jump instruction must contain the mask and $L_2$. The numbers to be sorted must reside in consecutive cells.
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
-\textbf{Memory Cell} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring $L_1$ @ 29. \\
+$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring $L_1$ at $@29$. \\
 $\alpha$     & \texttt{R} & $L_0 + 3$               & Store the address of the mask in the subroutine. \\
 $+1$         & \texttt{U} & $L_0$                   & Jump to the subroutine. \\
 $+2$         & \multicolumn{2}{l}{\texttt{,0000001'}} & Mask. \\
@@ -42,7 +41,7 @@ $+4$         &            & \textit{etc.}           & Return to the main program
 \end{tabular}
 \end{table}
 
-The instruction at $\alpha-1$ brings $L_1$ into the accumulator @ 29. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address of the mask ($\alpha+2$) in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the hexadecimal mask. The instruction at $\alpha+3$ contains $L_2$. Cell $\alpha+4$ contains the instruction of the main program that is executed first after the subroutine runs.
+The instruction at $\alpha-1$ brings $L_1$ into the accumulator at $@29$. (Any instruction that achieves this may be used.) The instruction at $\alpha$ stores the address of the mask ($\alpha+2$) in the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains the hexadecimal mask. The instruction at $\alpha+3$ contains $L_2$. Cell $\alpha+4$ contains the instruction of the main program that is executed first after the subroutine runs.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -65,16 +64,16 @@ The instruction at $\alpha-1$ brings $L_1$ into the accumulator @ 29. (Any instr
     Ignored upon entry and not reset upon exit.
 \end{enumerate}
 
-\subsection*{EXAMPLE}
+\subsubsection*{EXAMPLE}
 Suppose numbers are stored in cells 1500 to 1731, which are to be sorted according to their content in bit positions 7 to 11 and 24 to 29. Let ``Sorting 1'' be stored at 700 to 832, and the main program occupies cells 900 to 1215. The calling sequence would look as follows:
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-1011 & \texttt{B} & 1211 & Bring $L_1$ @ 29. \\
+1011 & \texttt{B} & 1211 & Bring $L_1$ at $@29$. \\
 1012 & \texttt{R} & 0703 & Set the address of the mask. \\
 1013 & \texttt{U} & 0700 & Jump to the subroutine. \\
 1014 & \multicolumn{2}{l}{\texttt{,0000001' 01WO OOWJ}} & Mask. \\
@@ -86,12 +85,11 @@ Suppose numbers are stored in cells 1500 to 1731, which are to be sorted accordi
 \end{tabular}
 \end{table}
 
-The instruction in 1011 brings $1500$ @ $29$ into the accumulator; the instruction in 1012 stores the address of the mask to 0703; and the instruction in 1013 effects a jump to the starting address of ``Sorting 1''. Cell 1014 contains the sorting mask. Note that only those bit positions that correspond to ``1'' bits in the mask are compared. The instruction in 1015 defines the ending address of the list. Cell 1016 contains the main program instruction to which execution returns.
+The instruction in 1011 brings $1500$ at $@29$ into the accumulator; the instruction in 1012 stores the address of the mask to 0703; and the instruction in 1013 effects a jump to the starting address of ``Sorting 1''. Cell 1014 contains the sorting mask. Note that only those bit positions that correspond to ``1'' bits in the mask are compared. The instruction in 1015 defines the ending address of the list. Cell 1016 contains the main program instruction to which execution returns.
 
 \pagebreak
 
-\subsection{SORTING 2}
-\subsubsection*{L1-10.1}
+\subsection*{SORTING 2 --- L1-10.1}
 
 \subsubsection*{PURPOSE}
 The program L1-10.1 sorts one-word or multi-word ``intervals'' [records] within a contiguous memory region by magnitude (smallest value to largest value) according to a designated ``sorting key word'' located within each respective record. Each record can be 1 to 64 words long. An additional memory region is required to temporarily buffer record contents during the sorting process. Sorting occurs relative to an arbitrary mask.
@@ -107,8 +105,8 @@ The program L1-10.1 sorts one-word or multi-word ``intervals'' [records] within 
 \subsubsection*{INPUT}
 The input consists of three hexadecimal key words supplied by the calling sequence and the record contents to be sorted. The key words are:
 \begin{enumerate}
-    \item $R$, the number of records at $q=15$; and $L_1$, the starting address of the first record at $q=29$.
-    \item $N$, the number of words in each record at $q=15$; and $K$, the position of the sorting key word within a record at $q=29$. (For example, $K = 3$ at $q=29$ specifies that the third word of the record is the sorting key).
+    \item $R$, the number of records at $q = 15$; and $L_1$, the starting address of the first record at $q = 29$.
+    \item $N$, the number of words in each record at $q = 15$; and $K$, the position of the sorting key word within a record at $q = 29$. (For example, $K = 3$ at $q = 29$ specifies that the third word of the record is the sorting key).
     \item A mask indicating the bit positions to be compared during sorting.
 \end{enumerate}
 
@@ -119,21 +117,21 @@ The records to be sorted must reside in consecutive cells.
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
 $\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring the word containing $R$ and $L_1$. \\
 $\alpha$     & \texttt{R} & $L_0 + 20$              & Store the address of the control data. \\
 $+1$         & \texttt{U} & $L_0$                   & Entry to subroutine. \\
-$+2$         & \multicolumn{2}{l}{\texttt{,0000002' N K}} & $N$ @ 15; $K$ @ 29. \\
+$+2$         & \multicolumn{2}{l}{\texttt{,0000002' N K}} & $N$ at $@15$; $K$ at $@29$. \\
 $+3$         & \multicolumn{2}{l}{\texttt{Mask}}      & Mask. \\
 $+4$         &            & \textit{etc.}           & Return to main program. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The instruction at $\alpha-1$ brings $R$ @ $15$ and $L_1$ @ $29$ into the accumulator. (Any instruction that accomplishes this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the instruction containing $N$ and $K$ into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains $N$ @ $15$ and $K$ @ $29$. Cell $\alpha+3$ contains the mask. After $\alpha+4$, execution returns from the subroutine.
+The instruction at $\alpha-1$ brings $R$ at $@15$ and $L_1$ at $@29$ into the accumulator. (Any instruction that accomplishes this is permissible.) The instruction at $\alpha$ stores the address ($\alpha+2$) of the instruction containing $N$ and $K$ into the subroutine. The instruction at $\alpha+1$ effects a jump to $L_0$, the starting address of the subroutine. Cell $\alpha+2$ contains $N$ at $@15$ and $K$ at $@29$. Cell $\alpha+3$ contains the mask. After $\alpha+4$, execution returns from the subroutine.
 
 \subsubsection*{OPERATION}
 \begin{enumerate}
@@ -159,18 +157,18 @@ Sort 37 words, stored in 4900 to 4936, treated as 37 single-word records, consid
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
 1010 & \texttt{B} & 1559 & Bring $R$ and $L_1$. \\
 1011 & \texttt{R} & 0320 & Store the N-K word address. \\
 1012 & \texttt{U} & 0300 & Jump to ``Sorting 2''. \\
-1013 & \multicolumn{2}{l}{\texttt{,0000002' 0001 0004}} & $N=1$ @ 15; $K=1$ @ 29. \\
+1013 & \multicolumn{2}{l}{\texttt{,0000002' 0001 0004}} & $N=1$ at $@15$; $K=1$ at $@29$. \\
 1014 & \multicolumn{2}{l}{\texttt{0001 wwwQ}} & Mask for bits 15 to 30. \\
 1015 &            & \textit{etc.} & Return to main program. \\
 \midrule
-1559 & \multicolumn{2}{l}{\texttt{,0000001' 0025 3100}} & $r=37$ @ 15; $L_1=4900$. \\
+1559 & \multicolumn{2}{l}{\texttt{,0000001' 0025 3100}} & $r=37$ at $@15$; $L_1=4900$. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -182,18 +180,18 @@ Sort 32 words, stored in 3200 to 3231, treated as eight 4-word records. They are
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
 1401 & \texttt{B} & 1563 & Bring $R$ and $L_1$. \\
 1402 & \texttt{R} & 0320 & Store the N-K word address. \\
 1403 & \texttt{U} & 0300 & Jump to ``Sorting 2''. \\
-1404 & \multicolumn{2}{l}{\texttt{,0000002' 0004 0008}} & $N=4$ @ 15; $K=2$ @ 29. \\
+1404 & \multicolumn{2}{l}{\texttt{,0000002' 0004 0008}} & $N=4$ at $@15$; $K=2$ at $@29$. \\
 1405 & \multicolumn{2}{l}{\texttt{OwwO W800}} & Mask for bits 4--11 and 16--20. \\
 1406 &            & \textit{etc.} & Return to main program. \\
 \midrule
-1563 & \multicolumn{2}{l}{\texttt{,0000001' 0008 2000}} & $R=8$ @ 15; $L_1=3200$. \\
+1563 & \multicolumn{2}{l}{\texttt{,0000001' 0008 2000}} & $R=8$ at $@15$; $L_1=3200$. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -429,8 +427,7 @@ Sample printouts follow, showing what both calling sequences achieve.
 
 \newpage
 
-\subsection{SORTING 3}
-\subsubsection*{L1-10.2}
+\subsection*{SORTING 3 --- L1-10.2}
 
 \subsubsection*{PURPOSE}
 The program L1-10.2 sorts a list of numbers within memory by magnitude (smallest value to largest value) according to a specified mask. Although the sorted numbers are written back to their original memory region, additional buffer cells are required. The mask determines which parts of the words are compared.
@@ -456,11 +453,11 @@ The numbers to be sorted must be positive and reside in consecutive cells.
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring $N$ @ 29. \\
+$\alpha - 1$ & \texttt{B} & $\langle \dots \rangle$ & Bring $N$ at $@29$. \\
 $\alpha$     & \texttt{R} & $L_0 + 63$              & Store the address of the first list word in the subroutine. \\
 $+1$         & \texttt{U} & $L_0$                   & Jump to the subroutine. \\
 $+2$         & \texttt{Z} & $S_0$                   & Starting address of the list. \\
@@ -498,7 +495,7 @@ The contents of cells 1514 to 1645 are to be sorted by magnitude, considering on
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccl}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
@@ -516,11 +513,9 @@ The contents of cells 1514 to 1645 are to be sorted by magnitude, considering on
 
 Please note that during sorting, only those bit positions that correspond to ``1'' bits in the mask are compared.
 \pagebreak
-\subsection{SORTING 4}
-\subsubsection*{L1-10.3}
-\section*{SORTING 4 L1-10.3}
+\subsection*{SORTING 4 --- L1-10.3}
 
-\subsection*{PURPOSE}
+\subsubsection*{PURPOSE}
 The program L1-10.3 sorts single-word or multi-word ``intervals'' [records]. In a list of single-word records, every word is treated as a comparison word [key]. In a list of multi-word records, any arbitrary word at the same position across all records can be designated as the comparison key word.
 
 The sorting process can be executed using any of the three following methods:
@@ -534,13 +529,13 @@ The sorting process can be executed using any of the three following methods:
 
 The program is invoked via a calling sequence from the main program. Upon jumping to ``Sorting 4'', the starting address of the parameter list must reside in the accumulator. Upon returning to the main program, the list stands sorted and stored in accordance with the specifications in the parameter list.
 
-\subsection*{STORAGE REQUIREMENTS}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{itemize}
     \item[] \textbf{Memory used:} 3 tracks
     \item[] \textbf{Temporary storage:} none
 \end{itemize}
 
-\subsection*{PROGRAM VARIABLES}
+\subsubsection*{PROGRAM VARIABLES}
 The seven program parameters must be specified in the following exact sequence:
 \begin{enumerate}
     \item \texttt{bbbb}, the starting address of the unsorted list.
@@ -554,7 +549,7 @@ The seven program parameters must be specified in the following exact sequence:
 
 \noindent \textbf{Note:} The mask must not contain a ``1'' in the sign position, as the program ignores the sign of the key words.
 
-\subsection*{CALLING SEQUENCE}
+\subsubsection*{CALLING SEQUENCE}
 The starting address of the parameter list is designated as $\beta$. This address $\beta$ must reside in the accumulator when the jump to the subroutine occurs.
 
 \begin{table}[h!]
@@ -590,7 +585,7 @@ $+6$    & \multicolumn{2}{l}{\texttt{mmmmmmmm}} & Comparison mask. \\
 \end{tabular}
 \end{table}
 
-\subsection*{OPERATION}
+\subsubsection*{OPERATION}
 \begin{enumerate}
     \item \textbf{Execution time:} \\
     Examples:
@@ -610,12 +605,12 @@ $+6$    & \multicolumn{2}{l}{\texttt{mmmmmmmm}} & Comparison mask. \\
     Ignored upon entry and not reset upon exit.
 \end{enumerate}
 
-\subsection*{EXAMPLE}
+\subsubsection*{EXAMPLE}
 The example demonstrates the three available sorting methods. Sample calling sequence for ``Sorting 4'' stored starting at 4100:
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccp{6cm}}
+\begin{tabular}{ccc p{6cm}}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
