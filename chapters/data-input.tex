@@ -314,7 +314,7 @@ To maintain maximum mathematical accuracy and prevent underflow or truncation er
 \subsubsection*{PURPOSE}
 Program J2-10.2 converts a single signed 7-digit decimal number into binary, or reads and converts it in a single operation. 
 
-This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store the return address within the subroutine structures. Depending on the calling sequence chosen, the integer to be converted must already reside in the accumulator. Upon return to the main program, the converted binary number is left in the accumulator at @30.
+This program functions as a subroutine called by a sequence in the main program. Prior to branching to the subroutine, the calling sequence must store the return address within the subroutine structures. Depending on the calling sequence chosen, the integer to be converted must already reside in the accumulator. Upon return to the main program, the converted binary number is left in the accumulator at $q=30$.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
@@ -331,17 +331,17 @@ The input variable is a decimal number $N$, which is either read directly from t
 
 \begin{itemize}
     \item \textbf{Tape Input via Subroutine:} $N$ may consist of up to seven decimal digits plus a sign. For positive numbers, the plus sign may be omitted. For negative numbers, the minus sign must explicitly precede the seven digits.
-    \item \textbf{Internal Input via Accumulator:} If the number is supplied by the main program, it must already be loaded into the accumulator at either @30 or @31, depending on the calling sequence used.
+    \item \textbf{Internal Input via Accumulator:} If the number is supplied by the main program, it must already be loaded into the accumulator at either $q=30$ or $q=31$, depending on the calling sequence used.
     \item \textbf{Sign Bit Positions:} The sign of the pre-loaded number is determined dynamically by specific bit slices:
     \begin{itemize}
-        \item If $N$ is at @30, the sign is indicated by **bit position 2**.
-        \item If $N$ is at @31, the sign is indicated by **bit position 3**.
+        \item If $N$ is at $q=30$, the sign is indicated by **bit position 2**.
+        \item If $N$ is at $q=31$, the sign is indicated by **bit position 3**.
     \end{itemize}
     A \texttt{1} in the respective bit position designates a negative number, while a \texttt{0} designates a positive number.
 \end{itemize}
 
 \subsubsection*{CALLING SEQUENCES}
-Calling Sequence 1 must be used if $N$ is to be read from tape by the subroutine. If $N$ is supplied internally by the main program, choose Calling Sequence 2 (for $N$ at @31) or Calling Sequence 3 (for $N$ at @30).
+Calling Sequence 1 must be used if $N$ is to be read from tape by the subroutine. If $N$ is supplied internally by the main program, choose Calling Sequence 2 (for $N$ at $q=31$) or Calling Sequence 3 (for $N$ at $q=30$).
 
 \paragraph{Calling Sequence 1 (Tape Input)}
 \begin{table}[h!]
@@ -358,7 +358,7 @@ $\alpha+2$   & \dots      &                & Return point to main program; $N$ r
 \end{table}
 The instruction at location $\alpha$ stores the return address ($\alpha+2$) inside the subroutine. The instruction at $\alpha+1$ executes a branch to the initial starting address of the subroutine (\texttt{L}). Location $\alpha+2$ contains the first main program instruction executed after the subroutine runs.
 
-\paragraph{Calling Sequence 2 (Accumulator Input at $@31$)}
+\paragraph{Calling Sequence 2 (Accumulator Input at $q=31$)}
 \begin{table}[h!]
 \centering
 \begin{tabularx}{\textwidth}{cccX}
@@ -367,14 +367,14 @@ The instruction at location $\alpha$ stores the return address ($\alpha+2$) insi
 \midrule
 $\alpha-1$   & \texttt{I} &                  & Read/Input $N$ into the accumulator. \\
 $\alpha$     & \texttt{R} & \texttt{L+44}    & Set return address. \\
-$\alpha+1$   & \texttt{U} & \texttt{L+2}     & Enter subroutine at $@31$ handling entry point. \\
+$\alpha+1$   & \texttt{U} & \texttt{L+2}     & Enter subroutine at $q=31$ handling entry point. \\
 $\alpha+2$   & \dots      &                  & Return point to main program. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-The instruction at $\alpha-1$ reads or brings $N$ into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+2}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 3 of the accumulator dictates the sign evaluation, and $N$ is processed at @31.
+The instruction at $\alpha-1$ reads or brings $N$ into the accumulator. The instruction at $\alpha$ stores the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+2}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 3 of the accumulator dictates the sign evaluation, and $N$ is processed at $q=31$.
 
-\paragraph{Calling Sequence 3 (Accumulator Input at $@30$)}
+\paragraph{Calling Sequence 3 (Accumulator Input at $q=30$)}
 \begin{table}[h!]
 \centering
 \begin{tabularx}{\textwidth}{cccX}
@@ -383,15 +383,15 @@ The instruction at $\alpha-1$ reads or brings $N$ into the accumulator. The inst
 \midrule
 $\alpha-1$   & \texttt{B} & \texttt{[Dest]} & Bring $N$ from memory into the accumulator. \\
 $\alpha$     & \texttt{R} & \texttt{L+44}   & Set return address. \\
-$\alpha+1$   & \texttt{U} & \texttt{L+58}   & Enter subroutine at $@30$ handling entry point. \\
+$\alpha+1$   & \texttt{U} & \texttt{L+58}   & Enter subroutine at $q=30$ handling entry point. \\
 $\alpha+2$   & \dots      &                  & Return point to main program. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-The instruction at $\alpha-1$ loads $N$ from memory into the accumulator. The instruction at $\alpha$ sets the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+58}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 2 of the accumulator dictates the sign evaluation, and $N$ is processed at @30.
+The instruction at $\alpha-1$ loads $N$ from memory into the accumulator. The instruction at $\alpha$ sets the return address ($\alpha+2$). The instruction at $\alpha+1$ executes a branch to entry offset \texttt{L+58}. Note that a \texttt{1} (negative) or \texttt{0} (positive) in bit position 2 of the accumulator dictates the sign evaluation, and $N$ is processed at $q=30$.
 
 \subsubsection*{OUTPUT}
-Upon return to the main program sequence, the converted binary representation of the decimal number $N$ resides completely within the accumulator scaled exactly to @30.
+Upon return to the main program sequence, the converted binary representation of the decimal number $N$ resides completely within the accumulator scaled exactly to $q=30$.
 
 \subsubsection*{OPERATING INSTRUCTIONS}
 \begin{enumerate}
@@ -509,13 +509,13 @@ The following are examples of Conversion Control Lists:
     0534              & \texttt{U}      & \texttt{L+0308}  & Jump to standard entry point \\
     0535              & \dots           &                  & Main program execution resumes \\
     \midrule
-    2420              & \texttt{Z}      & \texttt{1304}    & $Q = \text{@13}$, $P = 4$ decimal places \\
+    2420              & \texttt{Z}      & \texttt{1304}    & $Q = \text{$q=13$}$, $P = 4$ decimal places \\
     2421              & \texttt{Z}      & \texttt{0146}    & $N = 110$ words ($01_{\text{track}} \times 64 + 46_{\text{sector}} = 110_{10}$) \\
 2422              & \texttt{Z}      & \texttt{1500}    & Target starting address for data block \\
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read 110 decimal numbers from the tape, convert them to binary, align them for $P=4$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $@13$. Control then returns to cell \texttt{0535} of the main program.
+This example instructs the subroutine to read 110 decimal numbers from the tape, convert them to binary, align them for $P=4$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $q=13$. Control then returns to cell \texttt{0535} of the main program.
 
 \paragraph{Example 2: Alternative Device Selection with Negative Scale Factor}
 \begin{table}[h!]
@@ -647,12 +647,12 @@ The following examples illustrate the application of the Conversion Control List
     2002              & \texttt{U}      & \texttt{L+0308}  & Jump to standard entry point \\
     2003              & \dots           &                  & Main program execution resumes \\
     \midrule
-    2900              & \texttt{Z}      & \texttt{0100}    & $Q = \text{@01}$, $P = 0$ decimal places \\
+    2900              & \texttt{Z}      & \texttt{0100}    & $Q = \text{$q=01$}$, $P = 0$ decimal places \\
 2901              & \texttt{Z}      & \texttt{1500}    & Target starting address for data block \\
 \bottomrule
 \end{tabularx}
 \end{table}
-This example instructs the subroutine to read an indefinite quantity of data words from the tape, convert them to binary, align them for $P=0$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $@01$. Control then returns to cell \texttt{2003} of the main program.
+This example instructs the subroutine to read an indefinite quantity of data words from the tape, convert them to binary, align them for $P=0$ decimal places, and store them in consecutive cells starting at location \texttt{1500} at scale factor $q=01$. Control then returns to cell \texttt{2003} of the main program.
 
 \paragraph{Example 2: Indefinite Stream via Alternative Unit Override}
 \begin{table}[h!]

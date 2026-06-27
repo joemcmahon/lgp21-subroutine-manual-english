@@ -131,7 +131,7 @@ Example: The input keyword \texttt{,0000003'} followed by the three hexadecimal 
 
 The keyword for entering alphanumeric words causes \texttt{NN} alphanumeric words to be stored, beginning in the memory cell whose address is held in the start-fill counter. The alphanumeric words are shifted two places to the left and stored without binary conversion. \texttt{NN} must be specified in decimal and can take a value from 1 to 63.
 
-Each word can contain up to five characters in 6-bit representation (if more than five characters per word are entered, only the last five are retained). The last stored word receives a group-end indicator, i.e., $1$ at $@30$. All characters except tape feed (blank tape), delete code, and stop code can be entered; for example, lowercase letters can be stored.
+Each word can contain up to five characters in 6-bit representation (if more than five characters per word are entered, only the last five are retained). The last stored word receives a group-end indicator, i.e., $1$ at $q=30$. All characters except tape feed (blank tape), delete code, and stop code can be entered; for example, lowercase letters can be stored.
 
 Example: The input keyword \texttt{A0000004'} followed by the four words \texttt{TOTAL' UNIT'S PRO'DUCED'} would cause the information \texttt{TOTAL UNITS PRODUCED} to be stored into four consecutive memory locations without conversion into binary.
 

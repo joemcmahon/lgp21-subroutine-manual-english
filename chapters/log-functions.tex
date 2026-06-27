@@ -17,7 +17,7 @@ The program \texttt{B3-10.0} calculates the exponential function $K^x$, where K 
 \end{center}
 
 \subsubsection*{INPUT}
-The input value $x$ must be scaled to $-1 \le x \le 1$ and have a $q$ at $@1$.
+The input value $x$ must be scaled to $-1 \le x \le 1$ and have a $q$ at $q=1$.
 
 \subsubsection*{CALLING SEQUENCE}
 Each of the exponential functions has a separate entry point into the subroutine:
@@ -29,7 +29,7 @@ Each of the exponential functions has a separate entry point into the subroutine
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $q=1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L} & Call the $2^x$ routine. \\
 \bottomrule
@@ -43,7 +43,7 @@ $\alpha+1$ & \texttt{U} & \texttt{L} & Call the $2^x$ routine. \\
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $q=1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+2} & Call the $e^x$ routine. \\
 \bottomrule
@@ -57,7 +57,7 @@ $\alpha+1$ & \texttt{U} & \texttt{L+2} & Call the $e^x$ routine. \\
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $q=1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+3} & Call the $10^x$ routine. \\
 \bottomrule
@@ -66,7 +66,7 @@ $\alpha+1$ & \texttt{U} & \texttt{L+3} & Call the $10^x$ routine. \\
 Each of the entry points is a standard LGP-21 subroutine call; mainline execution resumes directly following the unconditional jump to the subroutine.
 
 \subsubsection*{OUTPUT}
-On return, the function value is in the accumulator at $@4$.
+On return, the function value is in the accumulator at $q=4$.
 
 \subsubsection*{REMARKS}
 \begin{itemize}
@@ -82,7 +82,7 @@ On return, the function value is in the accumulator at $@4$.
 \end{itemize}
 
 \subsubsection*{Translator's Notes}
-While the input to these functions is strictly restricted to $@1$, the routine returns the final calculated value in the accumulator scaled to \emph{at $@4$}. This choice of scale factor represents a best-case compromise with the LGP-21's fixed-point architecture.
+While the input to these functions is strictly restricted to $q=1$, the routine returns the final calculated value in the accumulator scaled to \emph{at $q=4$}. This choice of scale factor represents a best-case compromise with the LGP-21's fixed-point architecture.
 
 Because the maximum possible input value to any of these functions is 1.0, the maximum possible outputs are predetermined:
 \begin{align*}
@@ -90,11 +90,11 @@ Because the maximum possible input value to any of these functions is 1.0, the m
     e^1  &= 2.718281828\dots \\
     10^1 &= 10.0
 \end{align*}
-Recalling that the representation of the largest possible value for any of these functions as an integer is 10, or $1010_2$ --- four bits in binary --- this means we need to have four bits in front of the binary point, but not more, to represent the maximum value of 10.0: a $q$ of $@4$.
+Recalling that the representation of the largest possible value for any of these functions as an integer is 10, or $1010_2$ --- four bits in binary --- this means we need to have four bits in front of the binary point, but not more, to represent the maximum value of 10.0: a $q$ of $q=4$.
 
-If we instead chose to return the data at a standard library scale like at $@9$, this would throw away bits on the right side of the binary point to provide space to on the left-hand side of the binary point to represent values much larger that we would ever need. If, on the other hand, we chose to use $@1$, this would limit the return value's maximum to 1.99, causing an overflow on $2^1$ and most positive $e^x$ and $10^x$ calculations.
+If we instead chose to return the data at a standard library scale like at $q=9$, this would throw away bits on the right side of the binary point to provide space to on the left-hand side of the binary point to represent values much larger that we would ever need. If, on the other hand, we chose to use $q=1$, this would limit the return value's maximum to 1.99, causing an overflow on $2^1$ and most positive $e^x$ and $10^x$ calculations.
 
-By standardizing the output to at $@4$, \texttt{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
+By standardizing the output to at $q=4$, \texttt{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
 
 \newpage
 \subsection*{LOG 1 --- B3-11.0}
@@ -138,9 +138,9 @@ The \texttt{Z} instruction containing $K$ is the final entry in the calling sequ
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
 \midrule
-$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $q=1$ into the accumulator. \\
 $\alpha$ & \texttt{R} & \texttt{L+24} & Set return address. \\
-$\alpha+1$ & \texttt{U} & \texttt{L} & Call the log routine. The following parameter constants are effectively scaled at $@29$. \\
+$\alpha+1$ & \texttt{U} & \texttt{L} & Call the log routine. The following parameter constants are effectively scaled at $q=29$. \\
 $\alpha+2$ & \texttt{Z} & \texttt{00}$Q$ & The $q$ value of $N$. \\
 $\alpha+3$ & \texttt{Z} & \texttt{00}$K$ & Desired base $K$. \\
 \bottomrule
@@ -151,7 +151,7 @@ As usual, any instruction sequence leaving $N$ in the accumulator prior to the c
 Execution resumes following the second parameter constant upon return from the subroutine.
 
 \subsubsection*{OUTPUT}
-Upon the return branch to the main program, the calculated logarithm to the desired base resides in the accumulator at $@6$.
+Upon the return branch to the main program, the calculated logarithm to the desired base resides in the accumulator at $q=6$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -180,15 +180,15 @@ Upon the return branch to the main program, the calculated logarithm to the desi
     \toprule
     \textbf{Memory Location} & \textbf{Meaning and Remedy} \\
     \midrule
-    \texttt{main program+8}  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1\texttt{@30})$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
+    \texttt{main program+8}  & Argument $N$ is zero or negative. The accumulator contains the value $N - (1$q=30$)$. To continue, deposit a corrected value, and jump manually via the console to resume execution. \\
     \bottomrule
   \end{tabularx}
 \end{enumerate}
 
 \subsubsection*{Translator's Notes}
-The behavior on an invalid argument ($N \le 0$) is a little odd. Halting at \texttt{L+8} leaves execution close to the error, fine; but why also leave $N - (1\text{ at }@30)$ in the accumulator instead of just $N$?
+The behavior on an invalid argument ($N \le 0$) is a little odd. Halting at \texttt{L+8} leaves execution close to the error, fine; but why also leave $N - (1\text{ at }$q=30$)$ in the accumulator instead of just $N$?
 
-``$1$ at $@30$'' means a single \texttt{1} bit in position 30 of the word, i.e.\ the value $2^{-30}$ --- one bit short of the LSB. Subtracting it from $N$ is essentially $N - \epsilon$: the result looks almost identical to $N$ if you read it as a number, but the low end of the word will differ.
+``$1$ at $q=30$'' means a single \texttt{1} bit in position 30 of the word, i.e.\ the value $2^{-30}$ --- one bit short of the LSB. Subtracting it from $N$ is essentially $N - \epsilon$: the result looks almost identical to $N$ if you read it as a number, but the low end of the word will differ.
 
 The LGP-21's console isn't a wall of indicator lights; it's a small oscilloscope tube that paints the accumulator, the address register, and the current instruction as rows of dashes --- a \texttt{0} bit is drawn low, a \texttt{1} bit drawn high. The machine is slow enough that on a stop, the row sits there steady and you can read off the bits.
 

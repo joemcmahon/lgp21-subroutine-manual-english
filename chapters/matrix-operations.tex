@@ -66,7 +66,7 @@ Both parameters $N$ and $M$ are packed into a single parameter word. If $N$ is g
 $\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
 $\alpha$          & \texttt{R}      & \texttt{L+14}    & Modify subroutine instruction with key word address. \\
 $\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
+$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N$ at $q=15$ and $M$ at $q=29$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
 $\alpha + 3$      & ---              & ---              & Return to main program. \\
 \bottomrule
 \end{tabularx}
@@ -495,7 +495,7 @@ The source address $M$ and destination address $T$ may be identical (in-place tr
 $\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
 $\alpha$          & \texttt{R}      & \texttt{L}       & Store the parameter keyword tracking address in the subroutine. \\
 $\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$. \\
+$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N$ at $q=15$ and $M$ at $q=29$. \\
 $\alpha + 3$      & \texttt{Z}      & \texttt{T}       & Starting address for the transposed matrix. \\
 $\alpha + 4$      & ---              & ---              & Return to main program (execution resumes here). \\
 \bottomrule

@@ -40,7 +40,7 @@ $\alpha+1$ & \texttt{U} & \texttt{L} & Unconditional branch to the subroutine en
 This function uses a standard LGP-21 function call. The only notable factor is that $N$ must have an even $q$.\footnote{See \label{subsub:halfQ} for why.}
 
 \subsubsection*{OUTPUT}
-Upon the return branch to the main program, the square root of the argument $N$ resides in the accumulator at $q_N / 2$. For example, if $N$ is at $@24$, then $\sqrt{N}$ will be at $@12$.
+Upon the return branch to the main program, the square root of the argument $N$ resides in the accumulator at $q_N / 2$. For example, if $N$ is at $q=24$, then $\sqrt{N}$ will be at $q=12$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -86,7 +86,7 @@ The program \texttt{B4-11.0} calculates the $n$-th root of any non-negative valu
 where $y_i$ represents the $i$-th approximation of the root.
 
 \noindent
-\texttt{B4-11.0} uses a calling sequence similar to \ref{sec:logarithm_function}, except it has only one secondary parameter. The number $A$ whose root is to be taken is loaded into the accumulator with an appropriate scale factor (see below), and the degree of the root $n$ is stored in a \texttt{Z} instruction following the \texttt{R} that calls the subroutine. On return to the main program, the desired root resides in the accumulator at $@q/n$.
+\texttt{B4-11.0} uses a calling sequence similar to \ref{sec:logarithm_function}, except it has only one secondary parameter. The number $A$ whose root is to be taken is loaded into the accumulator with an appropriate scale factor (see below), and the degree of the root $n$ is stored in a \texttt{Z} instruction following the \texttt{R} that calls the subroutine. On return to the main program, the desired root resides in the accumulator at $q/n$.
 
 \subsubsection*{STORAGE REQUIREMENTS}
 \textbf{Program Space:} 1 track (64 words) \\
@@ -95,7 +95,7 @@ where $y_i$ represents the $i$-th approximation of the root.
 \subsubsection*{INPUT}
 The input variables for \texttt{B4-11.0} are $A$, the non-negative value whose root is to be calculated, and $n$, the integer specifying the degree of the root ($2 \le n \le 20$). 
 
-Upon branching to the subroutine, $A$ must reside in the accumulator scaled to a $q$ factor that is exactly divisible by $n$.\footnote{This is similar to the requirement that a number whose square root is being taken is divisible by two; however, $n$ only needs to divide $A$'s $q$ factor exactly to be acceptable. As an example, if we had $A$ at $@12$, then the square, cube, fourth, and sixth roots of $A$ could all be taken, as all are even divisors of 12.}
+Upon branching to the subroutine, $A$ must reside in the accumulator scaled to a $q$ factor that is exactly divisible by $n$.\footnote{This is similar to the requirement that a number whose square root is being taken is divisible by two; however, $n$ only needs to divide $A$'s $q$ factor exactly to be acceptable. As an example, if we had $A$ at $q=12$, then the square, cube, fourth, and sixth roots of $A$ could all be taken, as all are even divisors of 12.}
 
 \subsubsection*{CALLING SEQUENCE}
 \begin{table}[h!]
@@ -117,7 +117,7 @@ The instruction at location $\alpha - 1$ brings the value $A$ into the accumulat
 The instruction at location $\alpha$ stores the address ($\alpha + 2$) containing the parameter instruction for $n$ within the subroutine, and execution resumes at $\alpha+3$.\footnote{The subroutine takes the parameter address supplied via the \texttt{R} instruction, recalculates the return address, and adjusts its own code to properly return.}
 
 \subsubsection*{OUTPUT}
-Upon the return branch to the main program, the $n$-th root of the argument resides in the accumulator scaled to a $q$ factor of $q_A / n$. For example, if $n = 3$ and $q_A = 12$, the result $\sqrt[3]{A}$ will have a $q$ of at $@4$.
+Upon the return branch to the main program, the $n$-th root of the argument resides in the accumulator scaled to a $q$ factor of $q_A / n$. For example, if $n = 3$ and $q_A = 12$, the result $\sqrt[3]{A}$ will have a $q$ of at $q=4$.
 
 \subsubsection*{OPERATING DETAILS}
 

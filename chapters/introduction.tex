@@ -21,7 +21,7 @@ The LGP-21 treats all 31-bit words strictly as fractions ranging from $-1$ to $+
 
 This original version of this manual is inconsistent as to how this is notated (most likely because of multiple authors). As noted, the scaling factor is referred to as $q$, but there are multiple alternate notations for it. Some contributors use $q$ = $n$. Others prefer a shorthand $@n$ notation. Still others simply refer to ``a $q$ of 9'' (e.g.).
 
-For example, a value at texttt{@3} allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$ to be represented) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
+For example, a value at $q=3$ allocates 3 bits for the integer portion of a number (allowing values up to $7.999999$ to be represented) and the remaining 27 bits for the fraction. As noted above, the programmer is \emph{entirely responsible} for tracking this scale factor across operations, and must manually shift, multiply, or divide intermediate values as needed to maintain the desired scale factor.
 
 I have retained the melange of different notations for now, but I plan to standardize the usage as $q=n$ for scale factors.
 
@@ -33,8 +33,8 @@ Addition and subtraction require that the $q$ factors of both operands be identi
     For example, if you attempt to add $1.0$ scaled at $q=1$ to $1.0$ scaled at $q=4$ without normalizing them first:
     \begin{center}
     \begin{tabular}{rrc}
-        $1.0 \text{ at } \texttt{@1} \rightarrow$ & \texttt{0 100000...} & (Hardware sees $2^{29}$) \\
-        $+ \quad 1.0 \text{ at } \texttt{@4} \rightarrow$ & \texttt{0 000100...} & (Hardware sees $2^{26}$) \\ \hline
+        $1.0 \text{ at } q=1 \rightarrow$ & \texttt{0 100000...} & (Hardware sees $2^{29}$) \\
+        $+ \quad 1.0 \text{ at } q=4 \rightarrow$ & \texttt{0 000100...} & (Hardware sees $2^{26}$) \\ \hline
         \text{Result} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
     \end{tabular}
     \end{center}
