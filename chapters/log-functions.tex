@@ -1,13 +1,11 @@
 \section{Logarithmic Functions}
-\subsection{Exponential Function 1}
+\subsection*{EXPONENTIAL FUNCTION 1 --- B3-10.0}
 \label{sec:exponential_function_1}
-
-\subsection*{B3-10.0}
 
 \subsubsection*{PURPOSE}
 The program \texttt{B3-10.0} calculates the exponential function $K^x$, where K = 2, $e$, or 10 and $x: -1 \le x \le 1$. \texttt{B3-10.0} expects $x$ in the accumulator, and returns $K$ in the accumulator.
 
-\subsubsection*{Memory usage}
+\subsubsection*{STORAGE REQUIREMENTS}
 \begin{center}
 \begin{tabular}{ll}
     \toprule
@@ -17,44 +15,59 @@ The program \texttt{B3-10.0} calculates the exponential function $K^x$, where K 
 \end{tabular}
 \end{center}
 
-\subsubsection*{Input}
-The input value $x$ must be scaled to $-1 \le x \le 1$ and have a $q$ $@1$.
+\subsubsection*{INPUT}
+The input value $x$ must be scaled to $-1 \le x \le 1$ and have a $q$ at $@1$.
 
-\subsubsection*{Calling Sequence}
+\subsubsection*{CALLING SEQUENCE}
 Each of the exponential functions has a separate entry point into the subroutine:
 
 \paragraph{$2^x$}
-\begin{center}
-\begin{tabular}{llll}
-$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-$\alpha$ &    \texttt{R} & \texttt{L+9} & \text{; set return address} \\
-$\alpha+1$ &    \texttt{U} & \texttt{L} & \text{; call the $2^x$ routine} \\
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
+$\alpha+1$ & \texttt{U} & \texttt{L} & Call the $2^x$ routine. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \paragraph{$e^x$}
-\begin{center}
-\begin{tabular}{llll}
-$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-$\alpha$ &    \texttt{R} & \texttt{L+9} & \text{; set return address} \\
-$\alpha+1$ &    \texttt{U} & \texttt{L+2} & \text{; call the ex routine} \\
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
+$\alpha+1$ & \texttt{U} & \texttt{L+2} & Call the $e^x$ routine. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \paragraph{$10^x$}
-\begin{center}
-\begin{tabular}{llll}
-$\alpha-1$ 	& \texttt{B} 	& \texttt{$N$} 	& \text{; load $N@1$ into the accumulator} \\
-$\alpha$ 	& \texttt{R} 	& \texttt{L+9} 	& \text{; set return address} \\
-$\alpha+1$ 	& \texttt{U} 	& \texttt{L+3} 	& \text{; call the $10^x$ routine} \\
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
+$\alpha+1$ & \texttt{U} & \texttt{L+3} & Call the $10^x$ routine. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 Each of the entry points is a standard LGP-21 subroutine call; mainline execution resumes directly following the unconditional jump to the subroutine.
 
-\subsubsection*{Output}
-On return, the function value is in the accumulator$@4$.
+\subsubsection*{OUTPUT}
+On return, the function value is in the accumulator at $@4$.
 
-\subsubsection*{Notes}
+\subsubsection*{REMARKS}
 \begin{itemize}
     \item \textbf{Accuracy:} No error is greater than 5 x $10^{-8}$.
     \item \textbf{Time required:} approx. 775 ms.
@@ -67,8 +80,8 @@ On return, the function value is in the accumulator$@4$.
     \item \textbf{Overflow:} The program neither checks overflow upon input nor resets it.
 \end{itemize}
 
-\subsubsection*{Translator notes}
-While the input to these functions is strictly restricted to $@1$, the routine returns the final calculated value in the accumulator scaled to \emph{$@4$}. This choice of scale factor represents a best-case compromise with the LGP-21's fixed-point architecture.
+\subsubsection*{Translator's Notes}
+While the input to these functions is strictly restricted to $@1$, the routine returns the final calculated value in the accumulator scaled to \emph{at $@4$}. This choice of scale factor represents a best-case compromise with the LGP-21's fixed-point architecture.
 
 Because the maximum possible input value to any of these functions is 1.0, the maximum possible outputs are predetermined:
 \begin{align*}
@@ -78,30 +91,25 @@ Because the maximum possible input value to any of these functions is 1.0, the m
 \end{align*}
 Recalling that the representation of the largest possible value for any of these functions as an integer is 10, or $1010_2$ --- four bits in binary --- this means we need to have four bits in front of the binary point, but not more, to represent the maximum value of 10.0: a $q$ of $@4$.
 
-If we instead chose to return the data at a standard library scale like $@9$, this would throw away bits on the right side of the binary point to provide space to on the left-hand side of the binary point to represent values much larger that we would ever need. If, on the other hand, we chose to use $@1$, this would limit the return value's maximum to 1.99, causing an overflow on $2^1$ and most positive $e^x$ and $10^x$ calculations.
+If we instead chose to return the data at a standard library scale like at $@9$, this would throw away bits on the right side of the binary point to provide space to on the left-hand side of the binary point to represent values much larger that we would ever need. If, on the other hand, we chose to use $@1$, this would limit the return value's maximum to 1.99, causing an overflow on $2^1$ and most positive $e^x$ and $10^x$ calculations.
 
-By standardizing the output to $@4$, \texttt{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
+By standardizing the output to at $@4$, \texttt{B3-10.0} allows the maximum possible value (10.0) for any of these functions to be returned while preserving an optimal 26 bits of precision for the fractional portion of the result for smaller numbers.
 
 \newpage
-\subsection{Log 1}
+\subsection*{LOG 1 --- B3-11.0}
 \label{sec:logarithm_function}
 
-\subsection*{B3-11.0}
-
 \subsubsection*{PURPOSE}
-The program \texttt{B3-11.0} calculates the logarithm of a positive number to the base 2, $e$, or 10. A 7th-degree polynomial is utilized as the approximation method. 
+The program \texttt{B3-11.0} calculates the logarithm of a positive number to the base 2, $e$, or 10. A 7th-degree polynomial is utilized as the approximation method.
 
-\noindent
 \texttt{B3-11.0} uses an altered multi-argument LGP-21 function call sequence. The function argument must reside in the accumulator, but the two words immediately following the jump to the subroutine must contain the $q$ of the argument and the desired base of the logarithm. The return value
 is in the accumulator on return.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Space:} 1 track, 58 words \\
 \textbf{Temporary Storage:} None
 
 \subsubsection*{INPUT}
-\noindent
 The required input consists of:
 \begin{enumerate}
     \item $N$: The positive number whose logarithm is to be calculated.
@@ -109,42 +117,39 @@ The required input consists of:
     \item $K$: The desired base of the logarithm.
 \end{enumerate}
 
-\noindent
-$N$ must be a positive number greater than zero ($N > 0$) and must reside in the accumulator with a positive $q$ factor when branching to the subroutine. 
+$N$ must be a positive number greater than zero ($N > 0$) and must reside in the accumulator with a positive $q$ factor when branching to the subroutine.
 
-\noindent
 The $q$ factor must lie within the range $0 \le q \le 31$. In the calling sequence, $Q$ is stored in the sector portion of a \texttt{Z} instruction that immediately follows the branch instruction.
 
-\noindent
 $K$, the desired base of the logarithm, is also stored in the sector portion of a \texttt{Z} instruction.
 \begin{itemize}
     \item For $\log_2 N$, $K = \texttt{00}$
     \item For $\log_e N$, $K = \texttt{01}$
     \item For $\log_{10} N$, $K$ can take any value other than \texttt{00} or \texttt{01}. 
 \end{itemize}
-\noindent
 The \texttt{Z} instruction containing $K$ is the final entry in the calling sequence.
 
 \subsubsection*{CALLING SEQUENCE}
-\begin{center}
-\begin{tabular}{llll}
-$\alpha-1$ &    \texttt{B} & \texttt{$N$} & \text{; load $N@1$ into the accumulator} \\
-$\alpha$ &    \texttt{R} & \texttt{L+24} & \text{; set return address} \\
-$\alpha+1$ &    \texttt{U} & \texttt{L} & \text{; call the log routine} \\
-    & & & \text{; The following parameter constants} \\
-    & & & \text{; are effectively scaled at $@29$} \\
-$\alpha+2$ &    \texttt{Z} & \texttt{00$Q$} & \text{; The $q$ value of $N$} \\
-$\alpha+3$ &    \texttt{Z} & \texttt{00$K$} & \text{; Desired base $K$} \\
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha-1$ & \texttt{B} & $N$ & Load $N$ at $@1$ into the accumulator. \\
+$\alpha$ & \texttt{R} & \texttt{L+24} & Set return address. \\
+$\alpha+1$ & \texttt{U} & \texttt{L} & Call the log routine. The following parameter constants are effectively scaled at $@29$. \\
+$\alpha+2$ & \texttt{Z} & \texttt{00}$Q$ & The $q$ value of $N$. \\
+$\alpha+3$ & \texttt{Z} & \texttt{00}$K$ & Desired base $K$. \\
+\bottomrule
 \end{tabular}
-\end{center}
-\noindent
+\end{table}
 As usual, any instruction sequence leaving $N$ in the accumulator prior to the call is fine as long as it leaves $N$ there with a positive $q$. The instruction at location $\alpha$ stores the address ($\alpha+2$) of the \texttt{Z} instruction containing $Q$ into the subroutine's internal tracking mechanism, giving the subroutine the address of $Q$ and $K$.\footnote{Translator's note: the subroutine figures out the return address by taking the address supplied by the \texttt{R} instruction and adding 2 to skip over the two parameter words. It then updates a \texttt{U} instruction in \emph{itself} to jump back to the proper return address}.
 
 Execution resumes following the second parameter constant upon return from the subroutine.
 
 \subsubsection*{OUTPUT}
-\noindent
-Upon the return branch to the main program, the calculated logarithm to the desired base resides in the accumulator$@6$.
+Upon the return branch to the main program, the calculated logarithm to the desired base resides in the accumulator at $@6$.
 
 \subsubsection*{OPERATING DETAILS}
 
@@ -179,19 +184,19 @@ Upon the return branch to the main program, the calculated logarithm to the desi
 \end{enumerate}
 
 \subsubsection*{Translator's Notes}
-To a modern programmer accustomed to software exceptions and terminal logs, or one not quite as modern who's used to core dumps, the behavior of \texttt{B3-11.0} upon encountering an invalid argument ($N \le 0$) might seem strange. The program halting at location \texttt{L+8} is clear enough; that leaves execution realtively close to where the error occurred. But why set the accumulator to $N - (1\texttt{@30})$?
+To a modern programmer accustomed to software exceptions and terminal logs, or one not quite as modern who's used to core dumps, the behavior of \texttt{B3-11.0} upon encountering an invalid argument ($N \le 0$) might seem strange. The program halting at location \texttt{L+8} is clear enough; that leaves execution realtively close to where the error occurred. But why set the accumulator to $N - (1$ at $@30)$?
 
-$1\texttt{@30}$ denotes the integer value 1 scaled to a $q$ factor of 30, which places a single \texttt{1} bit at Bit 30 (representing a quantitative value of $2^{-30}$). This is the next-to-last usable bit in the word.
+$1$ at $@30$ denotes the integer value 1 scaled to a $q$ factor of 30, which places a single \texttt{1} bit at Bit 30 (representing a quantitative value of $2^{-30}$). This is the next-to-last usable bit in the word.
 
 Let's say a programmer accidentally passed a negative fraction; for example, $N = -0.5$ at a $q$ of 1. This value natively resides in the accumulator as:
 \begin{center}
     \texttt{11000000000000000000000000000000}
 \end{center}
 \noindent
-When the error trap, occurs, the program subtracts $1@30$ from the argument and leaves it in the accumulator. Subtracting a bit so low in the word forces a massive binary borrow chain to propagate all the way up to the first available \texttt{1} bit at the MSB side:
+When the error trap, occurs, the program subtracts $1$ at $@30$ from the argument and leaves it in the accumulator. Subtracting a bit so low in the word forces a massive binary borrow chain to propagate all the way up to the first available \texttt{1} bit at the MSB side:
 \begin{verbatim}
-  11000000000000000000000000000000  (N = -0.5@1)
-- 00000000000000000000000000000010  (1@30)
+  11000000000000000000000000000000  (N = -0.5 at @1)
+- 00000000000000000000000000000010  (1 at @30)
 ----------------------------------
   10111111111111111111111111111110  (Result remaining in Accumulator)
 \end{verbatim}
