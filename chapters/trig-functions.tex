@@ -242,7 +242,7 @@ The program \texttt{B1-11.1} calculates $\theta$ such that, given $x$ and $y$, t
     x &= \sqrt{x^2 + y^2} \cos \theta
 \end{align}
 
-The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result represents a partial result that can be converted into degrees or degrees of arc.
+The $x$ and $y$ values may be positive or negative; the function operates correctly in all quadrants of the cartesian plane. The values $x$ and $y$ must be given at the same $q$. The result is the angle expressed as a fraction of a half-turn (so 1.0 corresponds to $180\textdegree = \pi$ radians); multiply by 180 to convert to degrees, or by $\pi$ to convert to radians.
 
 \texttt{B1-11.1} uses a standard LGP-21 subroutine call, but the $y$ value must be stored in the subroutine's designated parameter storage, and $x$ must be in the accumulator prior to the call. Upon returning to the main program, the result will be in the accumulator $q=1$.
 
@@ -282,7 +282,7 @@ On return from the subroutine, the accumulator $q=1$ will contain the result. To
 
 \subsubsection*{OPERATION}
 \begin{itemize}
-    \item \textbf{Accuracy:} No error exceeds +4 x $10^{-8}$ in the partial result.
+    \item \textbf{Accuracy:} No error exceeds $4 \times 10^{-8}$ in the half-turn result.
     \item \textbf{Time required:} approx. 1160 ms.
     \item \textbf{Program format -} the tape contains the program in two versions:
     \begin{itemize}
