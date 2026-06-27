@@ -38,9 +38,9 @@ Addition and subtraction require that the $q$ factors of both operands be identi
         \text{Result} $\rightarrow$ & \texttt{0 100100...} & (Hardware sees $2^{29} + 2^{26}$)
     \end{tabular}
     \end{center}
-Obviously, the answer is not $2.0$, as it should be. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the binary point in the two numbers is in \emph{two different places}.
+Obviously, the answer is not $2.0$, as it should be. The machine will not throw an error, trigger an overflow, or warn you; it will simply calculate perfectly represented garbage because the \emph{logical} binary point in the two numbers is in \emph{two different places}.
 
-Multiplication and division also change the scale factor. Multiplication \emph{adds} $q$ values, division \emph{subtracts} them: a $q=4$ value times a $q=5$ value gives a $q=9$ result. The bit width of the word doesn't change, so the further the result's $q$ drifts from where you want it, the more least significant figures have been lost.
+Multiplication and division also change the scale factor. Multiplication \emph{adds} $q$ values, division \emph{subtracts} them: a $q=4$ value times a $q=5$ value gives a $q=9$ result. The bit width of the word doesn't change, so the further the result's $q$ drifts from where you want it, the more significant figures you've lost.
 
 Division has the extra restriction noted earlier: the divisor's magnitude must exceed the dividend's. Equivalently, if subtracting $q_\text{divisor}$ from $q_\text{dividend}$ gives a negative result, the operation overflows and the high-order bits are gone for good. Dividing a $q=1$ value by a $q=9$ value formally yields $q=-8$ --- i.e.\ the top 8, \emph{most} significant bits of the answer were thrown away.
  
