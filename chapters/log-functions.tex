@@ -23,8 +23,7 @@ The input value $x$ must be scaled to $-1 \le x \le 1$ and have a $q$ at $q=1$.
 Each of the exponential functions has a separate entry point into the subroutine:
 
 \paragraph{$2^x$}
-\begin{table}[h!]
-\centering
+\begin{center}
 \begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
@@ -34,11 +33,10 @@ $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L} & Call the $2^x$ routine. \\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 
 \paragraph{$e^x$}
-\begin{table}[h!]
-\centering
+\begin{center}
 \begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
@@ -48,11 +46,10 @@ $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+2} & Call the $e^x$ routine. \\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 
 \paragraph{$10^x$}
-\begin{table}[h!]
-\centering
+\begin{center}
 \begin{tabularx}{\textwidth}{cccX}
 \toprule
 \textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
@@ -62,7 +59,7 @@ $\alpha$ & \texttt{R} & \texttt{L+9} & Set return address. \\
 $\alpha+1$ & \texttt{U} & \texttt{L+3} & Call the $10^x$ routine. \\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 Each of the entry points is a standard LGP-21 subroutine call; mainline execution resumes directly following the unconditional jump to the subroutine.
 
 \subsubsection*{OUTPUT}
