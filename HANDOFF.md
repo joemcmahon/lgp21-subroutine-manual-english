@@ -12,18 +12,15 @@ elements of...", "Prior to executing the calling sequence, an explicit exit
 must be performed", etc.). We've been rewriting it paragraph-by-paragraph in
 plain English, with you saying y/n on each draft.
 
-Completed in this chapter:
+`chapters/matrix-operations.tex` is now fully de-stilted:
 - D1-11.0 Matrix Inversion 1
 - D1-12.0 Matrix-Vector Multiplication 1
 - D1-13.0 Matrix Multiplication 1
 - D1-14.0 Matrix Addition and Subtraction 1
 - D1-15.0 Matrix Transposition 1
+- H1-10.0 Complex Operations Interpretive System
 
 Still to do:
-- **H1-10.0 Complex Operations Interpretive System** -- last routine in the
-  chapter. Longer and denser than the others; it's a whole interpreter spec,
-  not just a single subroutine. About 100 lines of prose plus instruction
-  tables. Starts around line 470 of `chapters/matrix-operations.tex`.
 - **`chapters/floating-point.tex` -- the big one.** Same author voice as the
   matrix chapter but turned up to 11 -- "simulated pseudo-accumulator,"
   "architectural baseline footprint of the interpreter core loop," "operands
