@@ -1,13 +1,12 @@
 \section{Matrix Operations}
 \label{sec:matrix_operations}
 
-\subsection{Matrix Programs 1}
+\subsection*{MATRIX PROGRAMS 1 --- D1-10.0}
 \label{subsec:matrix_programs_1}
 
 The program \texttt{D1-10.0} is a collection of five routines, all of which utilize the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). This suite consists of the following programs:
 
 \medskip
-\noindent
 \begin{tabular}{llll}
 \toprule
 \textbf{Program} & \textbf{SC Number} & \textbf{Title} \\
@@ -25,10 +24,8 @@ The \ref{H1-11.0} floating-point interpreter provides a software floating-point 
 
 \newpage
 
-\subsection{Matrix Inversion 1}
+\subsection*{MATRIX INVERSION 1 --- D1-11.0}
 \label{subsec:matrix_inversion_1}
-
-\subsection*{D1-11.0}
 
 \subsubsection*{PURPOSE}
 \texttt{D1-11.0} utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}) to replace the elements of a square matrix $A$ with the elements of its inverse, $A^{-1} = B$. The input data must consist of the elements of a square, non-singular matrix whose rank is greater than 1, formatted as floating-point values. The total number of matrix elements must not exceed the available memory space.
@@ -37,7 +34,6 @@ The \ref{H1-11.0} floating-point interpreter provides a software floating-point 
 ``Matrix Inversion 1'' operates as a subroutine invoked via a calling sequence in the main program. Prior to executing the calling sequence, an explicit exit from the Interpretive System must be performed. Furthermore, before branching to the subroutine, the starting address of the Interpretive System must be stored within the subroutine's internal tracking workspace. The calling sequence must supply both the rank of the matrix and its starting memory address. Upon return to the main program, the calculated inverse matrix occupies the exact memory locations originally held by the input matrix.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Storage:} 2 tracks (128 words) \\
 \textbf{Temporary Storage:} None
 
@@ -53,22 +49,26 @@ Prior to executing the branch to the subroutine, the starting address of the Int
 \subsubsection*{CALLING SEQUENCE}
 The calling sequence must provide the following parameters:
 \begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $N$: The rank (dimension) of the matrix, scaled at $q=1$, with $N > 1$.
+    \item $N$: The rank (dimension) of the matrix, scaled at $q = 1$, with $N > 1$.
     \item $M$: The starting memory address of the matrix, specified in decimal track/sector notation.
 \end{enumerate}
 Both parameters $N$ and $M$ are packed into a single parameter word. If $N$ is greater than 15, the packed configuration requires hexadecimal entry format. 
 
 \medskip
-\begin{center}
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}            & \texttt{L+14}    & Modify subroutine instruction with key word address. \\
-$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \dots                 & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
-$\alpha + 3$      & ---                   & ---              & Return to main program.
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}      & \texttt{L+14}    & Modify subroutine instruction with key word address. \\
+$\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$.\footnote{Yes, you have to work this out yourself. It may be easier in hexadecimal.} \\
+$\alpha + 3$      & ---              & ---              & Return to main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \medskip
 \noindent
@@ -137,10 +137,8 @@ If a pivot element becomes very small (usually due to an earlier subtractive can
 \end{itemize}
 \newpage
 
-\subsection{Matrix-Vector Multiplication 1}
+\subsection*{MATRIX-VECTOR MULTIPLICATION 1 --- D1-12.0}
 \label{subsec:matrix_vector_multiplication_1}
-
-\subsection*{D1-12.0}
 
 \subsubsection*{PURPOSE}
 This program uses the Floating-Point Interpretive System 1 (\ref{H1-11.0}). \texttt{D1-12.0} multiplies a matrix by a column vector and stores the resulting product vector in a designated set of memory locations. 
@@ -159,7 +157,6 @@ The calling sequence must supply:
 \end{enumerate}
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Storage:} 1 track, 32 sectors (96 words) \\
 \textbf{Temporary Storage:} None
 
@@ -185,21 +182,24 @@ The following information must be supplied by the calling sequence in the exact 
 A sample calling sequence is illustrated below, where \texttt{L} denotes the starting address of this subroutine.
 
 \medskip
-\noindent
-\begin{center}
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha - 1$      & \texttt{XE}           & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}            & \texttt{$L_0$}   & Store the Interpretive System entry address in subroutine. \\
-$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
-$\alpha + 3$      & \texttt{Z}            & \texttt{M}       & Starting address of the matrix. \\
-$\alpha + 4$      & \texttt{Z}            & \texttt{iijj}    & Matrix dimensions: rows (\texttt{ii}) and columns (\texttt{jj}). \\
-$\alpha + 5$      & \texttt{Z}            & \texttt{V}       & Starting address of the column vector. \\
-$\alpha + 6$      & \texttt{Z}            & \texttt{P}       & Starting address of the destination product vector. \\
-$\alpha + 7$      & ---                   & ---              & Return to main program.
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$      & \texttt{XE}     & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}      & \texttt{$L_0$}   & Store the Interpretive System entry address in subroutine. \\
+$\alpha + 1$      & \texttt{U}      & \texttt{$L_0$}   & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}      & \texttt{$F_0$}   & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}      & \texttt{M}       & Starting address of the matrix. \\
+$\alpha + 4$      & \texttt{Z}      & \texttt{iijj}    & Matrix dimensions: rows (\texttt{ii}) and columns (\texttt{jj}). \\
+$\alpha + 5$      & \texttt{Z}      & \texttt{V}       & Starting address of the column vector. \\
+$\alpha + 6$      & \texttt{Z}      & \texttt{P}       & Starting address of the destination product vector. \\
+$\alpha + 7$      & ---              & ---              & Return to main program. \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \medskip
 \noindent
@@ -246,9 +246,8 @@ Speculating slightly, because I have not seen/dumped the code in question, this 
 This lets the \texttt{B} instruction at $L_0$ do double duty; it serves to save the ``return address'' (actually the parameter list address for the call) and to set up the calculation of the real return address by loading it into the accumulator.
 \newpage
 
-\subsection{Matrix Multiplication 1}
+\subsection*{MATRIX MULTIPLICATION 1 --- D1-13.0}
 \label{subsec:matrix_multiplication_1}
-\subsection*{D1-13.0}
 
 \subsubsection*{PURPOSE}
 The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-13.0} calculates the product matrix $C$ resulting from the matrix equation:
@@ -268,7 +267,6 @@ The product of an $n \times m$ matrix $A$ and an $m \times p$ matrix $B$ is an $
 Upon return to the main program, the calculated product matrix is in the target memory locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Storage:} 2 tracks, 50 sectors (178 words) \\
 \textbf{Temporary Storage:} None
 
@@ -296,20 +294,25 @@ The calling sequence must provide the following information in the exact sequent
 A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of this subroutine.
 
 \medskip
-\noindent
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}            & \texttt{$L_0$}       & Store parameter keyword tracking address in subroutine.\footnote{\textbf{Translator's note:} As discussed at \ref{jump-to-return-what}, the \texttt{R} calculates the location $\alpha+2$, effectively the parameter list address, and embeds it into the instruction at \texttt{$L_0$}. The jump to the subroutine executes a \texttt{B} which loads the address of the parameters, adds an offset of $+8$ to compute the final return address, and saves it locally to properly do the return.} \\
-$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
-$\alpha + 3$      & \texttt{Z}            & \texttt{A}       & Starting address of matrix $A$. \\
-$\alpha + 4$      & \texttt{Z}            & \texttt{nnmm}    & Dimensions of matrix $A$: rows (\texttt{nn}) and columns (\texttt{mm}). \\
-$\alpha + 5$      & \texttt{Z}            & \texttt{B}       & Starting address of matrix $B$. \\
-$\alpha + 6$      & \texttt{Z}            & \texttt{mmpp}    & Dimensions of matrix $B$: rows (\texttt{mm}) and columns (\texttt{pp}). \\
-$\alpha + 7$      & \texttt{Z}            & \texttt{C}       & Starting address of destination product matrix $C$. \\
-$\alpha + 8$      & ---                   & ---              & Return to main program (execution resumes here).
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}      & \texttt{$L_0$}   & Store parameter keyword tracking address in subroutine.\footnote{\textbf{Translator's note:} As discussed at \ref{jump-to-return-what}, the \texttt{R} calculates the location $\alpha+2$, effectively the parameter list address, and embeds it into the instruction at \texttt{$L_0$}. The jump to the subroutine executes a \texttt{B} which loads the address of the parameters, adds an offset of $+8$ to compute the final return address, and saves it locally to properly do the return.} \\
+$\alpha + 1$      & \texttt{U}      & \texttt{$L_0$}   & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}      & \texttt{$F_0$}   & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}      & \texttt{A}       & Starting address of matrix $A$. \\
+$\alpha + 4$      & \texttt{Z}      & \texttt{nnmm}    & Dimensions of matrix $A$: rows (\texttt{nn}) and columns (\texttt{mm}). \\
+$\alpha + 5$      & \texttt{Z}      & \texttt{B}       & Starting address of matrix $B$. \\
+$\alpha + 6$      & \texttt{Z}      & \texttt{mmpp}    & Dimensions of matrix $B$: rows (\texttt{mm}) and columns (\texttt{pp}). \\
+$\alpha + 7$      & \texttt{Z}      & \texttt{C}       & Starting address of destination product matrix $C$. \\
+$\alpha + 8$      & ---              & ---              & Return to main program (execution resumes here). \\
+\bottomrule
 \end{tabular}
+\end{table}
 
 \medskip
 \noindent
@@ -348,10 +351,8 @@ The result of ``Matrix Multiplication 1'' is the product matrix $C$, structured 
 The subroutine utilizes the Interpretive System internally to calculate floating-point steps. However, an exit sequence from the interpreter is automatically executed prior to returning control to the main program; control is returned in native hardware mode.
 \newpage
 
-\subsection{Matrix Addition and Subtraction 1}
+\subsection*{MATRIX ADDITION AND SUBTRACTION 1 --- D1-14.0}
 \label{subsec:matrix_addition_subtraction_1}
-
-\subsection*{D1-14.0}
 
 \subsubsection*{PURPOSE}
 The program utilizes the Floating-Point Interpretive System 1 (\texttt{H1-11.0}). \texttt{D1-14.0} adds or subtracts two matrices $A$ and $B$ and stores the resulting product matrix in a designated memory area. 
@@ -370,7 +371,6 @@ The input consists of the elements of both matrices, each having $i$ rows and $j
 Upon return to the main program, the resulting matrix resides in the designated memory cells.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Space:} 1 track (64 words) \\
 \textbf{Temporary Storage:} None
 
@@ -392,19 +392,24 @@ The following information must be supplied by the calling sequence in the exact 
 A template for the calling sequence is illustrated below, where \texttt{$L_0$} denotes the starting address of ``Matrix Addition and Subtraction 1''.
 
 \medskip
-\noindent
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}            & \texttt{$L_0$}       & Store parameter tracking address in the subroutine. \\
-$\alpha + 1$      & \texttt{U}            & \texttt{$L_0$}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \texttt{Z}            & \texttt{$F_0$}       & Starting address of the Interpretive System. \\
-$\alpha + 3$      & \texttt{Z}            & \texttt{A}       & Starting address of matrix $A$. \\
-$\alpha + 4$      & \texttt{Z}            & \texttt{iijj}    & Dimensions of the matrices: rows (\texttt{ii}) and columns (\texttt{jj}). \\
-$\alpha + 5$      & \texttt{A}/\texttt{S} & \texttt{B}       & Operation (\texttt{A} or \texttt{S}) and starting address of matrix $B$. \\
-$\alpha + 6$      & \texttt{Z}            & \texttt{C}       & Starting address of destination area for the resulting matrix. \\
-$\alpha + 7$      & ---                   & ---              & Return to main program (execution resumes here).
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}      & \texttt{$L_0$}   & Store parameter tracking address in the subroutine. \\
+$\alpha + 1$      & \texttt{U}      & \texttt{$L_0$}   & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \texttt{Z}      & \texttt{$F_0$}   & Starting address of the Interpretive System. \\
+$\alpha + 3$      & \texttt{Z}      & \texttt{A}       & Starting address of matrix $A$. \\
+$\alpha + 4$      & \texttt{Z}      & \texttt{iijj}    & Dimensions of the matrices: rows (\texttt{ii}) and columns (\texttt{jj}). \\
+$\alpha + 5$      & \texttt{A}/\texttt{S} & \texttt{B}  & Operation (\texttt{A} or \texttt{S}) and starting address of matrix $B$. \\
+$\alpha + 6$      & \texttt{Z}      & \texttt{C}       & Starting address of destination area for the resulting matrix. \\
+$\alpha + 7$      & ---              & ---              & Return to main program (execution resumes here). \\
+\bottomrule
 \end{tabular}
+\end{table}
 
 \medskip
 \noindent
@@ -436,10 +441,8 @@ The subroutine relies internally on the Interpretive System to process all float
 Either matrix $A$ or $B$ may be updated in place if desired. If an independent destination area is chosen, its memory bounds must not overlap with either $A$ or $B$.
 \newpage
 
-\subsection{Matrix Transposition 1}
+\subsection*{MATRIX TRANSPOSITION 1 --- D1-15.0}
 \label{subsec:matrix_transposition_1}
-
-\subsection*{D1-15.0}
 
 \subsubsection*{PURPOSE}
 The program \texttt{D1-15.0} transposes a square matrix stored in memory and saves the transposed results into designated cells. The input consists of the elements of a square matrix whose rank is strictly less than 32. Both fixed-point and floating-point data formats are supported. The total number of elements must not exceed the available memory space.
@@ -454,7 +457,6 @@ The program \texttt{D1-15.0} transposes a square matrix stored in memory and sav
 Upon return to the main program, the transposed matrix resides in the specified memory locations.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Space:} 1 track, 58 sectors (122 words) \\
 \textbf{Temporary Storage:} None
 
@@ -467,7 +469,7 @@ The data values may be supplied either in standard raw fixed-point fractional fo
 \subsubsection*{CALLING SEQUENCE}
 The following information must be supplied by the calling sequence in the exact sequential order specified below:
 \begin{enumerate}[label=\arabic*., leftmargin=1.5em, itemsep=2pt]
-    \item $N$: The rank (dimension) of the matrix, scaled at $q=15$.
+    \item $N$: The rank (dimension) of the matrix, scaled at $q = 15$.
     \item $M$: The starting memory address of the matrix, specified in decimal track/sector notation.
     \item $T$: The starting memory address of the destination storage area for the transposed matrix in decimal track/sector notation.
 \end{enumerate}
@@ -478,16 +480,21 @@ Parameters $N$ and $M$ are packed into a single parameter word at location $\alp
 The source address $M$ and destination address $T$ may be identical (in-place transposition). However, if the transposed matrix is to be written to a different memory region, that region must not overlap with the original matrix block.
 
 \medskip
-\noindent
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha - 1$      & \texttt{E}            & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha$          & \texttt{R}            & \texttt{L}       & Store the parameter keyword tracking address in the subroutine. \\
-$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to subroutine entry. \\
-$\alpha + 2$      & \dots                 & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$. \\
-$\alpha + 3$      & \texttt{Z}            & \texttt{T}       & Starting address for the transposed matrix. \\
-$\alpha + 4$      & ---                   & ---              & Return to main program (execution resumes here).
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha - 1$      & \texttt{E}      & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha$          & \texttt{R}      & \texttt{L}       & Store the parameter keyword tracking address in the subroutine. \\
+$\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to subroutine entry. \\
+$\alpha + 2$      & \dots           & \dots            & Packed parameter word: $N\texttt{@15}$ and $M\texttt{@29}$. \\
+$\alpha + 3$      & \texttt{Z}      & \texttt{T}       & Starting address for the transposed matrix. \\
+$\alpha + 4$      & ---              & ---              & Return to main program (execution resumes here). \\
+\bottomrule
 \end{tabular}
+\end{table}
 
 \medskip
 \noindent
@@ -517,17 +524,13 @@ The individual elements of the transposed matrix are saved starting at location 
 Unlike the other routines in the matrix suite, this subroutine \emph{does not} invoke or use the Floating-Point Interpretive System internally.\footnote{Because matrix transposition is a purely structural index manipulation (swapping element positions $(i,j)$ with $(j,i)$), the subroutine does not perform any actual arithmetic on the matrix values themselves, so it's completely unnecessary to incur the massive overhead of the floating-point interpreter \texttt{H1-11.0}. We're just moving data, so it doesn't matter if it's native fixed-point integers or multi-word floating-point interpreter variables.}
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Complex Matrix Operations Interpreter}
-\subsection{Complex Operations Interpretive System}
+\subsection*{COMPLEX OPERATIONS INTERPRETIVE SYSTEM --- H1-10.0}
 \label{subsec:complex_interpreter}
-
-\subsection*{H1-10.0}
 
 \subsubsection*{PURPOSE}
 The program \texttt{H1-10.0} enables the user to process algebraic expressions involving complex numbers in the form $(a+bi)$ as seamlessly as if they were standard real numbers. Additionally, the system provides integrated left and right logical bit-shifting capabilities. It also allows for dynamic address modification and loop-termination testing against a target end-address without ever needing to exit the interpretive execution loop.
 
 \subsubsection*{STORAGE REQUIREMENTS}
-\noindent
 \textbf{Program Space:} 3 tracks (192 words) \\
 \textbf{Temporary Storage:} None
 
@@ -571,16 +574,21 @@ The interpretive engine processes 15 distinct operations. For all arithmetic com
 A template for entering the interpretive loop is illustrated below, where \texttt{L} denotes the starting address of the interpreter.
 
 \medskip
-\noindent
-\begin{tabular}{llll}
-\textbf{Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Description} \\
-$\alpha$          & \texttt{R}            & \texttt{L}       & Store parameter tracking address inside the interpreter. \\
-$\alpha + 1$      & \texttt{U}            & \texttt{L}       & Unconditional branch to interpreter entry. \\
-$\alpha + 2$      & \dots                 & \dots            & First complex pseudo-instruction to be interpreted. \\
-$\vdots$          & $\vdots$              & $\vdots$         & Sequence of complex operations. \\
-$\alpha + n$      & \texttt{XE}           & \texttt{0000}    & Exit from the Interpretive System. \\
-$\alpha + n + 1$  & \dots                 & \dots            & First native hardware instruction (execution resumes here).
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc p{6cm}}
+\toprule
+\textbf{Memory Location} & \textbf{Instruction} & \textbf{Address} & \textbf{Meaning} \\
+\midrule
+$\alpha$          & \texttt{R}      & \texttt{L}       & Store parameter tracking address inside the interpreter. \\
+$\alpha + 1$      & \texttt{U}      & \texttt{L}       & Unconditional branch to interpreter entry. \\
+$\alpha + 2$      & \dots           & \dots            & First complex pseudo-instruction to be interpreted. \\
+$\vdots$          & $\vdots$        & $\vdots$         & Sequence of complex operations. \\
+$\alpha + n$      & \texttt{XE}     & \texttt{0000}    & Exit from the Interpretive System. \\
+$\alpha + n + 1$  & \dots           & \dots            & First native hardware instruction (execution resumes here). \\
+\bottomrule
 \end{tabular}
+\end{table}
 
 \medskip
 \noindent
