@@ -419,7 +419,7 @@ The initial location of the interpreter system should ideally align with Sector 
 
 Remember that when the interpreter is running all instructions are pseudo-instructions! The interpreter is substituting itself for the standard fetch-execute cycle that the CPU would do. Another way of saying it is that the interpreter is an emulator for a CPU that has a floating-point instruction set, and we have an agreed-upon protocol to enter and exit emulation.
 
-Pseudo-instructions utilizing addresses from \texttt{0000} to \texttt{0009} have special meanings. When pseudo-instructions use these addresses, they do not refer to the actual storage at these addresses, but instead invoke functions in the interpreter. The interpreter utilizes 16 such special instructions, including \texttt{D 000y} and \texttt{M 000y}. Although instructions \texttt{D 000y} and \texttt{M 000y} may carry a literal value of $y$ between 1 and 9, standard instructions like \texttt{D ttss} and \texttt{M ttss} (while in interpreter mode) cannot reference any location between \texttt{0000} and \texttt{0009}\footnote{The addresses from \texttt{0000} to \texttt{0009}, inclusive, trigger transcendental functions, etc. \emph{when the floating-point interpreter is running}. In normal execution mode, they're used just the same as any other location in the machine.}.
+Pseudo-instructions whose operand addresses are between \texttt{0000} and \texttt{0009} have special meanings: rather than referring to those memory locations, they invoke interpreter functions (transcendentals, register operations, etc.). The interpreter has 16 such address-driven operations. The shift instructions \texttt{D 000y} and \texttt{M 000y} use \texttt{y} (1--9) as a shift count, not as a memory address, which means standard \texttt{D ttss} or \texttt{M ttss} instructions inside the interpreter cannot reference locations \texttt{0000}--\texttt{0009}.
 
 \subsubsection*{EXAMPLE}
 
@@ -521,21 +521,19 @@ N & ttss & (M Reg.) $\times$ (ttss) + (Acc) $\rightarrow$ Acc \\
 H & ttss & (Acc) $\rightarrow$ ttss \\
 C & ttss & (Acc) $\rightarrow$ ttss; then 0 $\rightarrow$ Acc \\
 U & ttss & Unconditional Jump: Next instruction is at ttss \\
-T & ttss & Conditional Jump: Jump to ttss if (Acc) $<$ 0 \\
--T& ttss & Conditional Jump: Jump to ttss if (Acc) $<$ 0 OR if \textsf{PST} is \textsf{ON} \\
-E & --   & Exit Interpreter Mode \\
-I & ttss & ttss + (A Reg.) $\rightarrow$ A Reg. \\
-Y & ttss & (Address Part of ttss) $\rightarrow$ A Reg. \\
-Z & ttss & (A Reg.) $\rightarrow$ Address Part of ttss \\
-R & ttss & Compare: If (A Reg.) - ttss = 0, skip next instruction; else loop \\
+T    & ttss & Conditional Jump: Jump to ttss if (Acc) $<$ 0 \\
+800T & ttss & Conditional Jump: Jump to ttss if (Acc) $<$ 0 or if \textsf{PST} is \textsf{ON} \\
+E & ttss & (Address Part of ttss) $\rightarrow$ A Reg. \\
+I & ttss & (A Reg.) + ttss $\rightarrow$ A Reg. \\
+Y & ttss & (A Reg.) $\rightarrow$ Address Part of ttss \\
+Z & ttss & Skip next instruction if (A Reg.) = ttss; else fall through \\
+R & ttss & Return: (Instr. Counter + 2) $\rightarrow$ Address Part of ttss \\
 \bottomrule
 \end{tabularx}
 \end{table}
 \newpage
-\paragraph{Special Behavior for Null Addresses}
-When the address field \texttt{ttss} of an interpreter command equals \texttt{0000} (or a designated function selector ID within Track 00), the default memory interaction is overridden to perform specialized administrative or algorithmic operations rather than referencing physical location zero.
-
-\paragraph{Interpreter Behavior for Null Addresses (Address = 0000)\protect\footnote{Excluding extended subroutine selection commands under the format \texttt{D000y} or \texttt{M000y}. See Section~0479.}}
+\paragraph{Behavior when the operand is 0000}
+When the operand field of an interpreter instruction is \texttt{0000}, the instruction invokes one of the interpreter's built-in operations rather than referencing memory location zero. The shift instructions \texttt{D 000y} and \texttt{M 000y} are also special-cased here (see FLOATING-POINT INSTRUCTIONS above).
 
 \begin{table}[h]
 \centering
@@ -543,7 +541,7 @@ When the address field \texttt{ttss} of an interpreter command equals \texttt{00
 \ttfamily
 \begin{tabularx}{\textwidth}{lX}
 \toprule
-\textbf{Op} & \textbf{Result / Action Executed (When Address Field is 0000)} \\ 
+\textbf{Op} & \textbf{Action} \\ 
 \midrule
 D & (Acc)$^2$ $\rightarrow$ Acc \hfill [Square the Accumulator] \\
 M & (Acc) $\times$ 2 $\rightarrow$ Acc \hfill [Double the Accumulator] \\
