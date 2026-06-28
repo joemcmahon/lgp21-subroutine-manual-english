@@ -688,7 +688,7 @@ Multiple floating-point numbers stored consecutively occupy memory in pairs, alt
 
 \subsubsection*{PSEUDO-INSTRUCTIONS}
 
-The following section details the complete catalog of the 33 virtual instructions compiled for the ``Floating-Point Interpreter System 2'' and explains their operational mechanics. Any reference to the ``Accumulator'' designates the designated two-location memory block allocated to the software Floating-Point Accumulator.
+The interpreter's 33 pseudo-instructions are listed below. ``Accumulator'' refers to the two-word software floating-point accumulator. In the Arithmetic and Branch tables, \texttt{XXXX} is an operand address; in the Auxiliary, I/O, and Function tables it is always \texttt{0000}.
 
 \paragraph{Arithmetic Instructions}
 \textit{Note: \texttt{XXXX} represents the absolute starting memory address of the target floating-point number's mantissa.}
@@ -699,7 +699,7 @@ The following section details the complete catalog of the 33 virtual instruction
 \ttfamily
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
+\textbf{Opcode} & \textbf{Name} & \textbf{Action} \\ 
 \midrule
 BXXXX & Bring & (XXXX) $\rightarrow$ Accumulator \\
 AXXXX & Add & (Accumulator) + (XXXX) $\rightarrow$ Accumulator \\
@@ -727,12 +727,12 @@ For the power-of-two scaling commands (\texttt{XD000y} and \texttt{XM000y}), the
 \ttfamily
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
+\textbf{Opcode} & \textbf{Name} & \textbf{Action} \\ 
 \midrule
-UXXXX & Unconditional Jump & Forces execution loop to target location \texttt{XXXX}.\footnote{Crucial constraint: This instruction must not be used to exit the interpreter environment.} \\
+UXXXX & Unconditional Jump & Jump to \texttt{XXXX}. Cannot be used to exit the interpreter. \\
 TXXXX & Test Minus & Jumps to \texttt{XXXX} if (Accumulator) $< 0$; else executes next sequential line. \\
 800TXXXX & Conditional Jump & Jumps to \texttt{XXXX} if (Accumulator) $< 0$ \textbf{OR} if console switch \textsf{PST} is \textsf{ON}. \\
-XXXXX & Set Address & (Address Part of XXXX) $\rightarrow$ Address Register \\
+EXXXX & Set Address & (Address Part of XXXX) $\rightarrow$ Address Register \\
 IXXXX & Increment Address & (Address Register) + XXXX $\rightarrow$ Address Register\footnote{Can perform subtraction/decrements by supplying the two's complement of the address part in the instruction word.} \\
 YXXXX & Store Address & (Address Part of Address Register) $\rightarrow$ Address Part of location XXXX \\
 ZXXXX & Zero Test & (Address Register) $-$ \texttt{XXXX}. If result $= 0$, skip next instruction; else execute next line. \\
@@ -750,7 +750,7 @@ RXXXX & Return & Links subroutines: ($\text{PC} + 2$) $\rightarrow$ Address Part
 \ttfamily
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
+\textbf{Opcode} & \textbf{Name} & \textbf{Action} \\ 
 \midrule
 U0000 & Swap Registers & (M Register) $\longleftrightarrow$ (Accumulator) \\
 B0000 & Set Plus Sign & Forces (Accumulator) positive \hfill [Absolute Value: $|Accumulator|$] \\
@@ -771,7 +771,7 @@ E0000 & Exit Interpreter & Safe exit from Virtual Machine; returns to native har
 \ttfamily
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
+\textbf{Opcode} & \textbf{Name} & \textbf{Action} \\ 
 \midrule
 I0000 & Data Input & Diverts to tape-reader module. Parses, normalizes, and stores decimal variables. \\
 P0000 & Data Output & Prints/Punches the current Accumulator value. Accumulator data remains unaltered. \\
@@ -779,7 +779,7 @@ P0000 & Data Output & Prints/Punches the current Accumulator value. Accumulator 
 \end{tabularx}
 \end{table}
 
-During tape data input (\texttt{I0000}), sequential tracking remains under tape control until a designated physical stop-code is pulled from the reader, passing execution control back to the next sequential interpreter instruction.
+Inside an \texttt{I0000}, input continues from the tape until a stop code returns control to the next interpreter instruction.
 
 \paragraph{Function Instructions}
 \textit{Note: The address field for all transcendental operations must be set to \texttt{0000}. The input argument must already sit in the Accumulator.}
@@ -790,7 +790,7 @@ During tape data input (\texttt{I0000}), sequential tracking remains under tape 
 \ttfamily
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Opcode} & \textbf{Name} & \textbf{Operational Action / Mechanics} \\ 
+\textbf{Opcode} & \textbf{Name} & \textbf{Action} \\ 
 \midrule
 R0000 & Square Root & $\sqrt{\text{(Accumulator)}}$ $\rightarrow$ Accumulator. Negative inputs trigger an immediate error halt. \\
 S0000 & Sine & $\sin\text{(Accumulator)}$ $\rightarrow$ Accumulator. Input argument must be formatted in radians. \\
@@ -803,64 +803,40 @@ H0000 & Exponential & $e^X \rightarrow$ Accumulator, where $X$ represents the in
 \end{table}
 
 \bigskip
-\textbf{System Composition Architecture Note:} The core arithmetic instructions, branch/jump vectors, address register manipulation routines, auxiliary commands, and the primary Square Root (\texttt{R0000}) engine form the permanent hardcoded baseline footprint of the interpreter core loop. 
-
-Conversely, the individual Data Input, Data Output, and specialized transcendental math packages were developed as independent software library modules. To maximize available user space on the drum, these external extensions only need to be loaded into memory if the user's application program explicitly calls them.
+The core interpreter loop contains the arithmetic, branch, address-register, auxiliary, and square-root instructions. Data Input, Data Output, and the other transcendental functions (sin/cos/atan/log/exp) are separate modules; load only the ones you need.
 
 \subsubsection*{INPUT}
 
-The pseudo-input instruction (\texttt{I0000}) requires a data paper tape formatted precisely as follows:
+The \texttt{I0000} pseudo-instruction reads a data tape with the following structure:
 \begin{enumerate}
-    \item A starting address block.
-    \item The raw data formatted as signed decimal integers coupled with their respective exponents.
-    \item A designated group-termination code at the end of each distinct cluster of numbers.
-    \item A final master execution stop-code at the terminal end of the data tape.
+    \item A starting address.
+    \item Signed decimal integers paired with their exponents.
+    \item A group-termination code after each block.
+    \item A final stop code at the end of the tape.
 \end{enumerate}
 
 \paragraph{The Starting Address}
-Every independent data group must begin with its target starting memory location, designated in decimal Track/Sector notation. This must be an absolute address and must be immediately followed by a physical stop-code (\texttt{'}). 
-
-\textit{Example:} The entry \texttt{4200'} instructs the input subroutine to begin storing the incoming converted floating-point variables sequentially starting at location \texttt{4200}.
+Each data group starts with an absolute destination address in decimal track/sector notation, terminated by a stop code. For example, \texttt{4200'} stores the group's values starting at location \texttt{4200}.
 
 \paragraph{The Data Structure}
-Following the starting address line, one or more signed decimal integers and their exponents are fed into the reader. The subroutine converts this decimal matrix into internal binary floating-point representations and stores them in consecutive, two-location blocks on the drum.
-
-Each individual floating-point value must be explicitly split into \emph{two distinct words} on the paper tape, each line capped with a hardware stop-code (\texttt{'}). 
-\begin{itemize}
-    \item \textbf{Negative values:} The minus sign (\texttt{-}) must immediately precede the very first digit of the first word.
-    \item \textbf{Positive values:} A space may be inserted before the first digit, but a physical plus sign (\texttt{+}) is strictly prohibited.
-\end{itemize}
-
-The structural payload layout across the tape lines is split as follows:
-\begin{itemize}
-    \item \textbf{Word 1:} Contains the algebraic sign bit and the first seven digits of the decimal integer.
-    \item \textbf{Word 2:} Contains the final two digits of the decimal integer, followed immediately by the sign and the two digits of the base-10 exponent.
-\end{itemize}
-
-Formally, the physical tape notation maps to this exact structural syntax:
+Each value is two consecutive punched values on the tape: a 7-digit signed first word and a 2-digit second word concatenated with a 2-digit signed exponent, each terminated by a stop code:
 \begin{center}
 \ttfamily
 \begin{tabular}{ll}
-\textnormal{\textbf{Line 1 (Word 1):}} & $\pm d_1d_2d_3d_4d_5d_6d_7'$ \\
-\textnormal{\textbf{Line 2 (Word 2):}} & $d_8d_9\pm e_1e_2'$ \\
+\textnormal{\textbf{Word 1:}} & $\pm d_1d_2d_3d_4d_5d_6d_7'$ \\
+\textnormal{\textbf{Word 2:}} & $d_8d_9\pm e_1e_2'$ \\
 \end{tabular}
 \end{center}
-Where $\pm d_1d_2d_3d_4d_5d_6d_7d_8d_9$ constitutes the total 9-digit signed decimal integer, and $\pm e_1e_2$ represents the 2-digit decimal scaling exponent.
-
-\medskip
-The mathematical value of the processed data variable is determined by the underlying relationship:
-\[ \text{Represented Value} = \text{Integer} \times 10^{E_{10}} \]
-Where the exponent boundaries are hardcoded at: $-99 \le E_{10} \le +99$.
+The nine digits $d_1 \ldots d_9$ form a signed 9-digit decimal integer; $\pm e_1 e_2$ is its base-10 exponent ($-99 \le E_{10} \le +99$). The value is $\text{integer} \times 10^{E_{10}}$. Negative numbers have a leading minus on the first digit of word 1; positive numbers may have a leading space but must not have an explicit \texttt{+} sign. The subroutine converts each value to binary floating-point and stores it in a two-word block.
 
 \paragraph{Input Encoding Examples}
 \begin{itemize}
-    \item \textbf{Example 1:} Consider the fraction $0.0900000521374209$. This corresponds mathematically to the scientific notation expression: $521374209 \times 10^{-16}$. To feed this value into the interpreter, it must be punched onto the paper tape as two distinct lines:
+    \item \textbf{Example 1:} $0.0900000521374209 = 521374209 \times 10^{-16}$, punched as:
     \begin{verbatim}
     5213742'
     09-16'
     \end{verbatim}
-    
-    \item \textbf{Example 2:} Consider the large whole number $5522829640000000$. This corresponds to the mathematical notation: $552282964 \times 10^{+07}$. It must be presented to the reader as:
+    \item \textbf{Example 2:} $5522829640000000 = 552282964 \times 10^{+07}$, punched as:
     \begin{verbatim}
     5522829'
     64+07'
@@ -868,14 +844,14 @@ Where the exponent boundaries are hardcoded at: $-99 \le E_{10} \le +99$.
 \end{itemize}
 
 \paragraph{Termination Stopcodes}
-The system defines two distinct classes of termination stop-codes. Their behavior varies fundamentally based on their context and placement on the data coding sheet:
+Two stop codes mark the boundaries:
 \begin{enumerate}
-    \item \textbf{Group Termination Code:} Signifies the end of the current numerical data block. It commands the system to immediately begin reading the next subsequent address and data group on the tape.
-    \item \textbf{Master Input Stop-Code:} Signifies the total completion of data entry. It triggers an automatic terminal carriage return, shuts down the tape reader pipeline, and gracefully jumps execution control back to the next sequential line of the user's main program.
+    \item \textbf{Group end.} A stop code where a number is expected ends the current group. The interpreter then reads the next group's starting address from the tape.
+    \item \textbf{Input end.} Two consecutive stop codes where a number is expected end the whole input. The interpreter issues a carriage return, stops the tape reader, and returns to the interpreted program (the instruction following the \texttt{I0000} that called it).
 \end{enumerate}
 
 \paragraph{Input example}
-Table \ref{data-input-table} demonstrates how data should be punched to be read by the \texttt{I0000} instruction. Data is entered in groups, starting with the address where the data should be stored, followed by the (signed) mantissa, a space, and the (signed) exponent, followed by a stopcode to terminate the number. The input routine will continue reading numbers until a lone stopcode is entered, ending the group. If two lone stopcodes are entered, input ends and execution resumes immediately following the \texttt{I0000} instruction.
+Table \ref{data-input-table} shows a sample tape layout. Each group starts with a destination address, then alternates 7-digit mantissa words and 2-digit-plus-exponent words. A stop code where a number is expected ends the group; two such stop codes in a row end the whole input.
 
 \begin{center}
 \small
@@ -923,7 +899,7 @@ $^{\parallel}$ This stopcode following the group terminator stopcode tells the i
 
 \medskip
 
-Reading the data in Table \ref{data-input-table} results in the following data in memory. Group 1 is read and the floating-point numbers are built\footnote{Translator's note: I've preserved the original manual's representation here; suffice it to say that the values indicated are handwaving the actual values in memory.} starting at location \texttt{5500}:
+Group 1 is read into consecutive locations starting at \texttt{5500}\footnote{Translator's note: I've preserved the original manual's representation here; suffice it to say that the values indicated are handwaving the actual values in memory.}:
 
 \texttt{5500} \texttt{-33000.0} \\
 \texttt{5501} \textit{(Exponent for $-33000.0$)} \\
@@ -932,7 +908,7 @@ Reading the data in Table \ref{data-input-table} results in the following data i
 \texttt{5504} \texttt{-0.00000059234} \\
 \texttt{5505} \textit{(Exponent for $-0.00000059234$)}
 
-All exponents are strictly maintained at $q = 29$. The physical stopcode trailing the final number of the group (located in the column immediately following Group 1) triggers the system to automatically advance and read the next starting target address of the second data group (\texttt{2134}\footnote{Note that these addresses don't need to be ordered. The input routine will happily build two-word floating-point numbers wherever you indicate.}). The second group is processed and stored as follows:
+All exponents are stored at $q = 29$. After Group 1's terminating stop code, the interpreter reads the next group's destination address (\texttt{2134}\footnote{Note that these addresses don't need to be ordered. The input routine will happily build two-word floating-point numbers wherever you indicate.}) and stores Group 2 there:
 
 \texttt{2134} $\rightarrow$ \texttt{Zero (0.0)} \\
 \texttt{2135} $\rightarrow$ \texttt{Zero (0.0)} \\
@@ -944,10 +920,10 @@ All exponents are strictly maintained at $q = 29$. The physical stopcode trailin
 \texttt{2141} $\rightarrow$ \textit{(Exponent for $-10000000000000.0$)}
 
 \vspace{1em}
-The processing loop for the second data group is terminated by a single stop-code just as Group 1 was. Note the \emph{second} stopcode, which serves to signal the interpreter that input is complete and execution may continue.
+Group 2 ends with a single stop code, and the second stop code immediately after it ends the whole input.
 
 \medskip
-\textbf{Special case:} Please note that any number meant to be input as a literal value of zero \emph{must} be explicitly encoded and punched onto the tape as \texttt{0'} rather than as just a stopcode (\texttt{'})\footnote{This is different from other input routines, particularly the Program Input 1 (Section~\ref{sec:PIRloader}) loader.}. Explicitly entering the zero values is necessary to allow the input routine to differentiate a true numerical zero from a structural group-termination/input-termination command.
+\textbf{Special case.} A literal zero must be punched as \texttt{0'} (with the explicit digit), not as a bare stop code\footnote{This is different from other input routines, particularly the Program Input 1 (Section~\ref{sec:PIRloader}) loader.}. The bare stop code is reserved for group/input termination, so the parser needs the explicit digit to recognize a real zero.
 
 \subsubsection*{OUTPUT}
 The output format works to make the numbers a consistent size on the page, and to have a consistent format. Each number has:
@@ -964,7 +940,7 @@ The \texttt{space}/$-$ convention means that positive and negative numbers will 
 
 The tab character enables the user to easily create well-formatted output on the Flexowriter by setting the hardware tab stops.
 
-Control is immediately returned to the main program loop after printing is complete. A single floating-point number is processed and output per subroutine invocation. The actual printed format of a number looks like this:
+Control returns to the interpreted program after each number; the subroutine prints one number per call. The printed format looks like this:
 
 \begin{center}
 \small
@@ -976,13 +952,12 @@ Negative&\texttt{-.xxxxxxx\ $\pm$ee[Tab]} \\
 \end{center}
 
 \medskip
-This physical teleprinter serialization format represents the standard mathematical expression:
+This is the standard scientific-notation form:
 \begin{equation*}
 \pm\text{.\texttt{xxxxxxx}} \cdot 10^{\pm\text{\texttt{ee}}}
 \end{equation*}
 
 \paragraph{Output Examples}
-The following examples illustrate how specific numerical values are printed:
 
 \begin{center}
 \small
@@ -999,18 +974,15 @@ The following examples illustrate how specific numerical values are printed:
 \end{tabularx}
 \end{center}
 
-\medskip
-Note how the leading column remains perfectly uniform; the decimal points align vertically on the page regardless of whether the value carries a negative sign or an implicit positive blank space.
-
 \paragraph{Output Limits and Constraints}
-The formatting routine enforces the following mathematical boundaries during execution:
+The formatting routine enforces the following bounds:
 \begin{itemize}
-	\item \textbf{Decimal Exponent Range:} $-99 \le ee \le +99$.
-	\item \textbf{Decimal Mantissa Bounds:} $0.1000000 \le \lvert\text{mantissa}\rvert \le 0.9999999$, or exactly zero.
-	\item \textbf{Internal Binary Exponent Range:} $-333 \le \text{exponent} \le +333$.
+	\item \textbf{Decimal exponent range:} $-99 \le ee \le +99$.
+	\item \textbf{Decimal mantissa bounds:} $0.1000000 \le \lvert\text{mantissa}\rvert \le 0.9999999$, or exactly zero.
+	\item \textbf{Internal binary exponent range:} $-333 \le \text{exponent} \le +333$.
 \end{itemize}
 
-An underflow condition occurs when where the internal binary exponent drops below $-333$; this causes the routine to automatically print a clean zero. Conversely, an overflow condition where the binary exponent exceeds $+333$ triggers a terminal range error stop, halting the interpreter loop.
+If the internal binary exponent drops below $-333$, the routine prints a zero. If it exceeds $+333$, the interpreter triggers a range-error stop and halts.
 
 \subsubsection*{FUNCTION SUBROUTINES}
 
