@@ -20,10 +20,10 @@ The mantissa is a sign bit followed by 24 bits of magnitude, treated as a fracti
 
 That accounts for 31 of the LGP-21's 32 bits per word; the remaining bit is unused.
 
-\paragraph{Translator's note: discrepancy between prose and worked examples}
-The three worked examples below are transcribed from the original manual, but the bit patterns don't quite line up with the field layout described above. The $+3.75$ pattern has the bit pattern \texttt{011111} at the top of the mantissa half, which works out to 0.96875 rather than 0.9375 if you read all 24 magnitude bits as a fraction. The $+0.46875$ pattern has the same issue. The $-3.75$ pattern's mantissa bits don't round-trip to 0.9375 under either one's or two's complement.
+\paragraph{Translator's note: transcription errors in the worked examples}
+The three worked examples below are transcribed from the original manual, but the bit patterns don't round-trip to the stated decimal values under the field layout described above. The $+3.75$ pattern has \texttt{011111} at the top of the word, which gives a 24-bit mantissa magnitude of 0.96875 rather than 0.9375. The $+0.46875$ pattern has the same problem. The $-3.75$ pattern's mantissa bits don't reconstruct $0.9375$ under either one's or two's complement.
 
-It's possible that there's an implicit shift bit between the sign and the mantissa magnitude, or that the diagram bit patterns themselves contain transcription errors. Without a working LGP-21 (or a reference manual that specifies the exact bit fields) it's not safe to commit to either reading. I've left the worked examples as the original presented them; if you have hardware to verify against, please file a PR.
+The 24-bit mantissa width is independently confirmed by the Data Input section below, so the field layout above is right. The bit patterns themselves appear to be transcription errors in the original: each one has one too many \texttt{1} bits in the mantissa magnitude. I've left them as the original presented them rather than guess at what was meant; if you have hardware (or a verified reference manual) to test against, please file a PR.
 
 \medskip
 \textbf{3.75}:
@@ -139,33 +139,23 @@ The operand address field for all function evaluations must be exactly zero (\te
 \label{subsec:data_io_1}
 
 \subsubsection*{Data Input}
-The ``Data Input and Output 1'' subroutine introduces data into the computer for utilization by a main program. Decimal numbers are read from tape, automatically converted into binary floating-point format, and stored into the specified locations in the required configuration.
+Data Input and Output 1 reads decimal numbers from tape, converts them to floating-point, and stores them in the locations you specify. It's invoked from inside the interpreter loop with an \texttt{I 0000} pseudo-instruction, and returns control to the instruction following the \texttt{I 0000} once all data has been read.
 
-This subroutine is invoked directly via an \texttt{I 0000} pseudo-instruction processed within the interpretive loop of the main program. Control automatically returns to the location immediately following this input command once all data elements have been successfully processed and stored.
-
-The input data tape must contain the following expressions in the exact order and format described below:
+The input tape is structured as follows.
 \begin{enumerate}[label=\alph*)]
-\item Input Keyword (Control Word)
-The first expression in each distinct group of data elements must be a control word that specifies both the number of decimal places $P$ for every word within that group, and the base starting address \texttt{ttss} of the destination memory block. 
+\item \textbf{Input Keyword (Control Word).}
+Each group of data starts with a control word: a signed two-digit decimal place count $P$ ($-03 \le P \le +16$) and the destination's starting address \texttt{ttss} in decimal track/sector notation. A positive $P$ shifts the decimal point left when the value is converted; a negative $P$ shifts it right.
 
-The parameter $P$ must be supplied as a two-digit decimal integer preceded by an algebraic sign, constrained strictly within the range:
-\[ -03 \le P \le +16 \]
-The starting destination address must be written as an absolute address in decimal track and sector notation (\texttt{ttss}). A positive $P$ value indicates that the decimal point is shifted to the left; a negative $P$ value indicates that the decimal point is shifted to the right.
-
-\item Numeric Data Elements
-The individual data entries are represented on tape as signed decimal integers containing up to 7 digits of precision. For positive values, both the explicit plus sign and any leading zeros may be omitted entirely. For negative values, however, all leading zeros between the minus sign and the first significant digit must be explicitly punched on the tape. A value of zero requires only a single stop code (\texttt{'}) to be written.
+\item \textbf{Numeric Data Elements.}
+Each value is a signed decimal integer of up to 7 digits. Positive values may omit the plus sign and leading zeros; negative values must include all leading zeros between the minus sign and the first significant digit. A value of zero is just a single stop code (\texttt{'}).
 
 \medskip
-\textbf{Example:} Given an input control keyword punched as \texttt{+032400'}, the fractional decimal value \textbf{16.192} would be encoded and supplied on tape simply as \texttt{16192'}.\footnote{\textbf{Translator's Note:} Because $P = +03$, the interpreter shifts the implied decimal point 3 places to the left upon ingestion, reconstructing $16192 \times 10^{-3} = 16.192$.}
+\textbf{Example:} with the control word \texttt{+032400'}, the value \textbf{16.192} is punched as \texttt{16192'}.\footnote{\textbf{Translator's Note:} Because $P = +03$, the interpreter shifts the implied decimal point 3 places to the left upon ingestion, reconstructing $16192 \times 10^{-3} = 16.192$.}
 
-\item End-of-Block Keyword and Minus-Zero Termination
-The end of a specific data group is flagged on tape by an explicit minus-zero control word, formatted as \texttt{-0000000'}. This tracking word functions strictly as a structural boundary indicator and is not saved in memory by the subroutine.
+\item \textbf{End-of-Block Marker.}
+A minus-zero word (\texttt{-0000000'}) marks the end of a group; it's not stored in memory, just consumed. The interpreter then expects another control word and starts a new group.
 
-The definitive end of the entire reading operation is signaled by appending a second consecutive stop code immediately following this minus-zero control word (i.e., formatted as \texttt{-0000000''}).
-
-When the interpreter reads the singular minus-zero word (\texttt{-0000000'}), the program automatically transitions to read the next sequential input control keyword on the tape, subsequently converting all following data values according to the newly defined $P$ scaling factor and storing them starting at the new destination base address. 
-
-When the double-stop code for the absolute end of the print/read sequence (\texttt{-0000000''}) is encountered instead, the subroutine executes a carriage return and returns execution control back to the main program.
+A minus-zero word followed by a second stop code (\texttt{-0000000''}) marks the end of the entire input. The subroutine prints a carriage return and returns to the interpreted program (the instruction following the \texttt{I 0000} that called it).
 
 The following example illustrates the physical layout of a typical structured data block:
 \begin{table}[h]
@@ -229,24 +219,18 @@ The second record group consisting of five data words would be stored as follows
 \end{tabular}
 
 \medskip
-The minus-zero control word \texttt{-0000000'} terminates each individual group and triggers the system to read the next record block. All mantissas are maintained at a binary scaling factor of $q = 0$ with a precision length of 24 bits. All exponents are stored within the exact same memory word as their respective mantissa, scaled at $q = 30$. The additional tracking stop code appended behind the second minus-zero control word completely terminates the data input sequence.
+The minus-zero word ends each group; the double-stop code at the end ends the whole read. Mantissas are stored at $q=0$ with 24 bits of precision, packed into the same word as their exponent (at $q=30$).
 \end{enumerate}
 
 \subsubsection*{2. Data Output}
-The ``Data Input and Output 1'' subroutine delivers the contents of the floating-point accumulator as a signed, seven-digit decimal mantissa and a signed, two-digit decimal exponent. Following the output execution, a tabulator character (tab space) is issued, and control branches back to the location immediately following the \texttt{P 0000} instruction that originally invoked the subroutine.
+Data Input and Output 1 prints the accumulator as a signed 7-digit decimal mantissa followed by a signed 2-digit decimal exponent, then issues a tab and returns to the interpreted program (the instruction following the \texttt{P 0000} that called it).
 
 \paragraph{Output Format}
-The printed output expression uses the following structural form:
 \[ \texttt{.XXXXXXX$\pm$\ EE$\pm$} \]
-
-Where:
-\begin{itemize}[label=---, leftmargin=1.5em, itemsep=2pt]
-    \item \texttt{.XXXXXXX$\pm$} represents the decimal mantissa with its trailing sign.
-    \item \texttt{EE$\pm$} represents the power-of-10 base exponent with its trailing sign.
-\end{itemize}
+where \texttt{.XXXXXXX$\pm$} is the decimal mantissa with its trailing sign, and \texttt{EE$\pm$} is the power-of-10 exponent with its trailing sign.
 
 \paragraph{Output Examples}
-The following table illustrates the raw machine printout format paired with its conventional decimal representation:
+Sample printouts and their conventional decimal values:
 
 \medskip
 \begin{tabular}{ll}
@@ -261,23 +245,22 @@ The following table illustrates the raw machine printout format paired with its 
 \end{tabular}
 
 \subsubsection*{SINE-COSINE 3 --- B1-10.2}
-``Sine-Cosine 3'' calculates the sine or cosine of an argument provided in floating-point radians. Upon returning to the main program, the result is stored in the floating-point accumulator. The return is executed to the location immediately following the \texttt{S0000} or \texttt{C0000} instruction, depending on which subroutine was invoked.
+Returns $\sin x$ (via \texttt{S0000}) or $\cos x$ (via \texttt{C0000}) of the accumulator (in radians) in the accumulator.
 
 \subsubsection*{ARCTANGENT 2 --- B1-11.2}
-``Arctangent 2'' calculates the arctangent of an argument located in the floating-point accumulator. The result is placed in the floating-point accumulator in radians when control returns to the location of the main program following the \texttt{A0000} instruction.
+Returns $\arctan x$ of the accumulator in the accumulator (in radians).
 
 \subsubsection*{LOGARITHM 2 --- B3-11.1}
-``Logarithm 2'' calculates the natural logarithm (base $e$) of a number located in the floating-point accumulator. The result remains in the floating-point accumulator upon return to the location of the main program following the \texttt{N0000} instruction.
+Returns $\ln x$ (natural logarithm) of the accumulator in the accumulator.
 
 \subsubsection*{EXPONENTIAL FUNCTION 2 --- B3-10.1}
-``Exponential Function 2'' calculates the value $e^x$, where $x$ is the contents of the floating-point accumulator. The result is stored in the floating-point accumulator upon return to the location of the main program following the \texttt{H0000} instruction.
+Returns $e^x$ of the accumulator in the accumulator.
 
 \subsubsection*{SQUARE ROOT 2 --- B4-10.1}
-``Square Root 2'' calculates the square root of a positive number located in the floating-point accumulator. The result is placed in the floating-point accumulator upon return to the location of the main program following the \texttt{R0000} instruction.
+Returns $\sqrt{x}$ of the (positive) accumulator in the accumulator.
 
 \subsubsection*{CALLING SEQUENCE}
-
-The ``Floating-Point Interpreter System 1'' is invoked via a calling sequence from the main program. Prior to branching into the system, the starting address of the floating-point instructions to be interpreted must be supplied to the system. The floating-point instructions must immediately follow the branch instruction. An example is provided below:
+Floating-Point Interpreter System 1 is invoked from the main program with the standard \texttt{R}/\texttt{U} calling sequence. The interpreter instructions follow immediately after the \texttt{U}, and an \texttt{XE 0000} returns to native execution. \texttt{L} is the interpreter's base address.
 
 \begin{table}[h!]
 \centering
@@ -294,7 +277,7 @@ $\alpha+n+1$         & \texttt{XE}                   & \texttt{0000}            
 \end{tabularx}
 \end{table}
 
-Locations $\alpha$ and $\alpha+1$ contain instructions \texttt{R} and \texttt{U}, which store the target address ($\alpha+2$) into the interpreter system and execute a branch to $L$, the starting address of the interpreter system. Locations $\alpha+2$ through $\alpha+n$ contain the actual floating-point instructions. An explicit exit from the interpreter system is required when, as shown here at $\alpha+n+1$, fixed-point machine instructions follow.
+
 
 \subsection*{FIXED-POINT TO FLOATING-POINT CONVERSION (AND VICE VERSA) --- L3-12.0}
 \addcontentsline{toc}{subsection}{FIXED-POINT TO FLOATING-POINT CONVERSION (AND VICE VERSA) --- L3-12.0}
