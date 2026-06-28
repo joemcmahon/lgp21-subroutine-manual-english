@@ -99,6 +99,15 @@ same patterns:
 
 ## TODOs you mentioned for later
 
+- **Verify the floating-point internal number format bit count.** The prose
+  says "sign bit followed by 24 bits of precision" for the mantissa and
+  "sign bit and 5 bits of precision" for the exponent (1+24+1+5 = 31 bits),
+  but the example bit patterns in the diagrams (e.g. `01111100000000000000000000000100`)
+  are 32 bits long. Could be a padding/spacer bit between fields, or could
+  be a transcription error in either the prose or the diagram. Pinned down
+  before we get into Internal Number Format / Internal Registers prose.
+
+
 - **Consistency pass on "two distribution formats"** in the OPERATING DETAILS
   boilerplate. We left it alone in this pass because it's used consistently
   across all programs, but the wording could be tightened.

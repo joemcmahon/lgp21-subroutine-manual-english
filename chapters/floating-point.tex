@@ -7,59 +7,27 @@
 \label{subsec:floating_point_1}
 
 \subsubsection*{PURPOSE}
-The Floating-Point Interpretive System 1 allows the programmer to prioritize floating-point calculations over standard fractional fixed-point operations. Data values are supplied to the system as 7-digit integers multiplied by a power of 10; the interpretive system automatically scales the data during calculation and delivers the final results as 7-digit integers multiplied by a power of 10.
+Floating-Point Interpretive System 1 is a 33-instruction interpreter that lets you write floating-point code on the LGP-21 without managing scale factors by hand. Inputs and outputs are 7-digit decimal mantissas with a separate power-of-10 exponent; the interpreter handles the binary mantissa/exponent split internally.
 
-Although this is fundamentally a single-word interpretive system, two memory words are required for each number during calculation and output operations. The mantissa and exponent are automatically separated and reassembled by the system. Consequently, a precise prior knowledge of the order of magnitude of a problem's variables is not required. The system features 33 distinct instructions, which significantly improves both programming ease and computational accuracy.
+Each number is packed into one machine word in memory. While the interpreter is operating on a number it unpacks it into two words --- one for the mantissa, one for the exponent --- so the hardware can do ordinary signed arithmetic on each half. The exact bit layout is given under ``Internal Number Format'' below.
 
-The interpretive system consists of various specialized subroutines---Data Input, Data Output, and the calculation of transcendental functions---which can be utilized either as a comprehensive program package or individually. These subroutines are invoked via specific interpretive instructions, rendering standard main-program calling sequences unnecessary. However, the interpretive system engine itself and the companion ``Fixed-Point to Floating-Point Conversion (and vice versa)'' routine are accessed via a traditional machine calling sequence.
-
-\subsubsection*{DOCUMENTATION INDEX}
-This manual section contains comprehensive descriptions of the following subroutines and specialized features of the interpretive system:
-
-\medskip
-\begin{tabularx}{\textwidth}{llX}
-\toprule
-\textbf{Title} & \textbf{Program No.} & \textbf{Page} \\
-\midrule
-Internal Number Format & --- & 2 \\
-Internal Registers & --- & 2 \\
-Floating-Point Instructions & --- & 4 \\
-Data Input and Output 1 & \texttt{J9-10.0} & 8 \\
-Sine-Cosine 3 & \texttt{B1-10.2} & 10 \\
-Arctangent 2 & \texttt{B1-11.2} & 10 \\
-Logarithm 2 & \texttt{B3-11.1} & 10 \\
-Exponential Function 2 & \texttt{B3-10.1} & 10 \\
-Square Root 2 & \texttt{B4-10.1} & 10 \\
-Calling Sequence & --- & 10 \\
-Fixed-Point/Floating-Point Conversion & \texttt{I3-12.0} & 11 \\
-Memory Allocation & --- & 12 \\
-Operating Instructions & --- & 13 \\
-Remarks & --- & 14 \\
-Comprehensive Example & --- & 15 \\
-Instruction Summary List & --- & 16 \\
-\bottomrule
-\end{tabularx}
-
-\newpage
+The interpreter is bundled with transcendental subroutines (data input/output, sin/cos, arctan, log, exp, sqrt) that are called as interpreter instructions, not as \texttt{B}/\texttt{R}/\texttt{U} calls --- once you're inside the interpreter loop, those operations are part of the instruction set. The interpreter engine itself and the companion fixed-point/floating-point conversion routine (\texttt{I3-12.0}) are entered with a normal machine calling sequence.
 
 \subsubsection*{INTERNAL NUMBER FORMAT}
-Every floating-point number is held within memory inside a single location as a split mantissa and exponent. Every mantissa is maintained in binary notation at a scaling factor of $q = 0$ and consists of an algebraic sign bit followed by 24 bits of precision. The most significant bit has a fractional value of $2^{-1}$, meaning that all stored mantissas are strictly normalized.
-
-The exponent is maintained at a scaling factor of $q = 30$ and consists of an algebraic sign bit and 5 bits of precision. The exponent represents the power-of-2 base by which the mantissa must be multiplied to obtain the actual represented numeric value. Expressed mathematically, the components represent the floating-point number as:
-
+Each floating-point number is packed into a single word. The word holds two independent signed numbers: a mantissa $M$ and an exponent $E$, representing the value
 \[ Z = M \cdot 2^E \]
+The mantissa is a sign bit followed by 24 bits of magnitude, treated as a fraction at $q=0$. Mantissas are always stored normalized, so the leading magnitude bit has the place value $2^{-1}$. The exponent is a sign bit followed by 5 bits of magnitude, treated as an integer at $q=30$. Negative values in either field are stored in two's complement of the magnitude bits, with the two fields complemented independently --- so a negative mantissa and a positive exponent can sit in the same word without interfering.
 
-Where:
-\begin{itemize}[label=---, leftmargin=1.5em, itemsep=2pt]
-    \item $Z$ = The represented numerical value.
-    \item $M$ = The normalized binary fractional mantissa ($q = 0$).
-    \item $E$ = The binary integer exponent ($q = 30$).
-\end{itemize}
+That accounts for 31 of the LGP-21's 32 bits per word; the remaining bit is unused.
+
+\paragraph{Translator's note: discrepancy between prose and worked examples}
+The three worked examples below are transcribed from the original manual, but the bit patterns don't quite line up with the field layout described above. The $+3.75$ pattern has the bit pattern \texttt{011111} at the top of the mantissa half, which works out to 0.96875 rather than 0.9375 if you read all 24 magnitude bits as a fraction. The $+0.46875$ pattern has the same issue. The $-3.75$ pattern's mantissa bits don't round-trip to 0.9375 under either one's or two's complement.
+
+It's possible that there's an implicit shift bit between the sign and the mantissa magnitude, or that the diagram bit patterns themselves contain transcription errors. Without a working LGP-21 (or a reference manual that specifies the exact bit fields) it's not safe to commit to either reading. I've left the worked examples as the original presented them; if you have hardware to verify against, please file a PR.
 
 \medskip
-For example, the value \textbf{3.75} would be represented in a computer memory word as:
+\textbf{3.75}:
 \[ \texttt{01111100000000000000000000000100} \]
-Where:
 \begin{itemize}[label=---, leftmargin=1.5em, itemsep=2pt]
     \item Mantissa ($q = 0$): $M = 0.9375$
     \item Exponent ($q = 30$): $E = 2$
@@ -67,12 +35,8 @@ Where:
 \end{itemize}
 
 \medskip
-The mantissa and exponent are treated by the system as two entirely distinct numbers. Therefore, a negative mantissa and a positive exponent can reside within the exact same memory word safely. The component parts of a number are complemented independently of one another.
-
-\medskip
-For example, the negative value \textbf{-3.75} would be represented as:
+\textbf{-3.75}:
 \[ \texttt{10001000000000000000000000000100} \]
-Where:
 \begin{itemize}[label=---, leftmargin=1.5em, itemsep=2pt]
     \item Mantissa ($q = 0$): $M = -0.9375$
     \item Exponent ($q = 30$): $E = 2$
@@ -80,9 +44,8 @@ Where:
 \end{itemize}
 
 \medskip
-As a further example, the fractional value \textbf{0.46875} in floating-point form would be represented as:
+\textbf{0.46875}:
 \[ \texttt{01111100000000000000000011111110} \]
-Where:
 \begin{itemize}[label=---, leftmargin=1.5em, itemsep=2pt]
     \item Mantissa ($q = 0$): $M = 0.9375$
     \item Exponent ($q = 30$): $E = -1$
@@ -90,28 +53,20 @@ Where:
 \end{itemize}
 
 \medskip
-When values are loaded inside the simulated floating-point accumulator or the multiplication register, the numbers are structured so that they occupy \textbf{two discrete locations}, with the mantissa shifted one place to the right. Despite this physical expansion, the structural relationship between each mantissa and its respective exponent is rigorously maintained.
+When a value is loaded into the floating-point accumulator or the multiplication register, it expands to two words --- one for the mantissa, one for the exponent --- with the mantissa shifted right by one bit (the ``implicit shift'' mentioned in the translator's note above; it puts the leading magnitude bit at $2^{-2}$ instead of $2^{-1}$). The mantissa and exponent are still paired as one logical value.
 
 \subsubsection*{INTERNAL REGISTERS}
-Although every location inside standard drum memory holds both a mantissa and its exponent packed together, two full words are required to hold a number during intermediate calculations and output processing: namely, one location for the isolated mantissa and one location for the exponent.
+The interpreter provides four registers: a floating-point accumulator, a multiplication register, an address register, and an instruction counter. The accumulator and multiplication register each occupy two words (mantissa + exponent); the address and instruction-counter registers occupy one word each.
 
-To facilitate data processing from memory, the interpretive system establishes a simulated floating-point accumulator, a multiplication register, an address register, and an instruction counter register. The accumulator and multiplication register each occupy two locations, while the address register and instruction counter occupy only one location each. All data remains in floating-point format throughout processing. Operands and addresses can be modified dynamically without exiting the interpretive system environment.
+All four registers are zero when the program is first loaded. Apart from the instruction counter (which is reset on every entry into the interpreter and incremented per instruction), the registers persist across exits and re-entries: you can leave the interpreter, run native code, and come back without losing register state.
 
-The initial contents of all registers are zero when the program has just been freshly loaded and not yet executed. The contents of all registers (with the sole exception of the instruction counter) are preserved upon system switches and are modified exclusively by explicit interpretive instructions. Therefore, the user can exit and re-enter the interpretive system repeatedly without corrupting or altering the values held in the registers.
+\paragraph{1. Floating-Point Accumulator.} Holds intermediate calculation results. Mantissa at $q=0$ (shifted right by one bit as described above), exponent at $q=30$, each with its own sign. Modified by arithmetic operations, function evaluations, and the Clear, Swap, and Set Sign instructions.
 
-The instruction counter is set upon every entry into the interpretive system and is incremented during the execution of every instruction. These specialized registers are detailed below:
+\paragraph{2. Multiplication Register ($M$-register).} Holds the multiplicand for the Multiply and Cumulative Multiplication instructions. Same internal layout as the accumulator. Modified only by the Set and Swap instructions.
 
-\paragraph{1. The Floating-Point Accumulator}
-The floating-point accumulator holds intermediate calculation results. Although the mantissa is stored in a normalized state in standard memory, it is shifted right by one binary place when held inside the floating-point accumulator. This means the mantissa sits at $q = 0$ with its most significant bit shifted one position to the right; the exponent sits at $q = 30$. Both components retain their independent algebraic sign bits. The contents of the accumulator are altered exclusively by arithmetic operations, function evaluations, or via the instructions: ``Clear'', ``Swap'', ``Set Sign'', or during a function calculation.
+\paragraph{3. Address Register.} A single word holding a track/sector value at $q=29$. Used by the Store Address instruction to patch the operand field of an instruction in memory, and by the Test for Zero branch. Modified only by Set Address and Increment Address.
 
-\paragraph{2. The Multiplication Register}
-The multiplication register ($M$-register) holds the multiplicand during the execution of the ``Multiply'' and ``Cumulative Multiplication'' instructions. The mantissa sits at $q = 0$ with its most significant bit shifted one position to the right; the exponent sits at $q = 30$. Both parts are provided with their respective algebraic signs. The contents of this register are modified exclusively by the ``Set'' and ``Swap'' instructions.
-
-\paragraph{3. The Address Register}
-The address register consists of a single location holding a track/sector value scaled at $q = 29$. This register is utilized to dynamically modify the operand address portion of standard instruction words in memory via the ``Store Address'' command. Additionally, this register is used during ``Test for Zero'' branch operations. The contents of this register can be modified exclusively by the ``Set Address'' or ``Increment Address'' instructions.
-
-\paragraph{4. The Instruction Counter Register}
-The instruction counter register tracks the memory address of the floating-point instruction currently being executed and flags the address of the next instruction to be processed. When executing a ``Return'' instruction, the operand address portion of the target location is overwritten with the current contents of the instruction counter plus 2. The register is initially seeded by the main program's calling sequence and increments by 1 with each instruction executed. This sequential operation is broken only by explicit jump instructions, which overwrite the register with a new target address.
+\paragraph{4. Instruction Counter.} Holds the address of the currently-executing interpreter instruction, and points at the next instruction to fetch. Initialized by the main program's calling sequence on entry, and incremented by one per instruction. Jump instructions overwrite it with a new target; the Return instruction stores its current value plus 2 into the operand field of its target location.
 
 \subsubsection*{FLOATING-POINT INSTRUCTIONS}
 This interpretive system operates using 33 pseudo-instructions. Each instruction consists of an operation code field and an operand address field. Certain operand addresses carry a divergent structural meaning compared to native fixed-point machine commands (e.g., null/zero addresses).
