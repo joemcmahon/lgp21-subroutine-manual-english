@@ -99,6 +99,15 @@ same patterns:
 
 ## TODOs you mentioned for later
 
+- **Rename `Program Input` heading to something clearer.** All over the
+  manual, the `\paragraph{1. Program Input}` block inside OPERATION/OPERATING
+  DETAILS sections is about how to *load* the program onto the LGP-21
+  (relocatable hex format, decimal coding-sheet format, what stops occur
+  during the load, etc.) -- not about the program's runtime input data. The
+  current name reads as "the program's input," which is misleading. Better
+  candidates: `Loading`, `Program Loading`, `Loading the Program`. Worth a
+  consistency pass once we agree on the name.
+
 - **Verify the floating-point internal number format bit count.** The prose
   says "sign bit followed by 24 bits of precision" for the mantissa and
   "sign bit and 5 bits of precision" for the exponent (1+24+1+5 = 31 bits),
