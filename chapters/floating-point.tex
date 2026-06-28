@@ -569,70 +569,47 @@ H & $e^{\text{(Acc)}}$ $\rightarrow$ Acc \hfill [Exponential Function] \\
 
 \subsubsection*{INTRODUCTION}
 
-The ``Floating-Point Interpreter System 2'' permits the programming of LGP-21 problems using floating-point arithmetic. The system accepts 9-digit whole decimal numbers as input data, scaled by a two-digit decimal exponent. It automatically handles all required scaling modifications during calculation and outputs results as a 7-digit signed decimal mantissa, followed by a 2-digit decimal exponent.
+Floating-Point Interpretive System 2 is a 33-instruction floating-point interpreter (like H1-11.0) but with much wider range and higher precision, at the cost of using two memory words per number instead of one. Inputs are 9-digit signed decimal mantissas with a 2-digit decimal exponent ($\pm 99$); outputs are 7-digit decimal mantissas with the same exponent range.
 
-Because the system autonomously processes values across an exceptionally wide dynamic range, the programmer does not require precise prior knowledge of a problem's numerical boundaries. This structural capacity guarantees a high degree of calculation and output accuracy. Furthermore, this program expands the standard 16-instruction hardware set of the computer to \textbf{33 instructions}, making operations as simple and user-friendly as possible.
+The interpreter ships on a single tape (relocatable hex, compatible with Program Input 1, \texttt{J1-10.0}) bundling Data Input, Data Output, and the usual transcendental functions. Only the subroutines you actually need must be loaded, but the cross-reference addresses between subroutines must be preserved when you do.
 
-The ``Floating-Point Interpreter System 2'' is available as a single paper tape in an arbitrarily relocatable hexadecimal format, compatible with Program Input 1 (\texttt{J1-10.0}). It bundles various subroutines—such as Data Input, Data Output, and a suite of transcendental math functions—which are detailed later in this manual. Only the specific subroutines required for a given problem need to be read into memory alongside the main ``Floating-Point Interpreter System 2'' core; however, the memory cross-references for the entire system must be strictly preserved during loading.
-
-The programmer will quickly find that utilizing this system yields a massive savings of time and effort when dealing with problems where data values fluctuate wildly in magnitude—scenarios that would otherwise demand an immense, complex programming overhead under traditional fixed-point arithmetic constraints.
+If your data swings across many orders of magnitude, this interpreter saves a lot of the scaling bookkeeping you'd have to do by hand in fixed-point.
 
 \paragraph{Principles}
-The ``Floating-Point Interpreter System 2'' intercepts and reinterprets the elementary hardware instruction structure of the LGP-21, transforming it so that it can be programmed exactly like a natively ``hardwired'' floating-point computer. This illusion is achieved through:
+The interpreter presents the LGP-21 to the programmer as if it had a native floating-point instruction set. To do this it provides:
 
 \begin{enumerate}
-    \item \textbf{Virtual Registers:} The provision of an internal, software-driven Multiplier Register, Address Register, and a dedicated Floating-Point Accumulator.
-    \item \textbf{Advanced Operations:} Integrated support for cumulative multiplication (multiply-accumulate), sign inversion, and direct function-generating commands.
-    \item \textbf{Massive Numerical Range:} Input data consists of signed 9-digit decimal numbers followed by a base-10 exponent between $+99$ and $-99$. Output data delivers signed 7-digit decimal numbers followed by a base-10 exponent between $+99$ and $-99$.
-    \item \textbf{Expanded I/O framework:} A vastly modernized structure for data entry and terminal printing commands.
+    \item \textbf{Software registers}: a floating-point accumulator, a multiplier register, an address register, and an instruction counter.
+    \item \textbf{A richer instruction set}: arithmetic and transcendentals (including a multiply-accumulate), sign manipulation, address-register operations, and built-in I/O.
+    \item \textbf{Wide numerical range}: inputs are signed 9-digit mantissas with a base-10 exponent in $\pm 99$; outputs are signed 7-digit mantissas with the same exponent range.
+    \item \textbf{Built-in I/O}: dedicated read and print pseudo-instructions for floating-point data.
 \end{enumerate}
 
-The entire system footprint consumes \textbf{28 Tracks} of memory. This is divided into the core interpreter loop, Data Input (7 tracks), Data Output (4 tracks), and Floating-Point Functions (6 tracks). This leaves \textbf{36 Tracks (2,304 words)} completely free on the magnetic drum for the programmer's main execution routine and data storage arrays.
+The complete system takes 28 tracks of memory: the interpreter core plus Data Input (7 tracks), Data Output (4 tracks), and floating-point functions (6 tracks). That leaves 36 tracks (2,304 words) for the main program and data.
 
 \subsubsection*{INTERNAL REGISTERS}
 
-The floating-point format requires two consecutive locations to represent a single data word. Consequently, the interpreter system features two specialized registers designed for data transport, processing, and output while strictly preserving the floating-point structure. These registers—the Floating-Point Accumulator and the Multiplier Register—each occupy two locations. 
+The interpreter provides four registers: a floating-point accumulator, a multiplier register, an address register, and an instruction counter. The accumulator and multiplier register are each two words wide (matching the in-memory two-word floating-point format); the address register and instruction counter are each one word.
 
-Address modification can be executed directly within the interpreter system by utilizing a simulated, single-location Address Register. Additionally, a single-location Counter Register governs the operational execution flow of the interpreter system loop.
+All four registers are zero on initial load. Instructions referenced in the descriptions below are detailed in the Pseudo-Instructions section.
 
-Upon initial system loading, before any operations have commenced, the contents of all virtual registers are initialized to zero. A detailed breakdown of these specialized registers follows below. (The individual instructions referenced here are explained comprehensively in Section 4, ``Pseudo-Instructions'').
+\paragraph{1. Floating-Point Accumulator.} Holds intermediate calculation results and output values. Mantissa at $q=0$, 30 bits of precision, normalized so the leading bit is at $2^{-1}$; exponent at $q=29$; each with its own sign bit. Modified by arithmetic, transcendental functions, and the Clear, Swap, and Set Sign instructions.
 
-\paragraph{1. The Floating-Point Accumulator}
-The Floating-Point Accumulator holds intermediate mathematical results and output values. Because output data must ultimately be rendered as a signed 7-digit decimal mantissa with a 2-digit decimal exponent, the hardware treats them internally as follows:
-\begin{itemize}
-	\item \textbf{The Mantissa:} Maintained within the Floating-Point Accumulator with a precision of 30 bits at binary scaling factor $q = 0$. The most significant bit possesses a weight of $2^{-1}$, meaning the mantissa is *always* strictly normalized.
-	\item \textbf{The Exponent:} Positioned at binary scaling factor $q = 29$. 
-\end{itemize}
+\paragraph{2. Multiplier Register.} Holds the multiplicand for Multiply and Cumulative Multiplication. Same internal layout as the accumulator. Modified only by Set and Swap.
 
-Both the mantissa and the exponent maintain their own independent, algebraic sign bits. The contents of the Accumulator are altered exclusively by arithmetic operations, transcendental function calls, or explicit register management commands (Clear, Swap, or Set Sign).
+\paragraph{3. Address Register.} A single word holding a track/sector address at $q=29$. Used by Store Address to patch the operand field of an instruction, and by the zero-test branch. Modified only by Set Address and Increment Address.
 
-\paragraph{2. The Multiplier Register}
-The Multiplier Register stores the multiplicand during standard multiplication and cumulative multiplication (multiply-accumulate) routines. 
-* The internal mantissa is mapped at $q = 0$.
-* The internal exponent is mapped at $q = 29$.
-
-Like the accumulator, both components carry their respective algebraic sign bits. The contents of this register can only be modified by executing explicit ``Set'' or ``Swap'' commands.
-
-\paragraph{3. The Address Register}
-The Address Register holds a single virtual memory address formatted in Track/Sector notation at binary scaling factor $q = 29$. This register is specifically utilized to modify the operand address field of memory words via the ``Store Address'' command, and to govern main program execution loops during zero-testing routines. The contents of this register are altered exclusively by an explicit ``Set Address'' or ``Increment Address'' instruction.
-
-\paragraph{4. The Counter Register}
-The Counter Register functions as the virtual Program Counter (PC). It tracks the absolute address of the currently executing pseudo-instruction and points ahead to the address of the subsequent instruction. 
-
-When a subroutine return sequence is initiated, the current contents of this register plus 2 ($\text{PC} + 2$) are injected into the operand address field of the targeted return command. The register is initially primed by the main program's calling sequence and automatically increments by 1 following the execution of each pseudo-instruction. This linear, step-by-step increment can only be overridden by a programmatic branch or jump instruction.
+\paragraph{4. Counter Register.} The interpreter's program counter. Holds the address of the current pseudo-instruction and points at the next. Initialized by the main program's calling sequence on entry, and incremented by one per instruction. A Return instruction stores (counter + 2) into the operand field of its target. Jumps and conditional branches overwrite it.
 
 \subsubsection*{INTERNAL NUMBER FORMAT}
 
-Every floating-point number requires two consecutive locations for its complete representation. 
-
+Each floating-point number occupies two consecutive locations:
 \begin{itemize}
-    \item \textbf{The first location} holds the mantissa of the number in binary representation scaled at $q = 0$. Each mantissa consists of an algebraic sign bit and 30 significant binary digits; the most significant bit (MSB) carries a value of $2^{-1}$. The mantissa is therefore always maintained in a strictly normalized state.
-    \item \textbf{The second location} holds the base-2 exponent, which must be multiplied by the mantissa to obtain the actual value of the represented number. This exponent, maintained at $q = 29$, is a whole binary integer carrying its own algebraic sign bit.
+    \item \textbf{First location}: the mantissa $M$ at $q=0$ --- a sign bit plus 30 magnitude bits, always stored normalized (so the leading magnitude bit has the place value $2^{-1}$).
+    \item \textbf{Second location}: the exponent $E$ at $q=29$ --- a sign bit plus magnitude bits, a small integer.
 \end{itemize}
 
-Taken together, these two components represent a floating-point number via the following mathematical relationship:
-\[ Z = M \cdot 2^E \]
-Where $Z = \text{The Number}$, $M = \text{The Mantissa}$, and $E = \text{The Exponent}$.
+The represented value is $Z = M \cdot 2^E$.
 
 \paragraph{Example 1: Representation of $+3.75$}
 In floating-point memory, the decimal value $3.75$ is internally normalized as $0.9375 \cdot 2^2$. Its exact binary equivalent on the magnetic drum is structured as follows:
@@ -667,7 +644,7 @@ In floating-point memory, the decimal value $3.75$ is internally normalized as $
 \end{table}
 
 \paragraph{Example 2: Representation of a Negative Number ($-3.75$)}
-A negative number is represented by inverting the leading sign bit of the mantissa location:
+A negative mantissa has its sign bit set and its magnitude bits stored in two's complement. The exponent is unaffected by the sign of the mantissa, so it's identical to the $+3.75$ case (not shown again here).
 
 \vspace{1em}
 \noindent\textbf{First Location (Mantissa at $q = 0$):}
@@ -684,7 +661,7 @@ A negative number is represented by inverting the leading sign bit of the mantis
 \end{tabular}
 \end{table}
 \paragraph{Sequential Allocation in Drum Memory}
-The continuous storage of alternating mantissas and exponents across sequential drum tracks steps through memory in fixed increments of two:
+Multiple floating-point numbers stored consecutively occupy memory in pairs, alternating mantissa and exponent:
 
 \begin{table}[h]
 \centering
@@ -704,10 +681,9 @@ The continuous storage of alternating mantissas and exponents across sequential 
 
 \paragraph{Operational Boundaries (Note):}
 \begin{enumerate}
-    \item \textbf{Input Restriction:} During decimal data entry, the input base-10 exponent is strictly bounded to the range $-99 \le E_{10} \le +99$.
-    \item \textbf{Output Restriction:} During printing operations via the paper tape typewriter, the printed base-10 exponent is likewise bounded to $-99 \le E_{10} \le +99$.
-    \item \textbf{Binary Underflow/Overflow Guard:} When executing internal calculations or storing the contents of the virtual Floating-Point Accumulator into memory, the computer will \emph{not} halt (i.e., no hardware overflow/underflow fault is triggered), provided that the internal binary exponent satisfies the following safety threshold:
-    \[ -333 \le E_{2} \le +333 \]
+    \item \textbf{Input range:} decimal exponent $-99 \le E_{10} \le +99$.
+    \item \textbf{Output range:} decimal exponent $-99 \le E_{10} \le +99$ (matching input).
+    \item \textbf{Internal range:} the binary exponent must stay in $-333 \le E_2 \le +333$ during arithmetic and stores. The interpreter does not trap on overflow/underflow as long as this is satisfied.
 \end{enumerate}
 
 \subsubsection*{PSEUDO-INSTRUCTIONS}
