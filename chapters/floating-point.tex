@@ -69,72 +69,69 @@ All four registers are zero when the program is first loaded. Apart from the ins
 \paragraph{4. Instruction Counter.} Holds the address of the currently-executing interpreter instruction, and points at the next instruction to fetch. Initialized by the main program's calling sequence on entry, and incremented by one per instruction. Jump instructions overwrite it with a new target; the Return instruction stores its current value plus 2 into the operand field of its target location.
 
 \subsubsection*{FLOATING-POINT INSTRUCTIONS}
-This interpretive system operates using 33 pseudo-instructions. Each instruction consists of an operation code field and an operand address field. Certain operand addresses carry a divergent structural meaning compared to native fixed-point machine commands (e.g., null/zero addresses).
-
-\noindent
-The floating-point instructions are detailed below. The placeholder notation \texttt{ttss} denotes an operand address written in decimal track and sector format. All referenced registers represent the simulated virtual registers of the interpretive engine. All instructions execute to completion without exiting the interpretive system.
+The interpreter has 33 pseudo-instructions. Each is a single word with an opcode and an operand address. In the descriptions below, \texttt{ttss} is an operand address in decimal track/sector format; instructions with operand \texttt{0000} have a special meaning (typically a register-only operation or a function call). All instructions run to completion without leaving the interpreter.
 \begin{enumerate}
 	\item Arithmetic Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{B ttss} (Bring):] Copies the contents of location \texttt{ttss} into the floating-point accumulator. The source memory remains unchanged.
-    \item[\texttt{A ttss} (Add):] Adds the contents of location \texttt{ttss} to the current value of the accumulator. The sum replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{S ttss} (Subtract):] Subtracts the contents of location \texttt{ttss} from the current value of the accumulator. The difference replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{D ttss} (Divide):] Divides the current value of the accumulator by the contents of location \texttt{ttss}. The resulting quotient replaces the contents of the accumulator. Memory remains unchanged.
-    \item[\texttt{P ttss} (Set M-Register):] Copies the contents of location \texttt{ttss} into the multiplication ($M$) register. Memory remains unchanged.
-    \item[\texttt{M ttss} (Multiply):] Multiplies the contents of the $M$-register by the contents of location \texttt{ttss}. The product replaces the contents of the accumulator. The source memory and the $M$-register remain unchanged.
-    \item[\texttt{N ttss} (Cumulative Multiplication):] Multiplies the contents of the $M$-register by the contents of location \texttt{ttss}, and automatically adds the product directly to the current accumulator value. The final sum resides in the accumulator. Memory and the $M$-register remain unchanged.
-    \item[\texttt{D 000y} (Shift Right):] Divides the current contents of the accumulator by $2^y$. The operand address must be formatted as \texttt{000y}, where $0 \le y \le 9$. The accumulator contents remain strictly in floating-point format.
-    \item[\texttt{M 000y} (Shift Left):] Multiplies the current contents of the accumulator by $2^y$. The operand address must be formatted as \texttt{000y}, where $0 \le y \le 9$. The accumulator contents remain strictly in floating-point format.
-    \item[\texttt{H ttss} (Hold):] Copies the current contents of the accumulator into location \texttt{ttss}. The accumulator contents remain unchanged.
-    \item[\texttt{C ttss} (Clear):] Copies the current contents of the accumulator into location \texttt{ttss}, and subsequently flushes the accumulator register entirely with zeros.
+    \item[\texttt{B ttss} (Bring):] Load \texttt{ttss} into the accumulator.
+    \item[\texttt{A ttss} (Add):] Add \texttt{ttss} to the accumulator.
+    \item[\texttt{S ttss} (Subtract):] Subtract \texttt{ttss} from the accumulator.
+    \item[\texttt{D ttss} (Divide):] Divide the accumulator by \texttt{ttss}.
+    \item[\texttt{P ttss} (Set M-Register):] Load \texttt{ttss} into the $M$-register.
+    \item[\texttt{M ttss} (Multiply):] Multiply the $M$-register by \texttt{ttss}; the product replaces the accumulator. $M$-register is unchanged.
+    \item[\texttt{N ttss} (Cumulative Multiplication):] Multiply the $M$-register by \texttt{ttss} and add the product to the accumulator. $M$-register is unchanged.
+    \item[\texttt{D 000y} (Shift Right):] Divide the accumulator by $2^y$ ($0 \le y \le 9$).
+    \item[\texttt{M 000y} (Shift Left):] Multiply the accumulator by $2^y$ ($0 \le y \le 9$).
+    \item[\texttt{H ttss} (Hold):] Store the accumulator into \texttt{ttss}. Accumulator is unchanged.
+    \item[\texttt{C ttss} (Clear):] Store the accumulator into \texttt{ttss}, then zero the accumulator.
 \end{description}
 
 \item Jump / Branch Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{U ttss} (Unconditional Jump):] Overwrites the instruction counter register with the address \texttt{ttss}. Execution loops to fetch the next instruction from location \texttt{ttss}. This command cannot be used to exit the interpretive system.
-    \item[\texttt{T ttss} (Test for Minus):] Overwrites the instruction counter register with address \texttt{ttss} if the current accumulator value is negative; execution then branches to \texttt{ttss}. If the accumulator is positive or zero, the branch is ignored and the next sequential instruction is executed. This command cannot be used to exit the interpretive system.
-    \item[\texttt{800T ttss} (Conditional Jump):] Overwrites the instruction counter register with address \texttt{ttss} if the accumulator value is negative OR if Program Selector Switch 7 (\texttt{PST}) is turned ON. Otherwise, execution continues sequentially. This command cannot be used to exit the interpretive system.
+    \item[\texttt{U ttss} (Unconditional Jump):] Jump to \texttt{ttss}. Can't exit the interpreter --- \texttt{ttss} must point at another interpreter instruction.
+    \item[\texttt{T ttss} (Test for Minus):] Jump to \texttt{ttss} if the accumulator is negative; otherwise fall through. Same restriction.
+    \item[\texttt{800T ttss} (Conditional Jump):] Jump to \texttt{ttss} if the accumulator is negative \emph{or} if Program Selector Switch 7 (\texttt{PST}) is ON. Same restriction.
 \end{description}
 
 \item Address Modification Instructions
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{E ttss} (Set Address):] Extracts the operand address portion of the instruction word stored at location \texttt{ttss} and copies it into the simulated address register. Memory remains unchanged.
-    \item[\texttt{I ttss} (Increment Address):] Increments the current numeric value of the simulated address register by the value \texttt{ttss}. This instruction can be used to decrement the register by supplying the complement of the value \texttt{ttss}.
-    \item[\texttt{Y ttss} (Store Address):] Copies the tracking address currently held in the simulated address register into the operand address field of the instruction word at location \texttt{ttss}. The remaining fields of location \texttt{ttss} and the address register itself are unaltered.
-    \item[\texttt{Z ttss} (Test for Zero):] Subtracts the literal value \texttt{ttss} from the current contents of the simulated address register. If the result is non-zero, the immediately following sequential instruction is executed. If the result is exactly zero, the next instruction is skipped and execution jumps directly to the second following word (the instruction after next).
-    \item[\texttt{R ttss} (Return):] Computes the current value of the instruction counter register plus 2, and writes that calculated address into the operand address field of the instruction word at location \texttt{ttss}. The instruction counter itself and the remaining fields of location \texttt{ttss} are untouched.
+    \item[\texttt{E ttss} (Set Address):] Load the address field of the word at \texttt{ttss} into the address register.
+    \item[\texttt{I ttss} (Increment Address):] Add \texttt{ttss} to the address register. Subtraction works by supplying the two's complement.
+    \item[\texttt{Y ttss} (Store Address):] Write the address register into the address field of the word at \texttt{ttss} (other fields of \texttt{ttss} and the address register itself are unchanged).
+    \item[\texttt{Z ttss} (Test for Zero):] If \texttt{ttss} equals the address register, skip the next instruction; otherwise fall through.
+    \item[\texttt{R ttss} (Return):] Write (instruction counter + 2) into the address field of the word at \texttt{ttss}.
 \end{description}
 
 \item Auxiliary Instructions
 
 The operand address field for all auxiliary commands must be exactly zero (\texttt{0000}).
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{U 0000} (Swap):] Swaps the contents of the multiplication ($M$) register and the floating-point accumulator.
-    \item[\texttt{B 0000} (Set Plus Sign):] Forces the accumulator value to be positive if it is currently negative. If the accumulator is already positive or zero, the command is skipped as a no-operation.
-    \item[\texttt{T 0000} (Set Minus Sign):] Forces the accumulator value to be negative if it is currently positive. If the accumulator is already negative, the command is skipped as a no-operation.
-    \item[\texttt{Y 0000} (Invert Sign):] Replaces the accumulator contents with its arithmetic complement (negating the current sign).
-    \item[\texttt{Z 0000} (Stop):] Halts all computation loops immediately, provided that physical Break Point Switch 16 (\texttt{PS-16}) is turned OFF. Pressing the physical ``Start'' button on the console resumes execution at the next sequential location. If \texttt{PS-16} is turned ON, this stop command is bypassed entirely.
-    \item[\texttt{E 0000} (Exit):] Terminates execution within the interpretive engine. The instruction immediately following this command word is decoded and executed as a standard native machine instruction.
+    \item[\texttt{U 0000} (Swap):] Swap the $M$-register and the accumulator.
+    \item[\texttt{B 0000} (Set Plus Sign):] Make the accumulator positive ($|x|$). No-op if already non-negative.
+    \item[\texttt{T 0000} (Set Minus Sign):] Make the accumulator negative ($-|x|$). No-op if already negative.
+    \item[\texttt{Y 0000} (Invert Sign):] Negate the accumulator.
+    \item[\texttt{Z 0000} (Stop):] Halt execution. Pressing \textit{Start} resumes at the next instruction. Skipped if Break Point Switch 16 (\texttt{PS-16}) is ON.
+    \item[\texttt{E 0000} (Exit):] Leave the interpreter. The next word is executed as a native machine instruction.
 \end{description}
 
 \item Input / Output Instructions
 
 The operand address field for all I/O commands must be exactly zero (\texttt{0000}).
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{I 0000} (Input):] Reads a block of data from tape, automatically parses it into floating-point format, and stores it in sequential memory addresses for main-program access. The target destination base address is read directly from the data tape leader header.
-    \item[\texttt{P 0000} (Output):] Prints the current contents of the floating-point accumulator to the output unit in standard floating-point notation. The accumulator state is completely preserved during the print operation.
+    \item[\texttt{I 0000} (Input):] Read a block of decimal numbers from tape, convert to floating-point, and store them in sequential locations. The destination address is taken from the tape's leader.
+    \item[\texttt{P 0000} (Output):] Print the accumulator on the output device in floating-point notation. Accumulator is unchanged.
 \end{description}
 
 \item Transcendental Function Evaluation Instructions
 
 The operand address field for all function evaluations must be exactly zero (\texttt{0000}).
 \begin{description}[leftmargin=1.5em, itemsep=4pt]
-    \item[\texttt{R 0000} (Square Root):] Computes the square root ($\sqrt{x}$) of the current accumulator contents. The result replaces the value in the accumulator.
-    \item[\texttt{S 0000} (Sine):] Calculates the sine ($\sin x$) of the current accumulator contents. The result replaces the value in the accumulator. The input argument $x$ must be supplied strictly in radians.
-    \item[\texttt{C 0000} (Cosine):] Calculates the cosine ($\cos x$) of the current accumulator contents. The result replaces the value in the accumulator. The input argument $x$ must be supplied strictly in radians.
-    \item[\texttt{A 0000} (Arctangent):] Calculates the principal value of the arctangent ($\arctan x$) of the current accumulator contents. The resulting angle is returned strictly in radians.
-    \item[\texttt{N 0000} (Natural Logarithm):] Calculates the natural logarithm ($\ln x$, base $x$ relative to $e$) of the current accumulator contents.
-    \item[\texttt{H 0000} (Exponential Function):] Computes the natural exponential value ($e^x$), where $x$ represents the initial numeric value held in the accumulator.
+    \item[\texttt{R 0000} (Square Root):] Replace the accumulator with $\sqrt{x}$.
+    \item[\texttt{S 0000} (Sine):] Replace the accumulator with $\sin x$ ($x$ in radians).
+    \item[\texttt{C 0000} (Cosine):] Replace the accumulator with $\cos x$ ($x$ in radians).
+    \item[\texttt{A 0000} (Arctangent):] Replace the accumulator with the principal value of $\arctan x$ (result in radians).
+    \item[\texttt{N 0000} (Natural Logarithm):] Replace the accumulator with $\ln x$.
+    \item[\texttt{H 0000} (Exponential Function):] Replace the accumulator with $e^x$.
 \end{description}
 \end{enumerate}
 
