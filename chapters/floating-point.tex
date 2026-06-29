@@ -1237,9 +1237,9 @@ The input tape supplies $X$ and the five coefficients in the format documented u
 \paragraph{Why do we have \emph{two} floating point packages?}
 Modern programmers would look at this documentation and immediately start trying to figure out how to get rid of one of these two packages. Why would anyone want, or need, two separate floating point packages?
 
-The following is speculation, based off the architectures of the two interpreters and years of experience with human nature, so take it with a grain of salt. If we ever have a real LGP-21 programmer around to ask, who actually \emph{used} both, we can nail it down for sure. But having said that, it appears that there two different floating-point interpreters because there were two different audiences who needed floating point.
+The following is speculation, based off the architectures of the two interpreters and years of experience with human nature, so take it with a grain of salt. If we ever have a real LGP-21 programmer around to ask, who actually \emph{used} both, we can nail it down for sure. But having said that, it appears that there are two different floating-point interpreters because there were two different audiences who needed floating point.
 
-The first set of users would be people who are familiar with the LGP-21 and the fixed-point frctional architecture; who are comfortable thinking about numbers in terms of $q$ and who have relatively lightweight requirements for floating-point operations. They will be writing code mostly in LGP-21 native mode, and occasionally dropping into floating point for a few calculations. Basic I/O of floating point works fine for them. Interpreter 1 is their choice.
+The first set of users would be people who are familiar with the LGP-21 and the fixed-point fractional architecture; who are comfortable thinking about numbers in terms of $q$ and who have relatively lightweight requirements for floating-point operations. They will be writing code mostly in LGP-21 native mode, and occasionally dropping into floating point for a few calculations. Basic I/O of floating point works fine for them. Interpreter 1 is their choice.
 
 The second set of users are primarily engineers, mathematicians, scientists...anyone whose native way of thinking about math is ``things you do with real numbers''. They want an instruction set that natively Does The Thing, using floating point numbers. Power-of-10 scaling makes perfect sense to them, but bit-twiddling and screwing around with representation is a distraction from the work they need to get done. Their attitude is effectively: \emph{``I just want to work with actual numbers. These fixed-point fractions are too weird.''}
 
@@ -1255,7 +1255,7 @@ We won't know for sure until we find a programmer who used both, or two programm
 \paragraph{Why interpreters?}
 A modern programmer's second thought is ``why are the LGP-21's floating point implementations \emph{interpreters?}'' Couldn't we just write some nice libraries and call it a day?
 
-On a more modern machine with a stack or other good support for subroutine calls, sure. (We'll pretend it doesn't have native floating point.) Let's say we're doing \texttt{fmul(fadd(a,b),fadd(c+d))}. We'd put a on the stack, call the conversion routine, push b on the stack, convert it, call the float-add function, put c on, convert, put d on, convert, call float-add, call float-multiply, done!
+On a more modern machine with a stack or other good support for subroutine calls, sure. (We'll pretend it doesn't have native floating point.) Let's say we're doing \texttt{fmul(fadd(a,b),fadd(c,d))}. We'd put a on the stack, call the conversion routine, push b on the stack, convert it, call the float-add function, put c on, convert, put d on, convert, call float-add, call float-multiply, done!
 
 On the LGP-21, there are \emph{so many} more operations. We have no stack, so everything has to go in temporary storage. We can't hold a two-word (mantissa and exponent) number in the regular accumulator, so we'll have to do something like this\footnote{This is only the instructions needed to set up to \emph{do} the operations; we're skipping the actual functions and the wiring necessary to do things like set up return addresses, find arguments, etc. Those are assumed to be library overhead and not something the caller codes...but that overhead exists too.}:
 
@@ -1266,8 +1266,8 @@ On the LGP-21, there are \emph{so many} more operations. We have no stack, so ev
 	\texttt{fread(b)} & 3 & read value for \texttt{b} \\
 	\texttt{fread(c)} & 3 & read value for \texttt{c} \\
 	\texttt{fread(d)} & 3 & read value for \texttt{d} \\
-    \texttt{fadd(a, b, t1)} & 3 & \texttt{a + b} to \texttt{t3}\\
-    \texttt{fadd(c, d, t2)} & 3 & \texttt{c + d} to \texttt{t4}\\
+    \texttt{fadd(a, b, t1)} & 3 & \texttt{a + b} to \texttt{t1}\\
+    \texttt{fadd(c, d, t2)} & 3 & \texttt{c + d} to \texttt{t2}\\
 	\texttt{fmul(t1, t2, t1)} & 3 & Final result in \texttt{t1}\\
 	\texttt{print(t1)} & 3 & Print it	\\
 \end{tabularx}
@@ -1298,7 +1298,7 @@ $\alpha+n+1$ & \multicolumn{2}{c}{\dots}     & Resume fixed-point. \\
 \end{tabularx}
 \end{table}
 
-To execute the exact same set of operations, the interpreter version only takes\emph{12} (pseudo) instructions plus 10 words to store 5 floating-point numbers, 22 total, and is much simpler to understand. Fitting your program into much less storage is a serious consideration on a machine with only 4K words, especially since you'll be giving up memory to your libraries or your interpreter. (Interestingly, it should be noted that for Interpreter 2, the floating-point library functions are \emph{smaller} than the corresponding fixed-point fractional ones.)
+To execute the exact same set of operations, the interpreter version only takes \emph{12} (pseudo) instructions plus 10 words to store 5 floating-point numbers, 22 total, and is much simpler to understand. Fitting your program into much less storage is a serious consideration on a machine with only 4K words, especially since you'll be giving up memory to your libraries or your interpreter. (Interestingly, it should be noted that for Interpreter 2, the floating-point library functions are \emph{smaller} than the corresponding fixed-point fractional ones.)
 \paragraph{Coding example for Interpreter 2}
 This is a far better example of using all of the facilities of Interpreter 2 than the very simple comparison program above.
 
@@ -1319,11 +1319,11 @@ To actually execute this on the LGP-21, an operator would have gone through the 
 	\item Power on the LGP-21 and ensure the Loader Utility Program is resident in memory. Load it if not.
 	\item Sit down at the Flexowriter and type out the coding sheet to produce a physical paper tape punched with the instruction bits and carriage-return stop codes (').
 	\item Take the finished source tape, walk over to the LGP-21 console, and feed it into the paper tape reader.
-	\item Set the console switches to execute the resident loader, and sets the input device to the paper tape reader, then tells the loader to load the tape.
+	\item Set the console switches to execute the resident loader, set the input device to the paper tape reader, then tell the loader to load the tape.
 	\item The loader starts the tape and reads the initial tape headers (;0004200 and /0004200), targets Track 04 Sector 00, and begins shifting the relative instruction addresses to match their new home on the drum.
 	\item Once the program tape finishes loading, the operator removes it and inserts a Data Tape containing the actual floating-point numbers for $x$ and the polynomial coefficients
 	\item The operator clears the manual controls and presses \textsf{START} on the physical control panel.
-	\item The computer starts executing the program, which starts Interpreter 2, pauses at Line 02 (xI 0000), readss in the data values from the data tape, and immediately begins crunching the numbers through the self-modifying loop.
+	\item The computer starts executing the program, which starts Interpreter 2, pauses at Line 02 (xI 0000), reads in the data values from the data tape, and immediately begins crunching the numbers through the self-modifying loop.
 	\item The interpreter finishes the math, commands the Flexowriter to type out the final evaluation result on paper (\texttt{xP 0000}), drops out of interpretive mode, and triggers a hard system stop via Line 13 (\texttt{xZ 0000}).
 	\item If the operator wants to clear the current run and evaluate a completely fresh data tape using the same polynomial structure, they simply hit \textsf{START} again. The machine executes Line 14 (\textsf{U 0000}), which immediately vectors execution right back to the beginning of the program loop (relative line 0) to read the next input tape of $x$ and the coefficients. 
 \end{enumerate}
