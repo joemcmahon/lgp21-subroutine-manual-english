@@ -794,7 +794,7 @@ Inside an \texttt{I0000}, input continues from the tape until a stop code return
 \midrule
 R0000 & Square Root & $\sqrt{\text{(Accumulator)}}$ $\rightarrow$ Accumulator. Negative inputs trigger an immediate error halt. \\
 S0000 & Sine & $\sin\text{(Accumulator)}$ $\rightarrow$ Accumulator. Input argument must be formatted in radians. \\
-Q0000 & Cosine & $\cos\text{(Accumulator)}$ $\rightarrow$ Accumulator. Input argument must be formatted in radians. \\
+C0000 & Cosine & $\cos\text{(Accumulator)}$ $\rightarrow$ Accumulator. Input argument must be formatted in radians. \\
 A0000 & Arctangent & $\arctan\text{(Accumulator)}$ $\rightarrow$ Accumulator. Resulting output is scaled in radians. \\
 N0000 & Natural Logarithm & $\ln\text{(Accumulator)}$ $\rightarrow$ Accumulator. \\
 H0000 & Exponential & $e^X \rightarrow$ Accumulator, where $X$ represents the initial value held in the Accumulator. \\
@@ -987,7 +987,7 @@ If the internal binary exponent drops below $-333$, the routine prints a zero. I
 \subsubsection*{FUNCTION SUBROUTINES}
 
 \paragraph{SINE-COSINE}
-This subroutine calculates the sine or cosine of a given value expressed in radians, using a 9th degree polynomial to approximate the value. To use, load the angle into the floating-point accumulator then execute the appropriate pseudo-instruction (\texttt{S0000} for sine or \texttt{C0000} for cosine). The result is placed in the floating-point accumulator. The following table shows the method for calculating the function values depending on the exponent of the argument.
+Returns $\sin x$ (\texttt{S0000}) or $\cos x$ (\texttt{C0000}) of the accumulator, in radians. Uses a 9th-degree polynomial approximation in most cases; behavior depends on the argument's binary exponent:
 
 \begin{center}
 \small
@@ -1004,27 +1004,23 @@ This subroutine calculates the sine or cosine of a given value expressed in radi
 \end{center}
 
 \paragraph{ARCTANGENT}
-This subroutine calculates the angle that corresponds to a given tangent argument. Load the tangent value into the floating-point accumulator and execute the \textbf{A0000} pseudo-instruction. The result is returned in radians in the floating-point accumulator.
+Returns $\arctan x$ (\texttt{A0000}) of the accumulator, in radians.
 
 \paragraph{LOGARITHM AND EXPONENTIAL FUNCTION}
-Load the independent variable \texttt{X} into the floating-point accumulator and execute the appropriate pseudo-instruction (\texttt{N0000} for $log_e$ and \texttt{H0000} for $e^x$); the resulting value is returned in the floating-point accumulator.
+Returns $\ln x$ (\texttt{N0000}) or $e^x$ (\texttt{H0000}) of the accumulator.
 
 \paragraph{SQUARE ROOT}
-This subroutine, which is included in the interpreter system, calculates the square root of the number in the floating-point accumulator and returns it there.
+Returns $\sqrt{x}$ (\texttt{R0000}) of the (positive) accumulator. This one's built into the interpreter core --- no separate load needed.
 
 \bigskip
 \hrule
 \bigskip
 
 \subsubsection*{OPERATION}
-Input is floating-point numbers loaded from tape or in memory, or from numbers in the pseudo-registers from previous operations.
+Inputs come from floating-point values loaded from tape, stored in memory, or left in the interpreter's pseudo-registers by previous operations.
 
 \paragraph{Running the interpreter}
-Entry to the interpreter is via a subroutine call using an \texttt{R}/\texttt{U} sequence. Similar to the Floating-point Interpreter I,
-the \texttt{R} instruction sets the address portion of a \texttt{B} instruction at $L_0$, which in this case acts as an executable pointer back
-to the pseudo-instructions inline after the \texttt{U}. The interpreter extracts the address of the code to be interpreted from this \texttt{B}
-instruction. It does \emph{not} set a return address, but instead uses the \texttt{E0000} instruction to detect the end of the interpreted
-pseudo-instructions, and branches back to the (fixed-point) instruction following the end of the floating-point code.
+Entry is the standard \texttt{R}/\texttt{U} sequence. The \texttt{R} patches the address portion of a \texttt{B} instruction at $L_0$ so it points at the pseudo-instructions immediately following the \texttt{U}; the interpreter reads its starting address from that \texttt{B}. There's no fixed-point-style return address --- instead, the interpreter watches for an \texttt{E 0000} pseudo-instruction, which marks the end of interpreted code and returns to native execution at the next location.
 
 \begin{table}[h!]
 \centering
@@ -1124,7 +1120,7 @@ By the time the conversion routine finishes working through a number like $10^{9
 \begin{enumerate}
 \item A program can exit H1-11.1 interpreter mode and return to it without the contents of the pseudo-registers being lost.
 \item The starting address of the system should be at sector 00 of a track. Otherwise, many of the addresses that refer to track 63 are not optimal.
-\item It's good practice to load the entirety of \texttt{H1-11.1}, and to then punch out the individual sub-libraries by means of \texttt{J4-10.2} or \texttt{J4-10.3}. This enables you to load only the parts that you require using \texttt{J1-10.0} or by means of \texttt{J5-10.0}. This allows you to verify checksums on load.
+\item It's good practice to load all of \texttt{H1-11.1}, then punch out the individual sub-libraries with \texttt{J4-10.2} or \texttt{J4-10.3}. You can then load only the parts you need with \texttt{J1-10.0} or \texttt{J5-10.0}, and verify the checksums on each load.
 \item Instructions with zero addresses do not actually refer to location 0000, but are used to indicate special pseudo-instructions. The interpreter has 14 pseudo-instructions with zero addresses, plus the two special shift instructions \texttt{D000y} and \texttt{M000y}. These instructions set their address part to values from 0001 to 0009, meaning that the division and normal multiplication instructions must not use these addresses in interpreter mode.
 \end{enumerate}
 
@@ -1143,7 +1139,7 @@ By the time the conversion routine finishes working through a number like $10^{9
 	\texttt{E} & Address part of (\texttt{XXXX}) $\rightarrow$ address part of the (Accumulator) \\
 	\texttt{U} & Take next instruction from \texttt{XXXX} \\
 	\texttt{T} & Jump if (Accumulator) is negative \\
-	\texttt{-T} & Jump if (Accumulator) is negative or if PST is turned on \\
+	\texttt{800T} & Jump if (Accumulator) is negative or if PST is turned on \\
 	\texttt{H} & (Accumulator) $\rightarrow$ (\texttt{XXXX}) \\
 	\texttt{C} & (Accumulator) $\rightarrow$ (\texttt{XXXX}); 0 $\rightarrow$ (Accumulator) \\
 	\texttt{A} & (Accumulator) $+$ (\texttt{XXXX}) $\rightarrow$ (Accumulator) \\
@@ -1167,7 +1163,7 @@ By the time the conversion routine finishes working through a number like $10^{9
 	\texttt{E} & Exit interpreter mode \\
 	\texttt{U} & Swap (Accumulator) and (M Reg.) \\
 	\texttt{T} & Make (Accumulator) negative \\
-	\texttt{-T} & Jump if (Accumulator) is negative or if \textsf{PST} switch is on \\
+	\texttt{800T} & Jump if (Accumulator) is negative or if \textsf{PST} switch is on \\
 	\texttt{H} & $e^{\text{(Accumulator)}} \rightarrow$ (Accumulator) \\
 	\texttt{C} & Cosine (Accumulator) $\rightarrow$ (Accumulator) \\
 	\texttt{A} & Arctangent (Accumulator) $\rightarrow$ (Accumulator) \\
@@ -1177,60 +1173,64 @@ By the time the conversion routine finishes working through a number like $10^{9
 \paragraph{Coding sheet for Horner's Method example}
 [\textbf{Translator's note:} This coding example and its data are simply oddly bunged on to the end of the chapter; best guess is that someone wanted a coding example of how to use the interpreter, and someone threw together a quick demo.]
 
-\begin{tabular}{|p{0.15\textwidth}|c|p{0.06\textwidth}|p{0.15\textwidth}|c|p{0.15\textwidth}|p{0.25\textwidth}|}
-	\hline
-	\textbf{Input} & \textbf{S} & \textbf{Loc.} & \textbf{Opcode} & \textbf{S} & \textbf{Address} & \textbf{Comments} \\
-	\textbf{keyword} & \textbf{T} & & \textbf{\& Addr.} & \textbf{T} & \textbf{Contents} & \\
-	& \textbf{O} & & & \textbf{O} & & \\
-	& \textbf{P} & & & \textbf{P} & & \\
-	\hline
-    ;0004200 & ' & & & & & Word counter to Track 04, Sector 00. \\
-	/0004200 & ' & & & & & Origin to Track 04, Sector 00. \\
-		      & & 00 & xR 1400 & ' & & Set interpreted section pointer in interpreter\\
-		      & & 01 & xU 1400 & ' & & Begin interpreting floating-point code \\
-		      & & 02 & xI 0000 & ' & & Read coefficients from Flexowriter (see below)\\
-		      & & 03 &  E 0018 & ' & 4306 & Set starting \\
-		      & & 04 &  Y 0006 & ' & 4306 & address \\
-		      & & 05 &  B 0013 & ' & Zero & \\
-		      & & 06 &  A [    ] & ' & $a_n$ & This address will be overwritten \\
-		      & & 07 & xL 0002 & ' & $a(4306+2n)$ & Increment address \\
-		      & & 08 &  Y 0006 & ' & $a(4306+2n)$ & register by 2 \\
-		      & & 09 & xZ 4316 & ' & & Check for completion \\
-		      & & 10 &  U 0015 & ' & & Not finished \\
-		      & & 11 & xP 0000 & ' & & Print result before exit \\
-			  & & 12 & xE 0000 & ' & & Exit interpreter \\
-			  & & 13 & xZ 0000 & ' & & Stop machine (fixed-point opcode) \\
-			  & & 14 &  U 0000 & ' & & Swap accumulator into instruction counter \\
-			  & & 15 & xU 0000 & ' & & Swap Accu. / M. Reg. \\
-			  & & 16 & xM 4304 & ' & & Multipl. by $x$ \\
-			  & & 17 &  U 0006 & ' & & Return for next term \\
-			  & & 18 & xZ 4306 & ' & & Initial coefficient \\
-			  000XXXX & & 19 & & ' & & \\
-		\hline
-\end{tabular}
+The program is the same fourth-degree Horner's method computation as the H1-11.0 example, but using H1-11.1's two-word floating-point format. The structure is identical --- a loop that walks the coefficients using address-register patching --- but the coefficient stride is 2 instead of 1 because each H1-11.1 floating-point value is two words.
 
-\paragraph{Data input sheet for Horner's Method}
-This is sample data in the format that Horner's Method demo program expects.
-\begin{center}
+The interpreter is loaded at \texttt{1400}. The program loads at \texttt{4200}. Lines \texttt{00} and \texttt{01} are native code that enter the interpreter; from \texttt{02} on it's all pseudo-instructions until \texttt{XE} at \texttt{12} exits back to native, where \texttt{13} halts the machine. The variable $X$ is at \texttt{4304}; the five coefficients $a_0 \ldots a_4$ are at \texttt{4306}, \texttt{4308}, \texttt{4310}, \texttt{4312}, \texttt{4314} (stride 2). The loop's termination test compares the address register against \texttt{4316}, one past the last coefficient.
+
+\medskip
+\noindent
 \small
 \ttfamily
-\begin{tabular}{|c|r|c|c|c|c|c|c|c|c|c|c|}
-	\hline
-	& \textbf{INPUT CONTROL WORD} & \textbf{S} & \multicolumn{4}{c|}{\textbf{SIGNED DECIMAL NUMBERS}} &   & \textbf{S}\\
-	& (Starting Address)          & \textbf{T} &         & Part 1 & ' & Part 2                        &   & \textbf{T}\\
-	&                              & \textbf{O} &   & $d_1d_2\dots d_7$ & & $d_8d_9$         &$e_1e_2$   & \textbf{O}\\
-	&                              & \textbf{P} &   &        &   &                                    &   & \textbf{P}\\
-	\hline
-	1 & 4304                       &'&   & 1090000 & ' & 00~+ & 09           & ' \\
-	2 &                            & &   & 0120000 & ' & 00~- & 09           & ' \\
-	3 &                            & &   & 0340000 & ' & 00~- & 09           & ' \\
-	3 &                            & &   & 0560000 & ' & 00~- & 09           & ' \\
-	3 &                            & &   & 0780000 & ' & 00~- & 09           & ' \\
-	3 &                            & &   & 0900000 & ' & 00~- & 09           & '\\
-	9 &                            &'&   &         &   &                     &  & '\\
-	\hline
+\begin{tabular}{l|c|l|l|l}
+\textbf{Loader directive} & \textbf{Loc} & \textbf{Op} & \textbf{Address contents} & \textbf{Comment} \\
+\texttt{;0004200'} &    &           &        & Block count to track 02, sector 00 \\
+\texttt{/0004200'} &    &           &        & Origin / relocation base 4200 \\
+           & 00 & \texttt{XR1400}  &        & Enter interpreter \\
+           & 01 & \texttt{XU1400}  &        & \\
+           & 02 & \texttt{XI0000}  &        & Read X and coefficients from tape \\
+           & 03 & \texttt{E0018}   & 4306   & Load addr-reg from operand of 18 \\
+           & 04 & \texttt{Y0006}   & 4306   & Patch 06's operand to 4306 \\
+           & 05 & \texttt{B0013}   &        & Clear accumulator \\
+           & 06 & \texttt{A0000}   & $a_n$  & Add next coefficient \\
+           & 07 & \texttt{XI0002}  &        & Addr-reg $+= 2$ \\
+           & 08 & \texttt{Y0006}   & $a(4306+2n)$ & Patch 06's operand to next coefficient \\
+           & 09 & \texttt{xZ4316}  &        & Done if addr-reg $= 4316$ \\
+           & 10 & \texttt{U0015}   &        & Not done --- jump to multiply step \\
+           & 11 & \texttt{XP0000}  &        & Print result \\
+           & 12 & \texttt{XE0000}  &        & Exit interpreter \\
+           & 13 & \texttt{xZ0000}  &        & Native stop \\
+           & 14 & \texttt{U0000}   &        & Return to start of program (see note) \\
+           & 15 & \texttt{xU0000}  &        & Swap accumulator and M-register \\
+           & 16 & \texttt{xM4304}  &        & Multiply M-register by X \\
+           & 17 & \texttt{U0006}   &        & Back to add next coefficient \\
+           & 18 & \texttt{XZ4306}  &        & Data: initial coefficient address \\
 \end{tabular}
-\end{center}
+\normalsize
+
+\medskip
+\paragraph{Translator's note: program-restart idiom at line 14}
+Line 14's \texttt{U 0000} has no \texttt{x} prefix, so the loader adds the relocation base (4200) to its operand; the runtime instruction is \texttt{U 4200}, a jump to line 0 of this program. After the line-13 native stop, pressing \textsf{Start} executes line 14, which re-enters the interpreter from the top --- re-reading new coefficients from tape, computing, printing, and halting again. It's a re-run loop.
+
+\paragraph{Translator's note: \texttt{XL0002} in the original}
+The original German source shows the increment instruction at line 07 as \texttt{XL 0002}. There's no \texttt{L} opcode in the H1-11.1 instruction set, and the comment ``Adressenregister um 2 erh\"ohen'' (increase address register by 2) describes \texttt{XI} (Increment Address). The \texttt{L} is almost certainly an OCR error for \texttt{I}. I've used \texttt{XI 0002} here.
+
+\paragraph{Data input sheet for Horner's Method}
+The input tape supplies $X$ and the five coefficients in the format documented under INPUT above:
+
+\medskip
+\noindent
+\small
+\ttfamily
+\begin{tabular}{ll}
+\texttt{4304'1090000'00+09'} & $X$ \\
+\texttt{\ \ \ \ \ 0120000'00+09'} & $a_0$ \\
+\texttt{\ \ \ \ \ 0340000'00+09'} & $a_1$ \\
+\texttt{\ \ \ \ \ 0560000'00+09'} & $a_2$ \\
+\texttt{\ \ \ \ \ 0780000'00+09'} & $a_3$ \\
+\texttt{\ \ \ \ \ 0900000'00+09'} & $a_4$ \\
+\texttt{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ '} & end of group \\
+\end{tabular}
+\normalsize
 
 \subsubsection*{Translator's Notes}
 
