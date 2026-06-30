@@ -12,23 +12,46 @@ elements of...", "Prior to executing the calling sequence, an explicit exit
 must be performed", etc.). We've been rewriting it paragraph-by-paragraph in
 plain English, with you saying y/n on each draft.
 
-`chapters/matrix-operations.tex` is now fully de-stilted:
-- D1-11.0 Matrix Inversion 1
-- D1-12.0 Matrix-Vector Multiplication 1
-- D1-13.0 Matrix Multiplication 1
-- D1-14.0 Matrix Addition and Subtraction 1
-- D1-15.0 Matrix Transposition 1
-- H1-10.0 Complex Operations Interpretive System
+Chapters fully de-stilted:
+- `chapters/matrix-operations.tex` -- all five matrix subroutines plus
+  H1-10.0 Complex Operations Interpretive System.
+- `chapters/floating-point.tex` -- both interpreters end-to-end (H1-11.0
+  Floating-Point Interpreter System 1 and H1-11.1 Floating-Point Interpreter
+  System 2), plus L3-12.0 Fixed/Floating Conversion. The closing translator's
+  notes ('Why do we have two floating point packages?', 'Why interpreters?',
+  and the Horner's Method coding example walk-through) were already in your
+  voice and got only small typo fixes.
+
+Also worth noting from the floating-point work:
+- **Caught two AI-hallucinated coding examples** by cross-checking against
+  the original German. H1-11.0's example had been turned into a stride-3
+  straight-line version (with the prose even fabricating a '3 words per
+  literal' storage claim that contradicted the documented format). H1-11.1's
+  was even more mangled: an OCR error rendering 'XI' (Increment Address) as
+  'XL' (no such opcode); the loader directive ':' instead of ';' (no such PIR
+  keyword); the line-14 program-restart idiom misread as a swap; and the
+  data sheet was complete nonsense with rows labeled '3 3 3 3 9'.  Both
+  examples are now restored from the original German, with translator's
+  notes flagging the puzzles in the source.
+- **Flagged a real bit-pattern discrepancy in H1-11.0** between the verbal
+  field layout (sign + 24 mantissa + sign + 5 exponent + 1 unused = 32 bits)
+  and the worked-example bit patterns (which have an extra mantissa bit each
+  and can't be made to round-trip under any plausible reading). The Data
+  Input section confirms the 24-bit width independently, so the verbal
+  layout is right; the worked examples appear to be transcription errors
+  from the original manual. Translator's note left in the chapter; needs
+  hardware verification.
+- **H1-11.1's bit patterns are clean** (the +3.75 example round-trips to
+  0.9375 exactly under the documented layout), so the H1-11.0 puzzle is
+  genuinely a chapter-specific transcription issue.
 
 Still to do:
-- **`chapters/floating-point.tex` -- the big one.** Same author voice as the
-  matrix chapter but turned up to 11 -- "simulated pseudo-accumulator,"
-  "architectural baseline footprint of the interpreter core loop," "operands
-  and addresses can be modified dynamically without exiting the interpretive
-  system environment," etc. ~1400 lines total. Going to be a multi-session
-  job. Expect lots of the same patterns: paragraphs that say the same thing
-  three ways, bullet lists that the table below restates, post-table prose
-  that reads each row of the table back.
+- Continue top-to-bottom for any chapters we haven't de-stilted yet. The
+  remaining big ones are sorting.tex, program-input-*.tex, data-input.tex,
+  data-output.tex. Read each one and decide whether a full pass is worth
+  it or just spot fixes.
+- Consistency pass on the 'Program Input' subsubsection name (see TODO
+  earlier in this file).
 
 ## House style we settled on during the cleanup
 
